@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>pl.miloszgilga</groupId>
+    <artifactId>event-proxy-system</artifactId>
+    <version>1.0.0</version>
+  </parent>
+
+  <artifactId>event-proxy-server</artifactId>
+  <packaging>jar</packaging>
+
+  <properties>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+  </properties>
+
+  <dependencies>
+    <!-- TODO -->
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- Package to Uber JAR -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>${maven-assembly-plugin.version}</version>
+        <configuration>
+          <finalName>event-proxy-server</finalName>
+          <appendAssemblyId>false</appendAssemblyId>
+          <outputDirectory>${project.parent.basedir}/.bin</outputDirectory>
+          <archive>
+            <manifest>
+              <mainClass>pl.miloszgilga.event.proxy.server.EventProxyServerMain</mainClass>
+            </manifest>
+          </archive>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+          <classifier>jar-with-dependencies</classifier>
+        </configuration>
+        <executions>
+          <execution>
+            <id>make-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
