@@ -5,7 +5,7 @@
 
 Event proxy system receiving events from a fake SMTP server (on the local network), parsing them and
 sending them via real-time communication channels (SSE). It also includes a simple REST client with
-CRUD operations and desktop application receiving this events from multiple proxy servers.
+CRUD operations and desktop application receiving these events from multiple proxy servers.
 
 ## Table of content
 * [Author](#author)
