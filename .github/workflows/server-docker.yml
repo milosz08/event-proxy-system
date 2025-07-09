@@ -8,6 +8,7 @@ on:
       - ".github/workflows/server-docker.yml"
       - "event-proxy-server/**"
       - "Dockerfile.pipeline"
+      - "mvnw"
       - "pom.xml"
 
 jobs:
