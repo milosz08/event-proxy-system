@@ -1,10 +1,11 @@
 package pl.miloszgilga.event.proxy.server;
 
-public class EventProxyServerMain {
+class EventProxyServerMain {
   public static void main(String[] args) {
-    System.out.println("Hello from event proxy server!");
-    while (true) {
-      // TODO: server loop
-    }
+    final HttpProxyServerThread httpProxyServerThread = new HttpProxyServerThread(4365);
+    final SmtpProxyServerThread smtpProxyServerThread = new SmtpProxyServerThread(1025, 10);
+
+    httpProxyServerThread.start();
+    smtpProxyServerThread.start();
   }
 }
