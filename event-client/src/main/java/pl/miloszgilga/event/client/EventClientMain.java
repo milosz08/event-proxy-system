@@ -1,7 +1,12 @@
 package pl.miloszgilga.event.client;
 
-public class EventClientMain {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+class EventClientMain {
+  private static final Logger LOG = LoggerFactory.getLogger(EventClientMain.class);
+
   public static void main(String[] args) {
-    System.out.println("Hello from event client!");
+    LOG.info("Hello from event client!");
   }
 }
