@@ -21,8 +21,8 @@ docker build -t milosz08/event-proxy-server .
 docker run -d \
   --name event-proxy-server \
   -p 8080:8080 \
-  -e EVENT_PROXY_SERVER_XMS=128m \
-  -e EVENT_PROXY_SERVER_XMX=128m \
+  -e EVENT_PROXY_SERVER_XMS=64m \
+  -e EVENT_PROXY_SERVER_XMX=64m \
   milosz08/event-proxy-server:latest
 ```
 
@@ -36,8 +36,8 @@ services:
     ports:
       - '8080:8080'
     environment:
-      EVENT_PROXY_SERVER_XMS: 128m
-      EVENT_PROXY_SERVER_XMX: 128m
+      EVENT_PROXY_SERVER_XMS: 64m
+      EVENT_PROXY_SERVER_XMX: 64m
     networks:
       - event-proxy-server-network
 
