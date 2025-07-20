@@ -10,7 +10,7 @@
     <version>1.0.0</version>
   </parent>
 
-  <artifactId>event-client</artifactId>
+  <artifactId>event-desktop-client</artifactId>
   <packaging>jar</packaging>
 
   <properties>
@@ -38,7 +38,7 @@
           <outputDirectory>${project.parent.basedir}/.bin</outputDirectory>
           <archive>
             <manifest>
-              <mainClass>pl.miloszgilga.event.client.EventClientMain</mainClass>
+              <mainClass>pl.miloszgilga.event.desktop.client.EventDesktopClientMain</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>

@@ -41,7 +41,7 @@ $ git clone https://github.com/milosz08/event-proxy-system
 ```bash
 $ ./mvnw clean package # build all
 $ ./mvnw clean package -pl event-proxy-server # build server
-$ ./mvnw clean package -pl event-client # build client
+$ ./mvnw clean package -pl event-desktop-client # build desktop client
 ```
 
 3. Run server in your local network area (on Raspberry Pi or other device with JVM 17):
