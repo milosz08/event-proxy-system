@@ -15,7 +15,6 @@ abstract class AbstractThread implements Runnable {
     thread = new Thread(this);
     thread.setName(name);
     thread.start();
-    afterStartThread();
   }
 
   final void stop() {
@@ -25,9 +24,5 @@ abstract class AbstractThread implements Runnable {
     thread = null;
   }
 
-  void afterStartThread() {
-  }
-
-  void beforeStopThread() {
-  }
+  abstract void beforeStopThread();
 }

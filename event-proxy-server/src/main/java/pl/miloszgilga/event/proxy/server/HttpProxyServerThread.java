@@ -10,6 +10,8 @@ class HttpProxyServerThread extends AbstractThread {
 
   private final int port;
 
+  private Server server;
+
   HttpProxyServerThread(int port) {
     super("HTTP-Proxy");
     this.port = port;
@@ -17,7 +19,7 @@ class HttpProxyServerThread extends AbstractThread {
 
   @Override
   public void run() {
-    final Server server = new Server(port);
+    server = new Server(port);
     final ServletContextHandler context = new ServletContextHandler();
 
     context.setContextPath("/");
@@ -26,8 +28,20 @@ class HttpProxyServerThread extends AbstractThread {
     try {
       server.start();
       server.join();
+    } catch (InterruptedException ignored) {
     } catch (Exception ex) {
-      LOG.error("Unable to start HTTP proxy server. Cause: {}.", ex.getMessage());
+      LOG.error("Unable to start HTTP proxy server. Cause: {}", ex.getMessage());
     }
+  }
+
+  @Override
+  void beforeStopThread() {
+    if (server == null) {
+      return;
+    }
+    try {
+      server.stop();
+    } catch (Exception ignored) {}
+    LOG.info("HTTP proxy server has been stopped");
   }
 }
