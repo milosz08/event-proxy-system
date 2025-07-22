@@ -1,4 +1,4 @@
-name: Build event client app
+name: Build event desktop client app
 
 on:
   workflow_dispatch:
