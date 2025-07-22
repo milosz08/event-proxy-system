@@ -5,7 +5,7 @@ import org.eclipse.jetty.server.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class HttpProxyServerThread extends Thread {
+class HttpProxyServerThread extends AbstractThread {
   private static final Logger LOG = LoggerFactory.getLogger(HttpProxyServerThread.class);
 
   private final int port;
