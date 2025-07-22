@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,12 +21,12 @@ class SmtpProxyServerThread extends AbstractThread {
 
   private ServerSocket serverSocket;
 
-  SmtpProxyServerThread(int port, int threadPoolSize) {
+  SmtpProxyServerThread(int port, int threadPoolSize, BlockingQueue<EmailContent> queue) {
     super("SMTP-Proxy");
     this.port = port;
     this.threadPoolSize = threadPoolSize;
+    this.queue = queue;
     threadPool = Executors.newFixedThreadPool(threadPoolSize);
-    queue = new ArrayBlockingQueue<>(threadPoolSize);
   }
 
   @Override
@@ -69,9 +68,5 @@ class SmtpProxyServerThread extends AbstractThread {
     }
     threadPool.shutdown();
     LOG.info("SMTP proxy server has been stopped");
-  }
-
-  EmailContent getNextEmail() throws InterruptedException {
-    return queue.take();
   }
 }

@@ -11,6 +11,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Properties;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -19,11 +21,13 @@ class SmtpProxyServerThreadTest {
   private static final String HOST = "localhost";
   private static final int PORT = 2526;
 
+  private BlockingQueue<EmailContent> queue;
   private SmtpProxyServerThread smtpProxyServerThread;
 
   @BeforeEach
   void setUp() {
-    smtpProxyServerThread = new SmtpProxyServerThread(PORT, 1);
+    queue = new ArrayBlockingQueue<>(1);
+    smtpProxyServerThread = new SmtpProxyServerThread(PORT, 1, queue);
     smtpProxyServerThread.start();
   }
 
@@ -64,7 +68,7 @@ class SmtpProxyServerThreadTest {
 
     Transport.send(message);
 
-    final EmailContent emailContent = smtpProxyServerThread.getNextEmail();
+    final EmailContent emailContent = queue.take();
 
     assertNotNull(emailContent, "email content cannot be null");
     assertEquals(from, emailContent.from(), "incorrect sender email address");
