@@ -21,6 +21,8 @@
     <swt.version>4.3</swt.version>
     <junit.version>5.13.3</junit.version>
     <jakarta-mail.version>2.0.1</jakarta-mail.version>
+    <jdbi-sqlite.version>3.50.3.0</jdbi-sqlite.version>
+    <hikari-cp.version>6.3.0</hikari-cp.version>
     <!-- configuration -->
     <maven-clean-plugin.version>3.4.1</maven-clean-plugin.version>
     <maven-assembly-plugin.version>2.2-beta-5</maven-assembly-plugin.version>
@@ -77,6 +79,16 @@
         <groupId>com.sun.mail</groupId>
         <artifactId>jakarta.mail</artifactId>
         <version>${jakarta-mail.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.xerial</groupId>
+        <artifactId>sqlite-jdbc</artifactId>
+        <version>${jdbi-sqlite.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.zaxxer</groupId>
+        <artifactId>HikariCP</artifactId>
+        <version>${hikari-cp.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
