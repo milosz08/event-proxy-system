@@ -52,8 +52,55 @@ class SmtpProxyServerThreadTest {
       enojis: 👍🎉❤️😂🤔
       $, €, £, ¥
       `!@#$%^&*()_+-=[]{}|;':",./<>?`
-      —, „“, ©, ®
-      """;
+      —, „“, ©, ®""";
+
+    sendMessageAndAssert(from, to, subject, body);
+  }
+
+  @Test
+  void shouldReceiveDvrMessageBody() throws MessagingException, InterruptedException {
+    final String from = "dvr-in@event-test";
+    final String to = "dvr-out@event-test";
+    final String subject = "Dvr event test topic";
+    final String body = """
+      This is an automatically generated e-mail from your DVR.
+
+      EVENT TYPE:    Motion Detected
+      EVENT TIME:    2025-07-27,11:41:29
+      DVR NAME:      Embedded Net DVR
+      DVR S/N:       RESTRICTED
+      CAMERA NAME(NUM):   CAM 2 Garage(A2)""";
+
+    sendMessageAndAssert(from, to, subject, body);
+  }
+
+  @Test
+  void shouldReceiveNasMessageBody() throws MessagingException, InterruptedException {
+    final String from = "nas-in@event-test";
+    final String to = "nas-out@event-test";
+    final String subject = "Nas event test topic";
+    final String body = """
+      A SMART Test Was Performed On The Following Hard Drive At 03:2:10 On 27-July-2025.
+
+      Device Model:  WDC WD20EFZX-68AWUN0
+      Serial Number:  RESTRICTED
+      Size: 2,000G
+
+      The Result Of The Test Is: Pass
+
+      Sincerely,
+      Your dlink-02C972""";
+
+    sendMessageAndAssert(from, to, subject, body);
+  }
+
+  @AfterEach
+  public void tearDown() {
+    smtpProxyServerThread.stop();
+  }
+
+  private void sendMessageAndAssert(String from, String to, String subject, String body)
+    throws MessagingException, InterruptedException {
 
     final Properties props = new Properties();
     props.put("mail.smtp.host", HOST);
@@ -73,11 +120,10 @@ class SmtpProxyServerThreadTest {
     assertNotNull(emailContent, "email content cannot be null");
     assertEquals(from, emailContent.from(), "incorrect sender email address");
     assertEquals(subject, emailContent.subject(), "incorrect message subject");
-    assertEquals(body, emailContent.rawBody(), "incorrect message body");
+    assertEquals(body, normalizeLineEndings(emailContent.rawBody()), "incorrect message body");
   }
 
-  @AfterEach
-  public void tearDown() {
-    smtpProxyServerThread.stop();
+  private String normalizeLineEndings(String str) {
+    return str.replace("\r\n", "\n");
   }
 }
