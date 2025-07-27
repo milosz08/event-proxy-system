@@ -45,7 +45,6 @@ class SmtpMessageReceiver implements Runnable {
           while (!(line = in.readLine()).equals(".")) {
             rawLines.add(line);
           }
-          rawLines.add(".");
           out.println("250 OK: Queued for delivery");
         } else {
           out.println("250 OK");
