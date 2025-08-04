@@ -1,6 +1,5 @@
 package pl.miloszgilga.event.proxy.server;
 
-import java.sql.JDBCType;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -25,7 +24,16 @@ class NasEmailParser extends AbstractEmailParser {
   }
 
   @Override
-  protected void parseWithExceptionWrapper(String rawBody, Map<String, EmailPropertyValue> values) {
+  protected void declareOwnParserFields(Map<String, FieldType> values) {
+    values.put("model", FieldType.TEXT);
+    values.put("serial", FieldType.TEXT);
+    values.put("size", FieldType.TEXT);
+    values.put("result", FieldType.TEXT);
+    values.put("timestamp", FieldType.TEXT);
+  }
+
+  @Override
+  protected void parseWithExceptionWrapper(String rawBody, Map<String, Object> values) {
     final String timePart = extractGroup(rawBody, TIMESTAMP_PATTERN, 1);
     final String datePart = extractGroup(rawBody, TIMESTAMP_PATTERN, 2);
 
@@ -37,10 +45,10 @@ class NasEmailParser extends AbstractEmailParser {
     final LocalDateTime timestamp = LocalDateTime
       .parse(timePart + " " + datePart, TIME_FORMATTER);
 
-    values.put("model", new EmailPropertyValue(model));
-    values.put("serial", new EmailPropertyValue(serial));
-    values.put("size", new EmailPropertyValue(size));
-    values.put("result", new EmailPropertyValue(result));
-    values.put("timestamp", new EmailPropertyValue(timestamp, JDBCType.TIMESTAMP));
+    values.put("model", model);
+    values.put("serial", serial);
+    values.put("size", size);
+    values.put("result", result);
+    values.put("timestamp", timestamp.toString());
   }
 }

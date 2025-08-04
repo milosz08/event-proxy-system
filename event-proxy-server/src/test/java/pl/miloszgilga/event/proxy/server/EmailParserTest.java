@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -66,13 +67,12 @@ class EmailParserTest {
     final Map<String, Object> extendedMap = new HashMap<>(expected);
     extendedMap.put("subject", subject);
 
-    final Map<String, EmailPropertyValue> values = parser.parseEmail(emailContent);
+    final List<EmailPropertyValue> values = parser.parseEmail(emailContent);
     assertNotNull(values);
 
-    for (final Map.Entry<String, EmailPropertyValue> value : values.entrySet()) {
-      final Object expectedValue = extendedMap.get(value.getKey());
-      final Object parsedValue = value.getValue().value();
-      assertEquals(expectedValue, parsedValue);
+    for (final EmailPropertyValue value : values) {
+      final Object expectedValue = extendedMap.get(value.name());
+      assertEquals(expectedValue, value.value());
     }
   }
 }

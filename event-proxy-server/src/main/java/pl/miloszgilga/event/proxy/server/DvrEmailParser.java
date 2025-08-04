@@ -1,6 +1,5 @@
 package pl.miloszgilga.event.proxy.server;
 
-import java.sql.JDBCType;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -23,7 +22,17 @@ class DvrEmailParser extends AbstractEmailParser {
   }
 
   @Override
-  protected void parseWithExceptionWrapper(String rawBody, Map<String, EmailPropertyValue> values) {
+  protected void declareOwnParserFields(Map<String, FieldType> values) {
+    values.put("eventType", FieldType.TEXT);
+    values.put("eventTime", FieldType.TEXT);
+    values.put("dvrName", FieldType.TEXT);
+    values.put("dvrSn", FieldType.TEXT);
+    values.put("cameraName", FieldType.TEXT);
+    values.put("cameraNum", FieldType.TEXT);
+  }
+
+  @Override
+  protected void parseWithExceptionWrapper(String rawBody, Map<String, Object> values) {
     final String eventType = extractGroup(rawBody, EVENT_TYPE_PATTERN, 1);
     final String eventTimeString = extractGroup(rawBody, EVENT_TIME_PATTERN, 1);
     final String dvrName = extractGroup(rawBody, DVR_NAME_PATTERN, 1);
@@ -33,11 +42,11 @@ class DvrEmailParser extends AbstractEmailParser {
 
     final LocalDateTime eventTime = LocalDateTime.parse(eventTimeString, TIME_FORMATTER);
 
-    values.put("eventType", new EmailPropertyValue(eventType));
-    values.put("eventTime", new EmailPropertyValue(eventTime, JDBCType.TIMESTAMP));
-    values.put("dvrName", new EmailPropertyValue(dvrName));
-    values.put("dvrSn", new EmailPropertyValue(dvrSn));
-    values.put("cameraName", new EmailPropertyValue(cameraName));
-    values.put("cameraNum", new EmailPropertyValue(cameraNum));
+    values.put("eventType", eventType);
+    values.put("eventTime", eventTime.toString());
+    values.put("dvrName", dvrName);
+    values.put("dvrSn", dvrSn);
+    values.put("cameraName", cameraName);
+    values.put("cameraNum", cameraNum);
   }
 }
