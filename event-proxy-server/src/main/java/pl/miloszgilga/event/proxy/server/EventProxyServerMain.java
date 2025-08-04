@@ -5,6 +5,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 class EventProxyServerMain implements Runnable {
+  private final EventBroadcaster eventBroadcaster;
   private final HttpProxyServerThread httpProxyServerThread;
   private final SmtpProxyServerThread smtpProxyServerThread;
 
@@ -14,7 +15,8 @@ class EventProxyServerMain implements Runnable {
     final ContentInitializerRegistry initializerRegistry = new ContentInitializerRegistry();
     final BlockingQueue<EmailContent> queue = new ArrayBlockingQueue<>(10);
 
-    httpProxyServerThread = new HttpProxyServerThread(4365);
+    eventBroadcaster = new EventBroadcaster();
+    httpProxyServerThread = new HttpProxyServerThread(4365, eventBroadcaster);
     smtpProxyServerThread = new SmtpProxyServerThread(4366, 10, queue);
 
     // init database
@@ -27,10 +29,11 @@ class EventProxyServerMain implements Runnable {
     );
 
     final EmailPersistor emailPersistor = new JdbcEmailPersistor(dbConnectionPool, emailParsers);
+
     initializerRegistry.register(emailPersistor);
 
     initializerRegistry.init();
-    emailConsumer = new EmailConsumer(queue, emailParsers, emailPersistor);
+    emailConsumer = new EmailConsumer(queue, emailParsers, eventBroadcaster, emailPersistor);
   }
 
   public static void main(String[] args) {
@@ -47,6 +50,7 @@ class EventProxyServerMain implements Runnable {
 
   @Override
   public void run() {
+    eventBroadcaster.close();
     httpProxyServerThread.stop();
     smtpProxyServerThread.stop();
     emailConsumer.stop();

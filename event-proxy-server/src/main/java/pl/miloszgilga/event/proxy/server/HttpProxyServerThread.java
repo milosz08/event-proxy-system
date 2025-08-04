@@ -9,26 +9,28 @@ class HttpProxyServerThread extends AbstractThread {
   private static final Logger LOG = LoggerFactory.getLogger(HttpProxyServerThread.class);
 
   private final int port;
+  private final EventBroadcaster eventBroadcaster;
 
   private Server server;
 
-  HttpProxyServerThread(int port) {
+  HttpProxyServerThread(int port, EventBroadcaster eventBroadcaster) {
     super("HTTP-Proxy");
     this.port = port;
+    this.eventBroadcaster = eventBroadcaster;
   }
 
   @Override
   public void run() {
     server = new Server(port);
     final ServletContextHandler context = new ServletContextHandler();
-
     context.setContextPath("/");
-    server.setHandler(context);
 
+    context.addServlet(new SseServlet(eventBroadcaster), "/events");
+
+    server.setHandler(context);
     try {
       server.start();
       server.join();
-    } catch (InterruptedException ignored) {
     } catch (Exception ex) {
       LOG.error("Unable to start HTTP proxy server. Cause: {}", ex.getMessage());
     }
