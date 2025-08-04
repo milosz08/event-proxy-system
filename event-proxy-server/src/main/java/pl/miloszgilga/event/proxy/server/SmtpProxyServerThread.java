@@ -45,7 +45,6 @@ class SmtpProxyServerThread extends AbstractThread {
           }
         }
       }
-    } catch (SocketException ignored) {
     } catch (IOException ex) {
       LOG.error("Unable to start SMTP proxy server. Cause: {}", ex.getMessage());
     } finally {
