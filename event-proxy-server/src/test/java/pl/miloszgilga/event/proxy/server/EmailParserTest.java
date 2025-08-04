@@ -24,7 +24,7 @@ class EmailParserTest {
 
     final Map<String, Object> expected = Map.of(
       "eventType", "Motion Detected",
-      "eventTime", LocalDateTime.of(2025, 7, 27, 11, 41, 29),
+      "eventTime", LocalDateTime.of(2025, 7, 27, 11, 41, 29).toString(),
       "dvrName", "Embedded Net DVR",
       "dvrSn", "RESTRICTED",
       "cameraName", "CAM 2",
@@ -54,7 +54,7 @@ class EmailParserTest {
       "serial", "RESTRICTED",
       "size", "2,000G",
       "result", "Pass",
-      "timestamp", LocalDateTime.of(2025, 7, 27, 3, 2, 10)
+      "timestamp", LocalDateTime.of(2025, 7, 27, 3, 2, 10).toString()
     );
 
     performParserTest(new NasEmailParser(), body, expected);
