@@ -1,5 +1,5 @@
 package pl.miloszgilga.event.proxy.server;
 
-public interface ContentInitializer {
+interface ContentInitializer {
   void init();
 }
