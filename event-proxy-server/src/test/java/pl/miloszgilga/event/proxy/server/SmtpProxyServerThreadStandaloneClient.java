@@ -8,28 +8,14 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 
 import java.util.Properties;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 class SmtpProxyServerThreadStandaloneClient {
-  private static final String HOST = "localhost";
-  private static final int PORT = 1025;
+  private static final String HOST = "0.0.0.0";
+  private static final int PORT = 4366;
 
-  private final BlockingQueue<EmailContent> queue;
-  private final SmtpProxyServerThread smtpProxyServerThread;
-
-  SmtpProxyServerThreadStandaloneClient() {
-    queue = new ArrayBlockingQueue<>(1);
-    smtpProxyServerThread = new SmtpProxyServerThread(PORT, 1, queue);
-  }
-
-  void sendEmail() throws MessagingException {
-    smtpProxyServerThread.start();
-
-    final String from = "nadawca@test";
+  void sendEmail(String subject, String body, EmailParser parser) throws MessagingException {
+    final String from = parser.senderName();
     final String to = "odbiorca@test";
-    final String subject = "Zażółć gęślą - jaźń. Zażółć gęślą jaźń";
-    final String body = "Testing message";
 
     final Properties props = new Properties();
     props.put("mail.smtp.host", HOST);
@@ -43,13 +29,38 @@ class SmtpProxyServerThreadStandaloneClient {
     message.setText(body);
 
     Transport.send(message);
-
-    smtpProxyServerThread.stop();
-    queue.clear();
   }
 
   public static void main(String[] args) throws MessagingException {
     final SmtpProxyServerThreadStandaloneClient main = new SmtpProxyServerThreadStandaloneClient();
-    main.sendEmail();
+    main.sendEmail(
+      "dlink-02C972_E-Mail_Alert",
+      """
+      A SMART Test Was Performed On The Following Hard Drive At 03:2:10 On 27-July-2025.
+
+      Device Model:  WDC WD20EFZX-68AWUN0
+      Serial Number:  RESTRICTED
+      Size: 2,000G
+
+      The Result Of The Test Is: Pass
+
+      Sincerely,
+      Your dlink-02C972
+      """,
+      new NasEmailParser()
+    );
+    main.sendEmail(
+      "Embedded Net DVR: Motion Detected On Channel A2",
+      """
+      This is an automatically generated e-mail from your DVR.
+
+      EVENT TYPE:    Motion Detected
+      EVENT TIME:    2025-07-26,16:53:09
+      DVR NAME:      Embedded Net DVR
+      DVR S/N:       RESTRICTED
+      CAMERA NAME(NUM):   CAM 2 Garage(A2)
+      """,
+      new DvrEmailParser()
+    );
   }
 }
