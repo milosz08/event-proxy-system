@@ -42,25 +42,17 @@ class EventBroadcaster implements Closeable {
     return broadcastClients.size();
   }
 
-  void broadcastEvent(String dataName, List<EmailPropertyValue> eventData) {
-    for (final AsyncContext clientContext : broadcastClients) {
-      try {
-        // TODO: change fields into JSON or param map (separated by =)
-        sendToChannel(clientContext, "data", eventData.toString());
-      } catch (IOException ex) {
-        LOG.error("Unable to send event from: {}. Cause: {}", dataName, ex.getMessage());
-      }
+  void broadcastEvent(String dataName, EmailPropertiesAggregator emailProperties) {
+    final String jsonData = emailProperties.serializeToJson(dataName);
+    for (final AsyncContext clientContext : broadcastClients.values()) {
+      sendToChannel(clientContext, "data", jsonData);
     }
   }
 
   // send heartbeat to check, if connection is still active, otherwise disconnect client
   private void sendHeartbeat() {
-    for (final AsyncContext clientContext : broadcastClients) {
-      try {
-        sendToChannel(clientContext, "", "heartbeat");
-      } catch (IOException ignored) {
-        clientContext.complete();
-      }
+    for (final AsyncContext clientContext : broadcastClients.values()) {
+      sendToChannel(clientContext, "", "heartbeat");
     }
   }
 

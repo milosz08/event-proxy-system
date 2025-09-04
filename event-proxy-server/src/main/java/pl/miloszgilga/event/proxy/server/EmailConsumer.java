@@ -35,7 +35,7 @@ class EmailConsumer extends AbstractThread {
         final EmailContent emailContent = queue.take();
         final EmailParser emailParser = emailParsers.get(emailContent.from());
         if (emailParser != null) {
-          final List<EmailPropertyValue> parsedEmail = emailParser.parseEmail(emailContent);
+          final EmailPropertiesAggregator parsedEmail = emailParser.parseEmail(emailContent);
           if (parsedEmail != null) {
             eventBroadcaster.broadcastEvent(emailParser.parserName(), parsedEmail);
             emailPersistor.persist(emailParser.parserName(), parsedEmail);

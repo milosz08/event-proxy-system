@@ -51,7 +51,8 @@ class JdbcEmailPersistor implements EmailPersistor {
 
   // execute with blocking mode on every new incoming event
   @Override
-  public void persist(String dataName, List<EmailPropertyValue> emailData) {
+  public void persist(String dataName, EmailPropertiesAggregator emailProperties) {
+    final List<EmailPropertyValue> emailData = emailProperties.propertyValues();
     final String sql = String.format(
       "INSERT INTO `%s` (%s) VALUES (%s)",
       dataName,

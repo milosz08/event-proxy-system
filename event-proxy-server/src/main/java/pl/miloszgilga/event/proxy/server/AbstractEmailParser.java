@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 abstract class AbstractEmailParser implements EmailParser {
   private static final Logger LOG = LoggerFactory.getLogger(AbstractEmailParser.class);
@@ -39,7 +38,7 @@ abstract class AbstractEmailParser implements EmailParser {
   }
 
   @Override
-  public final List<EmailPropertyValue> parseEmail(EmailContent emailContent) {
+  public final EmailPropertiesAggregator parseEmail(EmailContent emailContent) {
     final String rawBody = emailContent.rawBody();
     final Map<String, Object> values = new HashMap<>();
     try {
@@ -51,11 +50,12 @@ abstract class AbstractEmailParser implements EmailParser {
       }
       // get declared parser fields and map into EmailPropertyValue
       // keys has been checked before
-      return values.entrySet().stream()
+      final List<EmailPropertyValue> properties = values.entrySet().stream()
         // map must be parsed to list (elements must be in defined order for SQL statements)
         .map(entry -> new EmailPropertyValue(entry.getKey(), entry.getValue(),
           parserFields.get(entry.getKey())))
-        .collect(Collectors.toList());
+        .toList();
+      return new EmailPropertiesAggregator(properties);
     } catch (Exception ex) {
       LOG.error("Unable to parse {} message. Cause: {}", parserName(), ex.getMessage());
     }
