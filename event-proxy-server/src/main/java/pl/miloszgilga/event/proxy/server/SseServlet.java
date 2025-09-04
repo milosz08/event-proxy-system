@@ -25,9 +25,11 @@ class SseServlet extends HttpServlet {
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
 
+    final String clientId = eventBroadcaster.addClientIdToRequest(req);
+
     final AsyncContext asyncContext = req.startAsync(req, res);
     asyncContext.setTimeout(0); // set no limit for SSE connections
-    eventBroadcaster.addClient(asyncContext);
+    eventBroadcaster.addClient(clientId, asyncContext);
 
     asyncContext.addListener(new AsyncListener() {
       @Override
@@ -46,11 +48,13 @@ class SseServlet extends HttpServlet {
       public void onStartAsync(AsyncEvent event) {
       }
     });
-    LOG.info("Client connected. Active clients: {}", eventBroadcaster.getClientsCount());
+    LOG.info("Client {} connected. Active clients: {}", clientId,
+      eventBroadcaster.getClientsCount());
   }
 
   private void onDisconnectClient(AsyncContext asyncContext) {
-    eventBroadcaster.removeClient(asyncContext);
-    LOG.info("Client disconnected. Active clients: {}", eventBroadcaster.getClientsCount());
+    final String clientId = eventBroadcaster.removeClient(asyncContext);
+    LOG.info("Client {} disconnected. Active clients: {}", clientId,
+      eventBroadcaster.getClientsCount());
   }
 }
