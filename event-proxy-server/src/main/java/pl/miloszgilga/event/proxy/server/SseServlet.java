@@ -21,7 +21,6 @@ class SseServlet extends HttpServlet {
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse res) {
     res.setContentType("text/event-stream");
-    res.setCharacterEncoding("UTF-8");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
 

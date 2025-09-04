@@ -1,9 +1,12 @@
 package pl.miloszgilga.event.proxy.server;
 
+import jakarta.servlet.DispatcherType;
 import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
 import org.eclipse.jetty.server.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.EnumSet;
 
 class HttpProxyServerThread extends AbstractThread {
   private static final Logger LOG = LoggerFactory.getLogger(HttpProxyServerThread.class);
@@ -24,6 +27,8 @@ class HttpProxyServerThread extends AbstractThread {
     server = new Server(port);
     final ServletContextHandler context = new ServletContextHandler();
     context.setContextPath("/");
+
+    context.addFilter(new CharacterEncodingFilter(), "/*", EnumSet.of(DispatcherType.REQUEST));
 
     context.addServlet(new SseServlet(eventBroadcaster), "/events");
 
