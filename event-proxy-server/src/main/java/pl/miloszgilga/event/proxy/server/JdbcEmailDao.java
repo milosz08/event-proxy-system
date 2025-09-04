@@ -11,13 +11,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-class JdbcEmailPersistor implements EmailPersistor {
-  private static final Logger LOG = LoggerFactory.getLogger(JdbcEmailPersistor.class);
+class JdbcEmailDao implements EmailDao {
+  private static final Logger LOG = LoggerFactory.getLogger(JdbcEmailDao.class);
 
   private final DbConnectionPool dbConnectionPool;
   private final List<EmailParser> emailParsers;
 
-  JdbcEmailPersistor(DbConnectionPool dbConnectionPool, List<EmailParser> emailParsers) {
+  JdbcEmailDao(DbConnectionPool dbConnectionPool, List<EmailParser> emailParsers) {
     this.dbConnectionPool = dbConnectionPool;
     this.emailParsers = emailParsers;
   }

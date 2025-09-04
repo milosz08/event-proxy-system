@@ -28,12 +28,12 @@ class EventProxyServerMain implements Runnable {
       new NasEmailParser()
     );
 
-    final EmailPersistor emailPersistor = new JdbcEmailPersistor(dbConnectionPool, emailParsers);
+    final EmailDao emailDao = new JdbcEmailDao(dbConnectionPool, emailParsers);
 
-    initializerRegistry.register(emailPersistor);
+    initializerRegistry.register(emailDao);
 
     initializerRegistry.init();
-    emailConsumer = new EmailConsumer(queue, emailParsers, eventBroadcaster, emailPersistor);
+    emailConsumer = new EmailConsumer(queue, emailParsers, eventBroadcaster, emailDao);
   }
 
   public static void main(String[] args) {
