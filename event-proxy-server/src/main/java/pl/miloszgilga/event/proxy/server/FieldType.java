@@ -17,10 +17,6 @@ enum FieldType {
     this.statementConsumer = statementConsumer;
   }
 
-  String getSqliteType() {
-    return name();
-  }
-
   // fields must be mapped to specialized methods, because SQLite driver not implements setObject
   void executeStatement(PreparedStatement ps, int i, Object value) throws SQLException {
     statementConsumer.accept(ps, i, value);

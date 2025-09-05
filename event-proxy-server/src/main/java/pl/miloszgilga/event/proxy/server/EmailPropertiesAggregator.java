@@ -6,7 +6,7 @@ import org.json.JSONObject;
 import java.util.List;
 
 record EmailPropertiesAggregator(List<EmailPropertyValue> propertyValues) {
-  String serializeToJson(String dataName) {
+  String serializeToJson(String eventSource) {
     final JSONObject root = new JSONObject();
     final JSONArray dataFields = new JSONArray();
     for (final EmailPropertyValue eventProperty : propertyValues) {
@@ -16,7 +16,7 @@ record EmailPropertiesAggregator(List<EmailPropertyValue> propertyValues) {
       property.put("type", eventProperty.fieldType().name());
       dataFields.put(property);
     }
-    root.put("dataName", dataName);
+    root.put("eventSource", eventSource);
     root.put("dataFields", dataFields);
     return root.toString();
   }

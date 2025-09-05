@@ -42,8 +42,8 @@ class EventBroadcaster implements Closeable {
     return broadcastClients.size();
   }
 
-  void broadcastEvent(String dataName, EmailPropertiesAggregator emailProperties) {
-    final String jsonData = emailProperties.serializeToJson(dataName);
+  void broadcastEvent(String eventSource, EmailPropertiesAggregator emailProperties) {
+    final String jsonData = emailProperties.serializeToJson(eventSource);
     for (final AsyncContext clientContext : broadcastClients.values()) {
       sendToChannel(clientContext, "data", jsonData);
     }
