@@ -53,7 +53,7 @@ class EmailParserTest {
       "serial", "RESTRICTED",
       "size", "2,000G",
       "result", "Pass",
-      "timestamp", LocalDateTime.of(2025, 7, 27, 3, 2, 10).toString()
+      "eventTime", LocalDateTime.of(2025, 7, 27, 3, 2, 10).toString()
     );
 
     performParserTest(new NasEmailParser(), body, expected);
