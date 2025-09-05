@@ -35,10 +35,10 @@ class EmailConsumer extends AbstractThread {
         final EmailContent emailContent = queue.take();
         final EmailParser emailParser = emailParsers.get(emailContent.from());
         if (emailParser != null) {
-          final EmailPropertiesAggregator parsedEmail = emailParser.parseEmail(emailContent);
-          if (parsedEmail != null) {
-            eventBroadcaster.broadcastEvent(emailParser.parserName(), parsedEmail);
-            eventDao.persist(emailParser.parserName(), parsedEmail);
+          final List<EmailPropertyValue> emailProperties = emailParser.parseEmail(emailContent);
+          if (emailProperties != null) {
+            eventBroadcaster.broadcastEvent(emailParser.parserName(), emailProperties);
+            eventDao.persist(emailParser.parserName(), emailProperties);
           }
         }
       } catch (InterruptedException ignored) {

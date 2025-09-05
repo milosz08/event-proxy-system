@@ -18,6 +18,10 @@ class NasEmailParser extends AbstractEmailParser {
   private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter
     .ofPattern("H:m:s d-MMMM-yyyy", Locale.ENGLISH);
 
+  NasEmailParser(AppConfig appConfig) {
+    super(appConfig);
+  }
+
   @Override
   public String parserName() {
     return "nas";

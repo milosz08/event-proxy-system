@@ -12,17 +12,23 @@ class EventProxyServerMain implements Runnable {
   private final EmailConsumer emailConsumer;
 
   EventProxyServerMain() {
-    final ContentInitializerRegistry initializerRegistry = new ContentInitializerRegistry();
-    final BlockingQueue<EmailContent> queue = new ArrayBlockingQueue<>(10);
-
     final I18n i18n = new I18n();
+    final AppConfig appConfig = new AppConfig();
+
+    final ContentInitializerRegistry initializerRegistry = new ContentInitializerRegistry();
+    final BlockingQueue<EmailContent> queue =
+      new ArrayBlockingQueue<>(appConfig.getAsInt(AppConfig.Prop.SMTP_QUEUE_CAPACITY));
+
     // init database
-    final DbConnectionPool dbConnectionPool = DbConnectionPool.getInstance("events.db", 5);
+    final DbConnectionPool dbConnectionPool = DbConnectionPool.getInstance(
+      appConfig.getAsStr(AppConfig.Prop.DB_PATH),
+      appConfig.getAsInt(AppConfig.Prop.DB_POOL_SIZE)
+    );
 
     // register here new email parsers
     final List<EmailParser> emailParsers = List.of(
-      new DvrEmailParser(),
-      new NasEmailParser()
+      new DvrEmailParser(appConfig),
+      new NasEmailParser(appConfig)
     );
 
     final EventDao eventDao = new JdbcEventDao(dbConnectionPool, emailParsers);
@@ -31,16 +37,22 @@ class EventProxyServerMain implements Runnable {
     initializerRegistry.register(eventDao);
     initializerRegistry.register(sessionDao);
 
-    eventBroadcaster = new EventBroadcaster();
+    eventBroadcaster = new EventBroadcaster(
+      appConfig.getAsLong(AppConfig.Prop.SSE_HEARTBEAT_INTERVAL_SEC)
+    );
     httpProxyServerThread = new HttpProxyServerThread(
-      4365,
+      appConfig.getAsInt(AppConfig.Prop.HTTP_PORT),
       eventBroadcaster,
       sessionDao,
       eventDao,
       emailParsers,
       i18n
     );
-    smtpProxyServerThread = new SmtpProxyServerThread(4366, 10, queue);
+    smtpProxyServerThread = new SmtpProxyServerThread(
+      appConfig.getAsInt(AppConfig.Prop.SMTP_PORT),
+      appConfig.getAsInt(AppConfig.Prop.SMTP_THREAD_POOL_SIZE),
+      queue
+    );
 
     initializerRegistry.init();
     emailConsumer = new EmailConsumer(queue, emailParsers, eventBroadcaster, eventDao);

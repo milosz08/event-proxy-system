@@ -32,7 +32,9 @@ class SmtpProxyServerThreadStandaloneClient {
   }
 
   public static void main(String[] args) throws MessagingException {
+    final AppConfig appConfig = new AppConfig();
     final SmtpProxyServerThreadStandaloneClient main = new SmtpProxyServerThreadStandaloneClient();
+
     main.sendEmail(
       "dlink-02C972_E-Mail_Alert",
       """
@@ -47,7 +49,7 @@ class SmtpProxyServerThreadStandaloneClient {
       Sincerely,
       Your dlink-02C972
       """,
-      new NasEmailParser()
+      new NasEmailParser(appConfig)
     );
     main.sendEmail(
       "Embedded Net DVR: Motion Detected On Channel A2",
@@ -60,7 +62,7 @@ class SmtpProxyServerThreadStandaloneClient {
       DVR S/N:       RESTRICTED
       CAMERA NAME(NUM):   CAM 2 Garage(A2)
       """,
-      new DvrEmailParser()
+      new DvrEmailParser(appConfig)
     );
   }
 }

@@ -12,14 +12,14 @@ import java.util.regex.Pattern;
 
 abstract class AbstractEmailParser implements EmailParser {
   private static final Logger LOG = LoggerFactory.getLogger(AbstractEmailParser.class);
-
-  private static final String SENDER_SUFFIX = "event-proxy-system";
   private static final String SENDER_SEPARATOR = "@";
 
   private final Map<String, FieldType> parserFields;
+  private final String senderSuffix;
 
-  AbstractEmailParser() {
+  AbstractEmailParser(AppConfig appConfig) {
     parserFields = declareParserFields();
+    senderSuffix = appConfig.getAsStr(AppConfig.Prop.SMTP_SENDER_SUFFIX);
   }
 
   protected String extractGroup(String text, Pattern pattern, int groupIndex) {
@@ -68,7 +68,7 @@ abstract class AbstractEmailParser implements EmailParser {
 
   @Override
   public final String senderName() {
-    return parserName() + SENDER_SEPARATOR + SENDER_SUFFIX;
+    return parserName() + SENDER_SEPARATOR + senderSuffix;
   }
 
   protected abstract void declareOwnParserFields(Map<String, FieldType> values);

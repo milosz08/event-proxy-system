@@ -1,14 +1,23 @@
 package pl.miloszgilga.event.proxy.server;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class EmailParserTest {
+  private static AppConfig appConfig;
+
+  @BeforeAll
+  static void setup() {
+    appConfig = new AppConfig();
+  }
+
   @Test
   void shouldParseDvrEmail() {
     final String body = """
@@ -30,7 +39,7 @@ class EmailParserTest {
       "cameraNum", "A2"
     );
 
-    performParserTest(new DvrEmailParser(), body, expected);
+    performParserTest(new DvrEmailParser(appConfig), body, expected);
   }
 
   @Test
@@ -56,7 +65,7 @@ class EmailParserTest {
       "eventTime", LocalDateTime.of(2025, 7, 27, 3, 2, 10).toString()
     );
 
-    performParserTest(new NasEmailParser(), body, expected);
+    performParserTest(new NasEmailParser(appConfig), body, expected);
   }
 
   private void performParserTest(EmailParser parser, String body, Map<String, Object> expected) {
@@ -66,10 +75,10 @@ class EmailParserTest {
     final Map<String, Object> extendedMap = new HashMap<>(expected);
     extendedMap.put("subject", subject);
 
-    final EmailPropertiesAggregator values = parser.parseEmail(emailContent);
-    assertNotNull(values);
+    final List<EmailPropertyValue> emailProperties = parser.parseEmail(emailContent);
+    assertNotNull(emailProperties);
 
-    for (final EmailPropertyValue value : values.propertyValues()) {
+    for (final EmailPropertyValue value : emailProperties) {
       final Object expectedValue = extendedMap.get(value.name());
       assertEquals(expectedValue, value.value());
     }

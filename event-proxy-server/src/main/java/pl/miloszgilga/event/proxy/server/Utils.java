@@ -23,4 +23,12 @@ class Utils {
       return defaultValue;
     }
   }
+
+  static long safetyParseLong(String value, long defaultValue) {
+    try {
+      return Long.parseLong(value);
+    } catch (NumberFormatException ignored) {
+      return defaultValue;
+    }
+  }
 }

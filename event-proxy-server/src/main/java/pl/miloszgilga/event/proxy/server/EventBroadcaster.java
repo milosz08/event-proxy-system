@@ -19,10 +19,11 @@ class EventBroadcaster implements Closeable {
   private final Map<String, AsyncContext> broadcastClients;
   private final ScheduledExecutorService heartbeatScheduler;
 
-  EventBroadcaster() {
+  EventBroadcaster(long interval) {
     broadcastClients = new ConcurrentHashMap<>();
     heartbeatScheduler = Executors.newSingleThreadScheduledExecutor();
-    heartbeatScheduler.scheduleAtFixedRate(this::sendHeartbeat, 10, 10, TimeUnit.SECONDS);
+    heartbeatScheduler.scheduleAtFixedRate(this::sendHeartbeat, interval, interval,
+      TimeUnit.SECONDS);
   }
 
   String addClientIdToRequest(HttpServletRequest req) {

@@ -16,6 +16,10 @@ class DvrEmailParser extends AbstractEmailParser {
   private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter
     .ofPattern("yyyy-MM-dd,HH:mm:ss");
 
+  DvrEmailParser(AppConfig appConfig) {
+    super(appConfig);
+  }
+
   @Override
   public String parserName() {
     return "dvr";
