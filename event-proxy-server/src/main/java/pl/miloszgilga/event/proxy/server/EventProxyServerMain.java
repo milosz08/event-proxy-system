@@ -15,10 +15,7 @@ class EventProxyServerMain implements Runnable {
     final ContentInitializerRegistry initializerRegistry = new ContentInitializerRegistry();
     final BlockingQueue<EmailContent> queue = new ArrayBlockingQueue<>(10);
 
-    eventBroadcaster = new EventBroadcaster();
-    httpProxyServerThread = new HttpProxyServerThread(4365, eventBroadcaster);
-    smtpProxyServerThread = new SmtpProxyServerThread(4366, 10, queue);
-
+    final I18n i18n = new I18n();
     // init database
     final DbConnectionPool dbConnectionPool = DbConnectionPool.getInstance("events.db", 5);
 
@@ -28,12 +25,25 @@ class EventProxyServerMain implements Runnable {
       new NasEmailParser()
     );
 
-    final EmailDao emailDao = new JdbcEmailDao(dbConnectionPool, emailParsers);
+    final EventDao eventDao = new JdbcEventDao(dbConnectionPool, emailParsers);
+    final SessionDao sessionDao = new JdbcSessionDao(dbConnectionPool);
 
-    initializerRegistry.register(emailDao);
+    initializerRegistry.register(eventDao);
+    initializerRegistry.register(sessionDao);
+
+    eventBroadcaster = new EventBroadcaster();
+    httpProxyServerThread = new HttpProxyServerThread(
+      4365,
+      eventBroadcaster,
+      sessionDao,
+      eventDao,
+      emailParsers,
+      i18n
+    );
+    smtpProxyServerThread = new SmtpProxyServerThread(4366, 10, queue);
 
     initializerRegistry.init();
-    emailConsumer = new EmailConsumer(queue, emailParsers, eventBroadcaster, emailDao);
+    emailConsumer = new EmailConsumer(queue, emailParsers, eventBroadcaster, eventDao);
   }
 
   public static void main(String[] args) {
