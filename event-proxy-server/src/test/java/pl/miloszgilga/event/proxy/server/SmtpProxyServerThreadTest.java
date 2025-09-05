@@ -33,8 +33,8 @@ class SmtpProxyServerThreadTest {
 
   @Test
   void shouldReceiveEmailSentByClient() throws MessagingException, InterruptedException {
-    final String from = "nadawca@test";
-    final String to = "odbiorca@test";
+    final String from = "sender@test";
+    final String to = "receiver@test";
     final String subject = "Zażółć gęślą - jaźń. Zażółć gęślą jaźń";
     final String body = """
       ą, ć, ę, ł, ń, ó, ś, ź, ż.

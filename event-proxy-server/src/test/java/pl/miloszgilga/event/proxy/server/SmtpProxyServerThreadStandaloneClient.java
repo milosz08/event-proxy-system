@@ -15,7 +15,7 @@ class SmtpProxyServerThreadStandaloneClient {
 
   void sendEmail(String subject, String body, EmailParser parser) throws MessagingException {
     final String from = parser.senderName();
-    final String to = "odbiorca@test";
+    final String to = "receiver@test";
 
     final Properties props = new Properties();
     props.put("mail.smtp.host", HOST);
