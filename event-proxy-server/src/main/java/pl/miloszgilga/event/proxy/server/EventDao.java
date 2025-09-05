@@ -1,5 +1,6 @@
 package pl.miloszgilga.event.proxy.server;
 
+import java.util.List;
 import java.util.Map;
 
 interface EventDao extends ContentInitializer {
@@ -8,7 +9,7 @@ interface EventDao extends ContentInitializer {
   Map<String, Object> getSingleById(String eventSource, long id);
 
   // executed with blocking mode
-  void persist(String eventSource, EmailPropertiesAggregator emailData);
+  void persist(String eventSource, List<EmailPropertyValue> emailProperties);
 
   void deleteAllByEventSource(String eventSource);
 

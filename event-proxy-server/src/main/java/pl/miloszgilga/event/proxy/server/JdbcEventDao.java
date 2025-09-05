@@ -112,24 +112,23 @@ class JdbcEventDao implements EventDao {
 
   // execute with blocking mode on every new incoming event
   @Override
-  public void persist(String eventSource, EmailPropertiesAggregator emailProperties) {
-    final List<EmailPropertyValue> emailData = emailProperties.propertyValues();
+  public void persist(String eventSource, List<EmailPropertyValue> emailProperties) {
     final String sql = String.format(
       "INSERT INTO `%s` (%s) VALUES (%s)",
       eventSource,
-      String.join(",", emailData.stream().map(EmailPropertyValue::name).toList()),
-      String.join(",", Collections.nCopies(emailData.size(), "?"))
+      String.join(",", emailProperties.stream().map(EmailPropertyValue::name).toList()),
+      String.join(",", Collections.nCopies(emailProperties.size(), "?"))
     );
     try (final Connection conn = dbConnectionPool.getConnection();
          final PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
-      for (int i = 0; i < emailData.size(); i++) {
-        final EmailPropertyValue emailPropertyValue = emailData.get(i);
+      for (int i = 0; i < emailProperties.size(); i++) {
+        final EmailPropertyValue emailPropertyValue = emailProperties.get(i);
         emailPropertyValue.fieldType().executeStatement(preparedStatement, i + 1,
           emailPropertyValue.value());
       }
       final int rowsAffected = preparedStatement.executeUpdate();
       LOG.debug("Persist event from: {}. Rows affected: {}. Event: {}", eventSource, rowsAffected,
-        emailData);
+        emailProperties);
     } catch (SQLException ex) {
       LOG.error("Unable to persist event from: {}. Cause: {}", eventSource, ex.getMessage());
     }

@@ -2,10 +2,13 @@ package pl.miloszgilga.event.proxy.server;
 
 import jakarta.servlet.AsyncContext;
 import jakarta.servlet.http.HttpServletRequest;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.*;
@@ -42,8 +45,20 @@ class EventBroadcaster implements Closeable {
     return broadcastClients.size();
   }
 
-  void broadcastEvent(String eventSource, EmailPropertiesAggregator emailProperties) {
-    final String jsonData = emailProperties.serializeToJson(eventSource);
+  void broadcastEvent(String eventSource, List<EmailPropertyValue> emailProperties) {
+    final JSONObject root = new JSONObject();
+    final JSONArray dataFields = new JSONArray();
+    for (final EmailPropertyValue eventProperty : emailProperties) {
+      final JSONObject property = new JSONObject();
+      property.put("name", eventProperty.name());
+      property.put("value", eventProperty.value());
+      property.put("type", eventProperty.fieldType().name());
+      dataFields.put(property);
+    }
+    root.put("eventSource", eventSource);
+    root.put("dataFields", dataFields);
+
+    final String jsonData = root.toString();
     for (final AsyncContext clientContext : broadcastClients.values()) {
       sendToChannel(clientContext, "data", jsonData);
     }

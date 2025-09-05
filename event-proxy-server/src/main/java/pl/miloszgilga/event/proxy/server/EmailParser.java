@@ -1,5 +1,6 @@
 package pl.miloszgilga.event.proxy.server;
 
+import java.util.List;
 import java.util.Map;
 
 interface EmailParser {
@@ -9,5 +10,5 @@ interface EmailParser {
 
   String senderName();
 
-  EmailPropertiesAggregator parseEmail(EmailContent emailContent);
+  List<EmailPropertyValue> parseEmail(EmailContent emailContent);
 }
