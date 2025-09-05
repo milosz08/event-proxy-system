@@ -27,6 +27,7 @@
     <!-- configuration -->
     <maven-clean-plugin.version>3.4.1</maven-clean-plugin.version>
     <maven-assembly-plugin.version>2.2-beta-5</maven-assembly-plugin.version>
+    <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
     <java.version>17</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
