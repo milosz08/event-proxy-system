@@ -15,17 +15,17 @@ class EmailConsumer extends AbstractThread {
   private final BlockingQueue<EmailContent> queue;
   private final Map<String, EmailParser> emailParsers;
   private final EventBroadcaster eventBroadcaster;
-  private final EmailDao emailDao;
+  private final EventDao eventDao;
 
   EmailConsumer(BlockingQueue<EmailContent> queue, List<EmailParser> emailParsers,
-                EventBroadcaster eventBroadcaster, EmailDao emailDao) {
+                EventBroadcaster eventBroadcaster, EventDao eventDao) {
     super("Email-Consumer");
     this.queue = queue;
     // put email parsers to map for increase speed while search parser instance
     this.emailParsers = emailParsers.stream()
       .collect(Collectors.toMap(EmailParser::senderName, Function.identity()));
     this.eventBroadcaster = eventBroadcaster;
-    this.emailDao = emailDao;
+    this.eventDao = eventDao;
   }
 
   @Override
@@ -38,7 +38,7 @@ class EmailConsumer extends AbstractThread {
           final EmailPropertiesAggregator parsedEmail = emailParser.parseEmail(emailContent);
           if (parsedEmail != null) {
             eventBroadcaster.broadcastEvent(emailParser.parserName(), parsedEmail);
-            emailDao.persist(emailParser.parserName(), parsedEmail);
+            eventDao.persist(emailParser.parserName(), parsedEmail);
           }
         }
       } catch (InterruptedException ignored) {
