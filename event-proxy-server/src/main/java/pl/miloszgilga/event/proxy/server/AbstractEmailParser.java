@@ -3,6 +3,7 @@ package pl.miloszgilga.event.proxy.server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,7 @@ abstract class AbstractEmailParser implements EmailParser {
   public final Map<String, FieldType> declareParserFields() {
     final Map<String, FieldType> parserFields = new HashMap<>();
     parserFields.put("subject", FieldType.TEXT);
+    parserFields.put("eventTime", FieldType.TEXT);
     declareOwnParserFields(parserFields);
     return parserFields;
   }
@@ -43,7 +45,10 @@ abstract class AbstractEmailParser implements EmailParser {
     final Map<String, Object> values = new HashMap<>();
     try {
       values.put("subject", emailContent.subject());
-      parseWithExceptionWrapper(rawBody, values);
+      final LocalDateTime eventTime = parseWithExceptionWrapper(rawBody, values);
+      if (!values.containsKey("eventTime")) {
+        values.put("eventTime", eventTime.toString());
+      }
       // if parser fields map has different keys compared to values map, throw exception
       if (!parserFields.keySet().equals(values.keySet())) {
         throw new IllegalStateException("Values map has different keys compare to parser map.");
@@ -69,5 +74,7 @@ abstract class AbstractEmailParser implements EmailParser {
 
   protected abstract void declareOwnParserFields(Map<String, FieldType> values);
 
-  protected abstract void parseWithExceptionWrapper(String rawBody, Map<String, Object> values);
+  // return event time as LocalDateTime
+  protected abstract LocalDateTime parseWithExceptionWrapper(String rawBody, Map<String,
+    Object> values);
 }

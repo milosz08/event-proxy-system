@@ -29,11 +29,10 @@ class NasEmailParser extends AbstractEmailParser {
     values.put("serial", FieldType.TEXT);
     values.put("size", FieldType.TEXT);
     values.put("result", FieldType.TEXT);
-    values.put("timestamp", FieldType.TEXT);
   }
 
   @Override
-  protected void parseWithExceptionWrapper(String rawBody, Map<String, Object> values) {
+  protected LocalDateTime parseWithExceptionWrapper(String rawBody, Map<String, Object> values) {
     final String timePart = extractGroup(rawBody, TIMESTAMP_PATTERN, 1);
     final String datePart = extractGroup(rawBody, TIMESTAMP_PATTERN, 2);
 
@@ -42,13 +41,11 @@ class NasEmailParser extends AbstractEmailParser {
     final String size = extractGroup(rawBody, SIZE_PATTERN, 1);
     final String result = extractGroup(rawBody, RESULT_PATTERN, 1);
 
-    final LocalDateTime timestamp = LocalDateTime
-      .parse(timePart + " " + datePart, TIME_FORMATTER);
-
     values.put("model", model);
     values.put("serial", serial);
     values.put("size", size);
     values.put("result", result);
-    values.put("timestamp", timestamp.toString());
+
+    return LocalDateTime.parse(timePart + " " + datePart, TIME_FORMATTER);
   }
 }

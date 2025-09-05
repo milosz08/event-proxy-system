@@ -24,7 +24,6 @@ class DvrEmailParser extends AbstractEmailParser {
   @Override
   protected void declareOwnParserFields(Map<String, FieldType> values) {
     values.put("eventType", FieldType.TEXT);
-    values.put("eventTime", FieldType.TEXT);
     values.put("dvrName", FieldType.TEXT);
     values.put("dvrSn", FieldType.TEXT);
     values.put("cameraName", FieldType.TEXT);
@@ -32,7 +31,7 @@ class DvrEmailParser extends AbstractEmailParser {
   }
 
   @Override
-  protected void parseWithExceptionWrapper(String rawBody, Map<String, Object> values) {
+  protected LocalDateTime parseWithExceptionWrapper(String rawBody, Map<String, Object> values) {
     final String eventType = extractGroup(rawBody, EVENT_TYPE_PATTERN, 1);
     final String eventTimeString = extractGroup(rawBody, EVENT_TIME_PATTERN, 1);
     final String dvrName = extractGroup(rawBody, DVR_NAME_PATTERN, 1);
@@ -40,13 +39,12 @@ class DvrEmailParser extends AbstractEmailParser {
     final String cameraName = extractGroup(rawBody, CAMERA_PATTERN, 1);
     final String cameraNum = extractGroup(rawBody, CAMERA_PATTERN, 2);
 
-    final LocalDateTime eventTime = LocalDateTime.parse(eventTimeString, TIME_FORMATTER);
-
     values.put("eventType", eventType);
-    values.put("eventTime", eventTime.toString());
     values.put("dvrName", dvrName);
     values.put("dvrSn", dvrSn);
     values.put("cameraName", cameraName);
     values.put("cameraNum", cameraNum);
+
+    return LocalDateTime.parse(eventTimeString, TIME_FORMATTER);
   }
 }
