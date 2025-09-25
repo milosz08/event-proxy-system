@@ -87,8 +87,8 @@ public class JdbcSessionDao implements SessionDao {
     );
     try (final Connection conn = dbConnectionPool.getConnection();
          final PreparedStatement ps = conn.prepareStatement(sql)) {
-      ps.setString(2, DateTimeFormatter.ISO_INSTANT.format(newExpiresAt));
-      ps.setString(3, sessionId);
+      ps.setString(1, DateTimeFormatter.ISO_INSTANT.format(newExpiresAt));
+      ps.setString(2, sessionId);
       final int affectedRows = ps.executeUpdate();
       if (affectedRows > 0) {
         LOG.info("Updated session time with session id: {}", sessionId);
