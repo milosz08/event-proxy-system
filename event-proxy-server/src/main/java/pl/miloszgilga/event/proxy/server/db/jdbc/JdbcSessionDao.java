@@ -30,14 +30,14 @@ public class JdbcSessionDao implements SessionDao {
     // generate table for storing client session info, only one time (including public key incoming
     // with client login request)
     final String sql = String.format("""
-      CREATE TABLE IF NOT EXISTS `%s` (
-        session_id TEXT PRIMARY KEY NOT NULL,
-        client_id TEXT NOT NULL,
-        public_key TEXT NOT NULL,
-        public_key_sha256 TEXT NOT NULL UNIQUE,
-        expired_at TEXT NOT NULL
-      );
-    """, TABLE_NAME);
+        CREATE TABLE IF NOT EXISTS `%s` (
+          session_id TEXT PRIMARY KEY NOT NULL,
+          client_id TEXT NOT NULL,
+          public_key TEXT NOT NULL,
+          public_key_sha256 TEXT NOT NULL UNIQUE,
+          expired_at TEXT NOT NULL
+        );
+      """, TABLE_NAME);
     try (final Connection conn = dbConnectionPool.getConnection();
          final Statement statement = conn.createStatement()) {
       statement.execute(sql);
@@ -54,10 +54,10 @@ public class JdbcSessionDao implements SessionDao {
     final Instant expiresAt = Instant.now().plus(sessionTime);
 
     final String sql = String.format("""
-      INSERT INTO `%s` (
-        session_id, client_id, public_key, public_key_sha256, expired_at
-      ) VALUES (?,?,?,?,?,?,?);
-    """, TABLE_NAME);
+        INSERT INTO `%s` (
+          session_id, client_id, public_key, public_key_sha256, expired_at
+        ) VALUES (?,?,?,?,?,?,?);
+      """, TABLE_NAME);
 
     try (final Connection conn = dbConnectionPool.getConnection();
          final PreparedStatement ps = conn.prepareStatement(sql)) {
