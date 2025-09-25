@@ -5,8 +5,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 
-class Utils {
-  static String generateSha256(String key) {
+public class Utils {
+  public static String generateSha256(String key) {
     try {
       final MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
       final byte[] hashBytes = sha256.digest(key.getBytes(StandardCharsets.UTF_8));
@@ -16,7 +16,7 @@ class Utils {
     }
   }
 
-  static int safetyParseInt(String value, int defaultValue) {
+  public static int safetyParseInt(String value, int defaultValue) {
     try {
       return Integer.parseInt(value);
     } catch (NumberFormatException ignored) {
@@ -24,7 +24,7 @@ class Utils {
     }
   }
 
-  static long safetyParseLong(String value, long defaultValue) {
+  public static long safetyParseLong(String value, long defaultValue) {
     try {
       return Long.parseLong(value);
     } catch (NumberFormatException ignored) {

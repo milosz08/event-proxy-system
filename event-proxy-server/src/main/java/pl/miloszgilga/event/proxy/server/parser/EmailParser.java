@@ -1,0 +1,14 @@
+package pl.miloszgilga.event.proxy.server.parser;
+
+import java.util.List;
+import java.util.Map;
+
+public interface EmailParser {
+  String parserName();
+
+  Map<String, FieldType> declareParserFields();
+
+  String senderName();
+
+  List<EmailPropertyValue> parseEmail(EmailContent emailContent);
+}

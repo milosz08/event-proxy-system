@@ -4,7 +4,7 @@
     <module name="event-proxy-server" />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="pl.miloszgilga.event.proxy.server.*" />
+        <option name="PATTERN" value="pl.miloszgilga.event.proxy.server.parser.message.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>

@@ -1,19 +1,20 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="SmtpProxyServerThreadTest" type="JUnit" factoryName="JUnit" nameIsGenerated="true">
-    <module name="event-proxy-server" />
+  <configuration default="false" name="SmtpProxyServerThreadTest" type="JUnit" factoryName="JUnit"
+                 nameIsGenerated="true">
+    <module name="event-proxy-server"/>
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="pl.miloszgilga.event.proxy.server.*" />
-        <option name="ENABLED" value="true" />
+        <option name="PATTERN" value="pl.miloszgilga.event.proxy.server.parser.message.*"/>
+        <option name="ENABLED" value="true"/>
       </pattern>
     </extension>
-    <option name="PACKAGE_NAME" value="pl.miloszgilga.event.proxy.server" />
-    <option name="MAIN_CLASS_NAME" value="pl.miloszgilga.event.proxy.server.SmtpProxyServerThreadTest" />
-    <option name="METHOD_NAME" value="" />
-    <option name="TEST_OBJECT" value="class" />
-    <option name="WORKING_DIRECTORY" value="" />
+    <option name="PACKAGE_NAME" value="pl.miloszgilga.event.proxy.server"/>
+    <option name="MAIN_CLASS_NAME"
+            value="pl.miloszgilga.event.proxy.server.smtp.SmtpProxyServerThreadTest"/>
+    <option name="METHOD_NAME" value=""/>
+    <option name="TEST_OBJECT" value="class"/>
     <method v="2">
-      <option name="Make" enabled="true" />
+      <option name="Make" enabled="true"/>
     </method>
   </configuration>
 </component>

@@ -5,12 +5,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-class AppConfig {
+public class AppConfig {
   private static final String PROPERTIES_FILE = "server.properties";
 
   private final Properties properties;
 
-  AppConfig() {
+  public AppConfig() {
     properties = new Properties();
     try (final InputStream input = new FileInputStream(PROPERTIES_FILE)) {
       properties.load(input);
@@ -19,19 +19,19 @@ class AppConfig {
     }
   }
 
-  String getAsStr(AppConfig.Prop prop) {
+  public String getAsStr(AppConfig.Prop prop) {
     return properties.getProperty(prop.key);
   }
 
-  long getAsLong(AppConfig.Prop prop) {
+  public long getAsLong(AppConfig.Prop prop) {
     return Utils.safetyParseLong(properties.getProperty(prop.key), 0L);
   }
 
-  int getAsInt(AppConfig.Prop prop) {
+  public int getAsInt(AppConfig.Prop prop) {
     return Utils.safetyParseInt(properties.getProperty(prop.key), 0);
   }
 
-  enum Prop {
+  public enum Prop {
     HTTP_PORT("http-port"),
     SSE_HEARTBEAT_INTERVAL_SEC("sse-heartbeat-interval-sec"),
     SMTP_PORT("smtp-port"),
