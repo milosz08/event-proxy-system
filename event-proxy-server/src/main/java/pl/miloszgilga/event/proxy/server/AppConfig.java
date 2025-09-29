@@ -40,6 +40,10 @@ public class AppConfig {
     SMTP_SENDER_SUFFIX("smtp-sender-suffix"),
     DB_PATH("db-path"),
     DB_POOL_SIZE("db-pool-size"),
+    SESSION_TTL_SEC("session-ttl-sec"),
+    ACCOUNT_USERNAME("account-username"),
+    ACCOUNT_PASSWORD_LENGTH("account-password-length"),
+    ACCOUNT_PASSWORD_HASH_STRENGTH("account-password-hash-strength"),
     ;
 
     private final String key;

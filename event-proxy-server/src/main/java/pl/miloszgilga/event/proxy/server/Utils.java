@@ -3,9 +3,23 @@ package pl.miloszgilga.event.proxy.server;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.HexFormat;
 
 public class Utils {
+  private static final String ALPHANUMERIC_CHARACTERS =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+  public static String generateSecurePassword(int length) {
+    final StringBuilder password = new StringBuilder(length);
+    final SecureRandom secureRandom = new SecureRandom();
+    for (int i = 0; i < length; i++) {
+      final int randomIndex = secureRandom.nextInt(ALPHANUMERIC_CHARACTERS.length());
+      password.append(ALPHANUMERIC_CHARACTERS.charAt(randomIndex));
+    }
+    return password.toString();
+  }
+
   public static String generateSha256(String key) {
     try {
       final MessageDigest sha256 = MessageDigest.getInstance("SHA-256");

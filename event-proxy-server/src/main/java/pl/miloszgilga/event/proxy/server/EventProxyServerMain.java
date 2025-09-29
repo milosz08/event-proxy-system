@@ -1,10 +1,13 @@
 package pl.miloszgilga.event.proxy.server;
 
 import pl.miloszgilga.event.proxy.server.db.DbConnectionPool;
+import pl.miloszgilga.event.proxy.server.db.InstancePasswordManager;
 import pl.miloszgilga.event.proxy.server.db.dao.EventDao;
 import pl.miloszgilga.event.proxy.server.db.dao.SessionDao;
+import pl.miloszgilga.event.proxy.server.db.dao.UserDao;
 import pl.miloszgilga.event.proxy.server.db.jdbc.JdbcEventDao;
 import pl.miloszgilga.event.proxy.server.db.jdbc.JdbcSessionDao;
+import pl.miloszgilga.event.proxy.server.db.jdbc.JdbcUserDao;
 import pl.miloszgilga.event.proxy.server.http.HttpProxyServerThread;
 import pl.miloszgilga.event.proxy.server.http.I18n;
 import pl.miloszgilga.event.proxy.server.http.sse.EventBroadcaster;
@@ -48,10 +51,20 @@ class EventProxyServerMain implements Runnable {
     );
 
     final EventDao eventDao = new JdbcEventDao(dbConnectionPool, emailParsers);
+    final UserDao userDao = new JdbcUserDao(dbConnectionPool);
     final SessionDao sessionDao = new JdbcSessionDao(dbConnectionPool);
 
+    final InstancePasswordManager instancePasswordManager = new InstancePasswordManager(
+      userDao,
+      appConfig.getAsStr(AppConfig.Prop.ACCOUNT_USERNAME),
+      appConfig.getAsInt(AppConfig.Prop.ACCOUNT_PASSWORD_LENGTH),
+      appConfig.getAsInt(AppConfig.Prop.ACCOUNT_PASSWORD_HASH_STRENGTH)
+    );
+
     initializerRegistry.register(eventDao);
+    initializerRegistry.register(userDao);
     initializerRegistry.register(sessionDao);
+    initializerRegistry.register(instancePasswordManager);
 
     eventBroadcaster = new EventBroadcaster(
       appConfig.getAsLong(AppConfig.Prop.SSE_HEARTBEAT_INTERVAL_SEC)
@@ -62,6 +75,8 @@ class EventProxyServerMain implements Runnable {
       sessionDao,
       eventDao,
       emailParsers,
+      appConfig,
+      instancePasswordManager,
       i18n
     );
     smtpProxyServerThread = new SmtpProxyServerThread(

@@ -4,6 +4,8 @@ import org.eclipse.jetty.server.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.miloszgilga.event.proxy.server.AbstractThread;
+import pl.miloszgilga.event.proxy.server.AppConfig;
+import pl.miloszgilga.event.proxy.server.db.InstancePasswordManager;
 import pl.miloszgilga.event.proxy.server.db.dao.EventDao;
 import pl.miloszgilga.event.proxy.server.db.dao.SessionDao;
 import pl.miloszgilga.event.proxy.server.http.filter.AuthFilter;
@@ -29,12 +31,16 @@ public class HttpProxyServerThread extends AbstractThread {
   private final EventDao eventDao;
   private final List<EmailParser> emailParsers;
   private final I18n i18n;
+  private final AppConfig appConfig;
+  private final InstancePasswordManager instancePasswordManager;
   private final Map<String, EmailParser> emailParserMap;
 
   private Server server;
 
   public HttpProxyServerThread(int port, EventBroadcaster eventBroadcaster, SessionDao sessionDao,
-                               EventDao eventDao, List<EmailParser> emailParsers, I18n i18n) {
+                               EventDao eventDao, List<EmailParser> emailParsers,
+                               AppConfig appConfig, InstancePasswordManager instancePasswordManager,
+                               I18n i18n) {
     super("HTTP-Proxy");
     this.port = port;
     this.eventBroadcaster = eventBroadcaster;
@@ -42,6 +48,8 @@ public class HttpProxyServerThread extends AbstractThread {
     this.eventDao = eventDao;
     this.emailParsers = emailParsers;
     this.i18n = i18n;
+    this.appConfig = appConfig;
+    this.instancePasswordManager = instancePasswordManager;
     emailParserMap = emailParsers.stream()
       .collect(Collectors.toMap(EmailParser::parserName, Function.identity()));
   }
@@ -58,7 +66,7 @@ public class HttpProxyServerThread extends AbstractThread {
     final var eventSourceCheckerFilter = new EventSourceCheckerFilter(emailParsers);
 
     final var sseServlet = new SseServlet(eventBroadcaster);
-    final var loginServlet = new LoginServlet(sessionDao);
+    final var loginServlet = new LoginServlet(appConfig, instancePasswordManager, sessionDao);
     final var logoutServlet = new LogoutServlet(sessionDao);
     final var sessionRefreshServlet = new SessionRefreshServlet(sessionDao);
     final var messageAllServlet = new MessageAllServlet(eventDao);
