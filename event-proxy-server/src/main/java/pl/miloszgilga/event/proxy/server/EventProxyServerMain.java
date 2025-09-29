@@ -81,6 +81,7 @@ class EventProxyServerMain implements Runnable {
       eventBroadcaster,
       sessionDao,
       eventDao,
+      userDao,
       emailParsers,
       appConfig,
       instancePasswordManager,
