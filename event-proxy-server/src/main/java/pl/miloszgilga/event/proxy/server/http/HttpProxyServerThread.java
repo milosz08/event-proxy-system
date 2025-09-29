@@ -68,7 +68,7 @@ public class HttpProxyServerThread extends AbstractThread {
     final var sseServlet = new SseServlet(eventBroadcaster);
     final var loginServlet = new LoginServlet(appConfig, instancePasswordManager, sessionDao);
     final var logoutServlet = new LogoutServlet(sessionDao);
-    final var sessionRefreshServlet = new SessionRefreshServlet(sessionDao);
+    final var sessionRefreshServlet = new SessionRefreshServlet();
     final var messageAllServlet = new MessageAllServlet(eventDao);
     final var messageServlet = new MessageServlet(i18n, eventDao, emailParserMap);
     final var eventSourceAllServlet = new EventSourceAllServlet(i18n, emailParsers);
