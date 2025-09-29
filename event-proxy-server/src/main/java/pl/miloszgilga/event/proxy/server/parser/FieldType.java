@@ -5,12 +5,14 @@ import pl.miloszgilga.event.proxy.server.db.StatementConsumer;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 
 public enum FieldType {
   TEXT((ps, i, value) -> ps.setString(i, (String) value)),
   INTEGER((ps, i, value) -> ps.setInt(i, (Integer) value)),
   REAL((ps, i, value) -> ps.setDouble(i, (Double) value)),
   NUMERIC((ps, i, value) -> ps.setBigDecimal(i, (BigDecimal) value)),
+  TIMESTAMP((ps, i, value) -> ps.setTimestamp(i, (Timestamp) value)),
   ;
 
   private final StatementConsumer statementConsumer;

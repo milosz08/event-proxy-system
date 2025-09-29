@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.miloszgilga.event.proxy.server.AppConfig;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -35,7 +36,7 @@ public abstract class AbstractEmailParser implements EmailParser {
   public final Map<String, FieldType> declareParserFields() {
     final Map<String, FieldType> parserFields = new HashMap<>();
     parserFields.put("subject", FieldType.TEXT);
-    parserFields.put("eventTime", FieldType.TEXT);
+    parserFields.put("eventTime", FieldType.TIMESTAMP);
     declareOwnParserFields(parserFields);
     return parserFields;
   }
@@ -48,7 +49,7 @@ public abstract class AbstractEmailParser implements EmailParser {
       values.put("subject", emailContent.subject());
       final LocalDateTime eventTime = parseWithExceptionWrapper(rawBody, values);
       if (!values.containsKey("eventTime")) {
-        values.put("eventTime", eventTime.toString());
+        values.put("eventTime", Timestamp.valueOf(eventTime));
       }
       // if parser fields map has different keys compared to values map, throw exception
       if (!parserFields.keySet().equals(values.keySet())) {

@@ -6,6 +6,7 @@ import pl.miloszgilga.event.proxy.server.AppConfig;
 import pl.miloszgilga.event.proxy.server.parser.message.DvrEmailParser;
 import pl.miloszgilga.event.proxy.server.parser.message.NasEmailParser;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -36,7 +37,7 @@ class EmailParserTest {
 
     final Map<String, Object> expected = Map.of(
       "eventType", "Motion Detected",
-      "eventTime", LocalDateTime.of(2025, 7, 27, 11, 41, 29).toString(),
+      "eventTime", Timestamp.valueOf(LocalDateTime.of(2025, 7, 27, 11, 41, 29)),
       "dvrName", "Embedded Net DVR",
       "dvrSn", "RESTRICTED",
       "cameraName", "CAM 2",
@@ -66,7 +67,7 @@ class EmailParserTest {
       "serial", "RESTRICTED",
       "size", "2,000G",
       "result", "Pass",
-      "eventTime", LocalDateTime.of(2025, 7, 27, 3, 2, 10).toString()
+      "eventTime", Timestamp.valueOf(LocalDateTime.of(2025, 7, 27, 3, 2, 10))
     );
 
     performParserTest(new NasEmailParser(appConfig), body, expected);
