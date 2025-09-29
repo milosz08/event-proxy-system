@@ -54,6 +54,24 @@ public class JdbcUserDao implements UserDao {
   }
 
   @Override
+  public Integer getUserId(String username) {
+    final String sql = String.format("SELECT id FROM `%s` WHERE username = ?;", TABLE_NAME);
+    try (final Connection conn = dbConnectionPool.getConnection();
+         final PreparedStatement ps = conn.prepareStatement(sql)) {
+      ps.setString(1, username);
+      try (final ResultSet rs = ps.executeQuery()) {
+        if (rs.next()) {
+          return rs.getInt(1);
+        }
+      }
+    } catch (SQLException ex) {
+      LOG.error("Unable to get user id from user with username: {}. Cause: {}", username,
+        ex.getMessage());
+    }
+    return null;
+  }
+
+  @Override
   public Boolean userExists(String username) {
     final String sql = String.format("""
       SELECT COUNT(*) > 0 FROM `%s` WHERE username = ?;
@@ -93,13 +111,14 @@ public class JdbcUserDao implements UserDao {
   public void updateUserPassword(String username, String newHashedPassword,
                                  boolean defaultPassword) {
     final String sql = String.format(
-      "UPDATE `%s` SET password = ? WHERE default_password = ?;",
+      "UPDATE `%s` SET password = ?, defaultPassword = ? WHERE username = ?;",
       TABLE_NAME
     );
     try (final Connection conn = dbConnectionPool.getConnection();
          final PreparedStatement ps = conn.prepareStatement(sql)) {
       ps.setString(1, newHashedPassword);
       ps.setInt(2, defaultPassword ? 1 : 0);
+      ps.setString(3, username);
       final int affectedRows = ps.executeUpdate();
       if (affectedRows > 0) {
         LOG.info("Updated password for user with username: {}", username);

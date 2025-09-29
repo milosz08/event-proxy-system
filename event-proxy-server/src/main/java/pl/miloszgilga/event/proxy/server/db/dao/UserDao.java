@@ -5,6 +5,8 @@ import pl.miloszgilga.event.proxy.server.registry.ContentInitializer;
 public interface UserDao extends ContentInitializer {
   String getUserPasswordHash(String username);
 
+  Integer getUserId(String username);
+
   Boolean userExists(String username);
 
   void createUser(String username, String hashedDefaultPassword);

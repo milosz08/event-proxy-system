@@ -1,15 +1,17 @@
 package pl.miloszgilga.event.proxy.server.db.dao;
 
+import pl.miloszgilga.event.proxy.server.http.SessionData;
 import pl.miloszgilga.event.proxy.server.registry.ContentInitializer;
 
-import java.time.Duration;
 import java.time.Instant;
 
 public interface SessionDao extends ContentInitializer {
-  void createSession(String sessionId, String clientId, String publicKey, String publicKeySha256,
+  void createSession(String sessionId, Integer userId, String clientId, String publicKey,
                      Instant expiresAt);
 
-  Instant updateSessionTime(String sessionId, Duration sessionTime);
+  SessionData getSession(String sessionId);
+
+  void updateSessionTime(String sessionId, Instant newExpiresAt);
 
   void destroySession(String sessionId);
 

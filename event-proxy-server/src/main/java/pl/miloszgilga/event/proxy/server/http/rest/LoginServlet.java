@@ -5,9 +5,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 import pl.miloszgilga.event.proxy.server.AppConfig;
-import pl.miloszgilga.event.proxy.server.Utils;
+import pl.miloszgilga.event.proxy.server.Constants;
 import pl.miloszgilga.event.proxy.server.db.InstancePasswordManager;
 import pl.miloszgilga.event.proxy.server.db.dao.SessionDao;
+import pl.miloszgilga.event.proxy.server.db.dao.UserDao;
 import pl.miloszgilga.event.proxy.server.http.HttpJsonServlet;
 
 import java.time.Duration;
@@ -18,12 +19,14 @@ import java.util.UUID;
 public class LoginServlet extends HttpJsonServlet {
   private final AppConfig appConfig;
   private final InstancePasswordManager instancePasswordManager;
+  private final UserDao userDao;
   private final SessionDao sessionDao;
 
   public LoginServlet(AppConfig appConfig, InstancePasswordManager instancePasswordManager,
-                      SessionDao sessionDao) {
+                      UserDao userDao, SessionDao sessionDao) {
     this.appConfig = appConfig;
     this.instancePasswordManager = instancePasswordManager;
+    this.userDao = userDao;
     this.sessionDao = sessionDao;
   }
 
@@ -33,7 +36,7 @@ public class LoginServlet extends HttpJsonServlet {
     final String password = req.getParameter("password");
 
     if (!instancePasswordManager.verify(username, password)) {
-      res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      res.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return null;
     }
     final String clientId = Objects.requireNonNull(req.getParameter("clientId"));
@@ -42,20 +45,22 @@ public class LoginServlet extends HttpJsonServlet {
     final int sessionTtlSec = appConfig.getAsInt(AppConfig.Prop.SESSION_TTL_SEC);
 
     final String sessionId = UUID.randomUUID().toString();
-    final String publicKeySha256 = Utils.generateSha256(pubKey);
     final Instant expiresAt = Instant.now().plus(Duration.ofSeconds(sessionTtlSec));
 
-    sessionDao.createSession(sessionId, clientId, pubKey, publicKeySha256, expiresAt);
+    final Integer userId = userDao.getUserId(username);
+    sessionDao.createSession(sessionId, userId, clientId, pubKey, expiresAt);
 
-    final Cookie cookie = new Cookie("sid", sessionId);
+    final Cookie cookie = new Cookie(Constants.COOKIE_NAME, sessionId);
     cookie.setHttpOnly(true);
     cookie.setSecure(true);
     cookie.setMaxAge(sessionTtlSec);
+    cookie.setPath("/");
 
     res.addCookie(cookie);
 
     final JSONObject root = new JSONObject();
-    root.put("hasDefaultPassword", instancePasswordManager.hasDefaultPassword());
+    root.put("hasDefaultPassword", Objects
+      .requireNonNullElse(userDao.userHasDefaultPassword(username), false));
     return root.toString();
   }
 }
