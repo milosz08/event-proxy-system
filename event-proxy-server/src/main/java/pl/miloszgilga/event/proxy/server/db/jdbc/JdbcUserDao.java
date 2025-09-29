@@ -8,9 +8,8 @@ import pl.miloszgilga.event.proxy.server.db.dao.UserDao;
 import java.sql.*;
 
 public class JdbcUserDao implements UserDao {
+  public static final String TABLE_NAME = "_users";
   private static final Logger LOG = LoggerFactory.getLogger(JdbcUserDao.class);
-  private static final String TABLE_NAME = "_users";
-
   private final DbConnectionPool dbConnectionPool;
 
   public JdbcUserDao(DbConnectionPool dbConnectionPool) {
@@ -21,9 +20,10 @@ public class JdbcUserDao implements UserDao {
   public void init() {
     final String sql = String.format("""
       CREATE TABLE IF NOT EXISTS `%s` (
-        username TEXT PRIMARY KEY NOT NULL,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL UNIQUE,
         password TEXT NOT NULL,
-        default_password INTEGER NOT NULL DEFAULT 1
+        defaultPassword INTEGER NOT NULL DEFAULT 1
       );
       """, TABLE_NAME);
     try (final Connection conn = dbConnectionPool.getConnection();
@@ -37,9 +37,7 @@ public class JdbcUserDao implements UserDao {
 
   @Override
   public String getUserPasswordHash(String username) {
-    final String sql = String.format("""
-      SELECT password FROM `%s` WHERE username = ?;
-      """, TABLE_NAME);
+    final String sql = String.format("SELECT password FROM `%s` WHERE username = ?;", TABLE_NAME);
     try (final Connection conn = dbConnectionPool.getConnection();
          final PreparedStatement ps = conn.prepareStatement(sql)) {
       ps.setString(1, username);
@@ -115,7 +113,7 @@ public class JdbcUserDao implements UserDao {
   @Override
   public Boolean userHasDefaultPassword(String username) {
     final String sql = String.format("""
-      SELECT default_password FROM `%s` WHERE username = ?;
+      SELECT defaultPassword FROM `%s` WHERE username = ?;
       """, TABLE_NAME);
     try (final Connection conn = dbConnectionPool.getConnection();
          final PreparedStatement ps = conn.prepareStatement(sql)) {

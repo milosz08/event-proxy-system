@@ -4,14 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.miloszgilga.event.proxy.server.db.DbConnectionPool;
 import pl.miloszgilga.event.proxy.server.db.dao.SessionDao;
+import pl.miloszgilga.event.proxy.server.http.SessionData;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.time.Duration;
+import java.sql.*;
 import java.time.Instant;
-import java.time.format.DateTimeFormatter;
 
 public class JdbcSessionDao implements SessionDao {
   private static final Logger LOG = LoggerFactory.getLogger(JdbcSessionDao.class);
@@ -29,13 +25,14 @@ public class JdbcSessionDao implements SessionDao {
     // with client login request)
     final String sql = String.format("""
         CREATE TABLE IF NOT EXISTS `%s` (
-          session_id TEXT PRIMARY KEY NOT NULL,
-          client_id TEXT NOT NULL,
-          public_key TEXT NOT NULL,
-          public_key_sha256 TEXT NOT NULL UNIQUE,
-          expired_at TEXT NOT NULL
+          sessionId TEXT PRIMARY KEY NOT NULL,
+          clientId TEXT NOT NULL,
+          publicKey TEXT NOT NULL,
+          expiredAtUtc DATETIME NOT NULL,
+          userId INTEGER NOT NULL,
+          FOREIGN KEY(userId) REFERENCES %s(id) ON DELETE CASCADE
         );
-      """, TABLE_NAME);
+      """, TABLE_NAME, JdbcUserDao.TABLE_NAME);
     try (final Connection conn = dbConnectionPool.getConnection();
          final Statement statement = conn.createStatement()) {
       statement.execute(sql);
@@ -46,21 +43,18 @@ public class JdbcSessionDao implements SessionDao {
   }
 
   @Override
-  public void createSession(String sessionId, String clientId, String publicKey,
-                            String publicKeySha256, Instant expiresAt) {
+  public void createSession(String sessionId, Integer userId, String clientId, String publicKey,
+                            Instant expiresAt) {
     final String sql = String.format("""
-        INSERT INTO `%s` (
-          session_id, client_id, public_key, public_key_sha256, expired_at
-        ) VALUES (?,?,?,?,?,?,?);
+        INSERT INTO `%s` (sessionId, clientId, publicKey, expiredAtUtc, userId) VALUES (?,?,?,?,?);
       """, TABLE_NAME);
-
     try (final Connection conn = dbConnectionPool.getConnection();
          final PreparedStatement ps = conn.prepareStatement(sql)) {
       ps.setString(1, sessionId);
       ps.setString(2, clientId);
       ps.setString(3, publicKey);
-      ps.setString(4, publicKeySha256);
-      ps.setString(5, DateTimeFormatter.ISO_INSTANT.format(expiresAt));
+      ps.setTimestamp(4, Timestamp.from(expiresAt));
+      ps.setInt(5, userId);
       final int affectedRows = ps.executeUpdate();
       if (affectedRows > 0) {
         LOG.info("Created session for client: {} with session id: {}", clientId, sessionId);
@@ -71,32 +65,50 @@ public class JdbcSessionDao implements SessionDao {
   }
 
   @Override
-  public Instant updateSessionTime(String sessionId, Duration sessionTime) {
+  public SessionData getSession(String sessionId) {
     final Instant now = Instant.now();
-    final Instant newExpiresAt = now.plus(sessionTime);
+    final String sql = String.format("""
+      SELECT clientId, publicKey, username FROM `%s` s
+      INNER JOIN `%s` u ON s.userId = u.id WHERE sessionId = ? AND expiredAtUtc >= ?;
+      """, TABLE_NAME, JdbcUserDao.TABLE_NAME);
+    try (final Connection conn = dbConnectionPool.getConnection();
+         final PreparedStatement ps = conn.prepareStatement(sql)) {
+      ps.setString(1, sessionId);
+      ps.setTimestamp(2, Timestamp.from(now));
+      try (final ResultSet rs = ps.executeQuery()) {
+        if (rs.next()) {
+          return new SessionData(rs.getString(1), rs.getString(2), rs.getString(3));
+        }
+      }
+    } catch (SQLException ex) {
+      LOG.error("Unable to get session with id: {}. Cause: {}", sessionId, ex.getMessage());
+    }
+    return null;
+  }
 
+  @Override
+  public void updateSessionTime(String sessionId, Instant newExpiresAt) {
     final String sql = String.format(
-      "UPDATE `%s` SET expired_at = ? WHERE session_id = ?;",
+      "UPDATE `%s` SET expiredAtUtc = ? WHERE sessionId = ?;",
       TABLE_NAME
     );
     try (final Connection conn = dbConnectionPool.getConnection();
          final PreparedStatement ps = conn.prepareStatement(sql)) {
-      ps.setString(1, DateTimeFormatter.ISO_INSTANT.format(newExpiresAt));
+      ps.setTimestamp(1, Timestamp.from(newExpiresAt));
       ps.setString(2, sessionId);
       final int affectedRows = ps.executeUpdate();
       if (affectedRows > 0) {
-        LOG.info("Updated session time with session id: {}", sessionId);
+        LOG.debug("Updated session time with session id: {}", sessionId);
       }
     } catch (SQLException ex) {
       LOG.error("Unable to update session time for session with id: {}. Cause: {}", sessionId,
         ex.getMessage());
     }
-    return newExpiresAt;
   }
 
   @Override
   public void destroySession(String sessionId) {
-    final String sql = String.format("DELETE FROM `%s` WHERE session_id = ?;", TABLE_NAME);
+    final String sql = String.format("DELETE FROM `%s` WHERE sessionId = ?;", TABLE_NAME);
     try (final Connection conn = dbConnectionPool.getConnection();
          final PreparedStatement ps = conn.prepareStatement(sql)) {
       ps.setString(1, sessionId);
