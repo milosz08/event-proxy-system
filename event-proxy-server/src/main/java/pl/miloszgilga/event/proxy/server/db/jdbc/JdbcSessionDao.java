@@ -2,7 +2,6 @@ package pl.miloszgilga.event.proxy.server.db.jdbc;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.miloszgilga.event.proxy.server.Utils;
 import pl.miloszgilga.event.proxy.server.db.DbConnectionPool;
 import pl.miloszgilga.event.proxy.server.db.dao.SessionDao;
 
@@ -13,7 +12,6 @@ import java.sql.Statement;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
-import java.util.UUID;
 
 public class JdbcSessionDao implements SessionDao {
   private static final Logger LOG = LoggerFactory.getLogger(JdbcSessionDao.class);
@@ -48,11 +46,8 @@ public class JdbcSessionDao implements SessionDao {
   }
 
   @Override
-  public String createSession(String clientId, String publicKey, Duration sessionTime) {
-    final String sessionId = UUID.randomUUID().toString();
-    final String publicKeySha256 = Utils.generateSha256(publicKey);
-    final Instant expiresAt = Instant.now().plus(sessionTime);
-
+  public void createSession(String sessionId, String clientId, String publicKey,
+                            String publicKeySha256, Instant expiresAt) {
     final String sql = String.format("""
         INSERT INTO `%s` (
           session_id, client_id, public_key, public_key_sha256, expired_at
@@ -73,7 +68,6 @@ public class JdbcSessionDao implements SessionDao {
     } catch (SQLException ex) {
       LOG.error("Unable to create session for client: {}. Cause: {}", clientId, ex.getMessage());
     }
-    return sessionId;
   }
 
   @Override

@@ -6,7 +6,8 @@ import java.time.Duration;
 import java.time.Instant;
 
 public interface SessionDao extends ContentInitializer {
-  String createSession(String clientId, String publicKey, Duration sessionTime);
+  void createSession(String sessionId, String clientId, String publicKey, String publicKeySha256,
+                     Instant expiresAt);
 
   Instant updateSessionTime(String sessionId, Duration sessionTime);
 
