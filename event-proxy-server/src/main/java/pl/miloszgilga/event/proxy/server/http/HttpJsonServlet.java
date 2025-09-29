@@ -1,6 +1,5 @@
 package pl.miloszgilga.event.proxy.server.http;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -10,9 +9,24 @@ import java.io.Writer;
 
 public abstract class HttpJsonServlet extends HttpServlet {
   @Override
-  protected final void doGet(HttpServletRequest req, HttpServletResponse res)
-    throws ServletException, IOException {
-    final String jsonData = doJsonGet(req, res);
+  protected final void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException {
+    performJsonRequest(res, doJsonGet(req, res));
+  }
+
+  @Override
+  protected void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException {
+    performJsonRequest(res, doJsonPost(req, res));
+  }
+
+  protected String doJsonGet(HttpServletRequest req, HttpServletResponse res) {
+    return null;
+  }
+
+  protected String doJsonPost(HttpServletRequest req, HttpServletResponse res) {
+    return null;
+  }
+
+  private void performJsonRequest(HttpServletResponse res, String jsonData) throws IOException {
     if (jsonData == null) {
       return;
     }
@@ -21,7 +35,4 @@ public abstract class HttpJsonServlet extends HttpServlet {
     writer.write(jsonData);
     writer.flush();
   }
-
-  protected abstract String doJsonGet(HttpServletRequest req, HttpServletResponse res)
-    throws ServletException, IOException;
 }
