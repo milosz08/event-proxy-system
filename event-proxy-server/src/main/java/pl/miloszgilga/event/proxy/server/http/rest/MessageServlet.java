@@ -31,7 +31,6 @@ public class MessageServlet extends HttpJsonServlet {
 
     final Map<String, Object> eventRow = eventDao.getSingleById(eventSource, id);
     if (eventRow == null) {
-      res.setStatus(HttpServletResponse.SC_NOT_FOUND);
       return null;
     }
     final EmailParser emailParser = emailParsers.get(eventSource);

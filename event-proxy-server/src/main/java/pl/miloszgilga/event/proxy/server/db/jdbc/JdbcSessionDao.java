@@ -121,4 +121,14 @@ public class JdbcSessionDao implements SessionDao {
         ex.getMessage());
     }
   }
+
+  @Override
+  public void removeExpired() {
+    final String sql = String.format("DELETE FROM `%s` WHERE expiredAtUtc < ?;", TABLE_NAME);
+    try (final Connection conn = dbConnectionPool.getConnection();
+         final PreparedStatement ps = conn.prepareStatement(sql)) {
+      ps.executeUpdate();
+    } catch (SQLException ignored) {
+    }
+  }
 }

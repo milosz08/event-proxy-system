@@ -41,6 +41,7 @@ public class AppConfig {
     DB_PATH("db-path"),
     DB_POOL_SIZE("db-pool-size"),
     SESSION_TTL_SEC("session-ttl-sec"),
+    SESSION_CLEAR_INTERVAL_SEC("session-clear-interval-sec"),
     ACCOUNT_USERNAME("account-username"),
     ACCOUNT_PASSWORD_LENGTH("account-password-length"),
     ACCOUNT_PASSWORD_HASH_STRENGTH("account-password-hash-strength"),

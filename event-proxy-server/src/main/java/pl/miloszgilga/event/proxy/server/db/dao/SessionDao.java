@@ -12,4 +12,6 @@ public interface SessionDao extends ContentInitializer {
   Instant updateSessionTime(String sessionId, Duration sessionTime);
 
   void destroySession(String sessionId);
+
+  void removeExpired();
 }

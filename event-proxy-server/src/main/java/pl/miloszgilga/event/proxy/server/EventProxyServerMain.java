@@ -8,6 +8,7 @@ import pl.miloszgilga.event.proxy.server.db.dao.UserDao;
 import pl.miloszgilga.event.proxy.server.db.jdbc.JdbcEventDao;
 import pl.miloszgilga.event.proxy.server.db.jdbc.JdbcSessionDao;
 import pl.miloszgilga.event.proxy.server.db.jdbc.JdbcUserDao;
+import pl.miloszgilga.event.proxy.server.http.ExpiredSessionRemoval;
 import pl.miloszgilga.event.proxy.server.http.HttpProxyServerThread;
 import pl.miloszgilga.event.proxy.server.http.I18n;
 import pl.miloszgilga.event.proxy.server.http.sse.EventBroadcaster;
@@ -29,6 +30,7 @@ class EventProxyServerMain implements Runnable {
   private final SmtpProxyServerThread smtpProxyServerThread;
 
   private final EmailConsumer emailConsumer;
+  private final ExpiredSessionRemoval expiredSessionRemoval;
 
   EventProxyServerMain() {
     final I18n i18n = new I18n();
@@ -60,11 +62,16 @@ class EventProxyServerMain implements Runnable {
       appConfig.getAsInt(AppConfig.Prop.ACCOUNT_PASSWORD_LENGTH),
       appConfig.getAsInt(AppConfig.Prop.ACCOUNT_PASSWORD_HASH_STRENGTH)
     );
+    expiredSessionRemoval = new ExpiredSessionRemoval(
+      sessionDao,
+      appConfig.getAsInt(AppConfig.Prop.SESSION_CLEAR_INTERVAL_SEC)
+    );
 
     initializerRegistry.register(eventDao);
     initializerRegistry.register(userDao);
     initializerRegistry.register(sessionDao);
     initializerRegistry.register(instancePasswordManager);
+    initializerRegistry.register(expiredSessionRemoval);
 
     eventBroadcaster = new EventBroadcaster(
       appConfig.getAsLong(AppConfig.Prop.SSE_HEARTBEAT_INTERVAL_SEC)
@@ -107,5 +114,6 @@ class EventProxyServerMain implements Runnable {
     httpProxyServerThread.stop();
     smtpProxyServerThread.stop();
     emailConsumer.stop();
+    expiredSessionRemoval.close();
   }
 }

@@ -8,6 +8,7 @@ import pl.miloszgilga.event.proxy.server.AppConfig;
 import pl.miloszgilga.event.proxy.server.db.InstancePasswordManager;
 import pl.miloszgilga.event.proxy.server.db.dao.EventDao;
 import pl.miloszgilga.event.proxy.server.db.dao.SessionDao;
+import pl.miloszgilga.event.proxy.server.db.dao.UserDao;
 import pl.miloszgilga.event.proxy.server.http.filter.AuthFilter;
 import pl.miloszgilga.event.proxy.server.http.filter.CharacterEncodingFilter;
 import pl.miloszgilga.event.proxy.server.http.filter.EventSourceCheckerFilter;
@@ -29,6 +30,7 @@ public class HttpProxyServerThread extends AbstractThread {
   private final EventBroadcaster eventBroadcaster;
   private final SessionDao sessionDao;
   private final EventDao eventDao;
+  private final UserDao userDao;
   private final List<EmailParser> emailParsers;
   private final I18n i18n;
   private final AppConfig appConfig;
@@ -38,7 +40,7 @@ public class HttpProxyServerThread extends AbstractThread {
   private Server server;
 
   public HttpProxyServerThread(int port, EventBroadcaster eventBroadcaster, SessionDao sessionDao,
-                               EventDao eventDao, List<EmailParser> emailParsers,
+                               EventDao eventDao, UserDao userDao, List<EmailParser> emailParsers,
                                AppConfig appConfig, InstancePasswordManager instancePasswordManager,
                                I18n i18n) {
     super("HTTP-Proxy");
@@ -46,6 +48,7 @@ public class HttpProxyServerThread extends AbstractThread {
     this.eventBroadcaster = eventBroadcaster;
     this.sessionDao = sessionDao;
     this.eventDao = eventDao;
+    this.userDao = userDao;
     this.emailParsers = emailParsers;
     this.i18n = i18n;
     this.appConfig = appConfig;
@@ -59,36 +62,43 @@ public class HttpProxyServerThread extends AbstractThread {
     server = new Server(port);
     final CustomServletContextHandler context = new CustomServletContextHandler();
     context.setContextPath("/");
+    context.setErrorHandler(new NoBodyErrorHandler());
 
     final var characterEncodingFilter = new CharacterEncodingFilter();
-    final var authFilter = new AuthFilter();
+    final var authFilter = new AuthFilter(appConfig, sessionDao);
     final var idCheckerFilter = new IdCheckerFilter();
     final var eventSourceCheckerFilter = new EventSourceCheckerFilter(emailParsers);
 
-    final var sseServlet = new SseServlet(eventBroadcaster);
-    final var loginServlet = new LoginServlet(appConfig, instancePasswordManager, sessionDao);
+    final var eventSourceAllServlet = new EventSourceAllServlet(i18n, emailParsers);
+    final var loginServlet = new LoginServlet(appConfig, instancePasswordManager, userDao,
+      sessionDao);
     final var logoutServlet = new LogoutServlet(sessionDao);
-    final var sessionRefreshServlet = new SessionRefreshServlet();
     final var messageAllServlet = new MessageAllServlet(eventDao);
     final var messageServlet = new MessageServlet(i18n, eventDao, emailParserMap);
-    final var eventSourceAllServlet = new EventSourceAllServlet(i18n, emailParsers);
+    final var sessionRefreshServlet = new SessionRefreshServlet();
+    final var updateDefaultPasswordServlet = new UpdateDefaultPasswordServlet(userDao,
+      instancePasswordManager);
+    final var sseServlet = new SseServlet(eventBroadcaster);
 
     context.addFilter(authFilter, List.of(
-      "/api/event/source/all",
+      "/api/logout",
       "/api/message/*",
-      "/api/logout"
+      "/api/session/refresh",
+      "/api/update/default/password",
+      "/api/event/source/all"
     ));
     context.addFilter(characterEncodingFilter, "/*");
     context.addFilter(idCheckerFilter, "/api/message");
     context.addFilter(eventSourceCheckerFilter, "/api/message/*");
 
-    context.addServlet(sseServlet, "/events");
+    context.addServlet(eventSourceAllServlet, "/api/event/source/all");
     context.addServlet(loginServlet, "/api/login");
     context.addServlet(logoutServlet, "/api/logout");
-    context.addServlet(sessionRefreshServlet, "/api/session/refresh");
-    context.addServlet(eventSourceAllServlet, "/api/event/source/all");
     context.addServlet(messageAllServlet, "/api/message/all");
     context.addServlet(messageServlet, "/api/message");
+    context.addServlet(sessionRefreshServlet, "/api/session/refresh");
+    context.addServlet(updateDefaultPasswordServlet, "/api/update/default/password");
+    context.addServlet(sseServlet, "/events");
 
     server.setHandler(context);
     try {
