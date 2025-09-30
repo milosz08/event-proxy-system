@@ -5,11 +5,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.http.HttpStatus;
 import org.json.JSONObject;
+import pl.miloszgilga.event.proxy.server.crypto.AesEncryptedData;
 import pl.miloszgilga.event.proxy.server.crypto.Crypto;
-import pl.miloszgilga.event.proxy.server.crypto.EncryptedMessage;
 
+import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.io.Writer;
+import java.security.PublicKey;
 
 public abstract class HttpJsonServlet extends HttpServlet {
   @Override
@@ -19,18 +21,22 @@ public abstract class HttpJsonServlet extends HttpServlet {
       res.setStatus(HttpStatus.NOT_FOUND_404);
       return;
     }
-    final String pubKey = (String) req.getAttribute(ReqAttribute.PUBLIC_KEY.name());
-    if (pubKey == null) {
+    final String pubKeyBase64 = (String) req.getAttribute(ReqAttribute.PUBLIC_KEY.name());
+    if (pubKeyBase64 == null) {
       res.setStatus(HttpStatus.UNAUTHORIZED_401);
       return;
     }
     try {
-      final EncryptedMessage encryptedMessage = Crypto.encryptData(pubKey, plainJsonData);
+      final SecretKey aesKey = Crypto.createAesKey(); // generate aes key (once per request)
+      // RSA public key reconstruction
+      final PublicKey pubKey = Crypto.reconstructPubKey(pubKeyBase64);
+      final AesEncryptedData data = Crypto.encryptDataAes(plainJsonData, aesKey);
+      final String encryptedAes = Crypto.encryptAesKey(aesKey, pubKey);
 
       final JSONObject encryptedPackage = new JSONObject();
-      encryptedPackage.put("iv", encryptedMessage.iv());
-      encryptedPackage.put("aes", encryptedMessage.aes());
-      encryptedPackage.put("encrypted", encryptedMessage.jsonContent());
+      encryptedPackage.put("iv", data.iv());
+      encryptedPackage.put("aes", encryptedAes);
+      encryptedPackage.put("encrypted", data.base64data());
 
       performJsonRequest(res, encryptedPackage.toString());
     } catch (Exception ignored) {
