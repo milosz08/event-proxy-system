@@ -1,21 +1,13 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="EmailParserTest" type="JUnit" factoryName="JUnit"
-                 nameIsGenerated="true">
-    <module name="event-proxy-server"/>
-    <extension name="coverage">
-      <pattern>
-        <option name="PATTERN" value="pl.miloszgilga.event.proxy.server.parser.message.*"/>
-        <option name="ENABLED" value="true"/>
-      </pattern>
-    </extension>
-    <option name="PACKAGE_NAME" value="pl.miloszgilga.event.proxy.server"/>
-    <option name="MAIN_CLASS_NAME"
-            value="pl.miloszgilga.event.proxy.server.parser.EmailParserTest"/>
-    <option name="METHOD_NAME" value=""/>
-    <option name="TEST_OBJECT" value="class"/>
-    <option name="WORKING_DIRECTORY" value=""/>
+  <configuration default="false" name="EmailParserTest" type="JUnit" factoryName="JUnit" nameIsGenerated="true">
+    <module name="event-proxy-server" />
+    <option name="PACKAGE_NAME" value="pl.miloszgilga.event.proxy.server.parser" />
+    <option name="MAIN_CLASS_NAME" value="pl.miloszgilga.event.proxy.server.parser.EmailParserTest" />
+    <option name="METHOD_NAME" value="" />
+    <option name="TEST_OBJECT" value="class" />
+    <option name="WORKING_DIRECTORY" value="" />
     <method v="2">
-      <option name="Make" enabled="true"/>
+      <option name="Make" enabled="true" />
     </method>
   </configuration>
 </component>
