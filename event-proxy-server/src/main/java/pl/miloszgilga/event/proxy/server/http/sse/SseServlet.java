@@ -1,13 +1,17 @@
 package pl.miloszgilga.event.proxy.server.http.sse;
 
 import jakarta.servlet.AsyncContext;
-import jakarta.servlet.AsyncEvent;
-import jakarta.servlet.AsyncListener;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.miloszgilga.event.proxy.server.crypto.Crypto;
+import pl.miloszgilga.event.proxy.server.http.ReqAttribute;
+
+import javax.crypto.SecretKey;
+import java.security.PublicKey;
 
 public class SseServlet extends HttpServlet {
   private static final Logger LOG = LoggerFactory.getLogger(SseServlet.class);
@@ -20,40 +24,31 @@ public class SseServlet extends HttpServlet {
 
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse res) {
-    res.setContentType("text/event-stream");
-    res.setHeader("Cache-Control", "no-cache");
-    res.setHeader("Connection", "keep-alive");
+    final String pubKeyBase64 = (String) req.getAttribute(ReqAttribute.PUBLIC_KEY.name());
+    try {
+      final SecretKey aesKey = Crypto.createAesKey();
+      final PublicKey pubKey = Crypto.reconstructPubKey(pubKeyBase64);
+      final String encryptedAes = Crypto.encryptAesKey(aesKey, pubKey);
 
-    final String clientId = eventBroadcaster.addClientIdToRequest(req);
+      res.setContentType("text/event-stream");
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Connection", "keep-alive");
 
-    final AsyncContext asyncContext = req.startAsync(req, res);
-    asyncContext.setTimeout(0); // set no limit for SSE connections
-    eventBroadcaster.addClient(clientId, asyncContext);
+      final String clientId = eventBroadcaster.addClientIdToRequest(req);
 
-    asyncContext.addListener(new AsyncListener() {
-      @Override
-      public void onComplete(AsyncEvent event) {
-        onDisconnectClient(asyncContext);
-      }
-      @Override
-      public void onTimeout(AsyncEvent event) {
-        onDisconnectClient(asyncContext);
-      }
-      @Override
-      public void onError(AsyncEvent event) {
-        onDisconnectClient(asyncContext);
-      }
-      @Override
-      public void onStartAsync(AsyncEvent event) {
-      }
-    });
-    LOG.info("Client {} connected. Active clients: {}", clientId,
-      eventBroadcaster.getClientsCount());
-  }
+      final AsyncContext asyncContext = req.startAsync(req, res);
+      asyncContext.setTimeout(0); // set no limit for SSE connections
+      eventBroadcaster.addClient(clientId, asyncContext, new HybridKey(aesKey, encryptedAes));
 
-  private void onDisconnectClient(AsyncContext asyncContext) {
-    final String clientId = eventBroadcaster.removeClient(asyncContext);
-    LOG.info("Client {} disconnected. Active clients: {}", clientId,
-      eventBroadcaster.getClientsCount());
+      final CustomAsyncContextListener listener = new CustomAsyncContextListener(
+        asyncContext,
+        eventBroadcaster
+      );
+      asyncContext.addListener(listener);
+      LOG.info("Client {} connected. Active clients: {}", clientId,
+        eventBroadcaster.getClientsCount());
+    } catch (Exception ex) {
+      res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
+    }
   }
 }

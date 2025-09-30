@@ -85,7 +85,8 @@ public class HttpProxyServerThread extends AbstractThread {
       "/api/message/*",
       "/api/session/refresh",
       "/api/update/default/password",
-      "/api/event/source/all"
+      "/api/event/source/all",
+      "/stream/events"
     ));
     context.addFilter(characterEncodingFilter, "/*");
     context.addFilter(idCheckerFilter, "/api/message");
@@ -98,7 +99,7 @@ public class HttpProxyServerThread extends AbstractThread {
     context.addServlet(messageServlet, "/api/message");
     context.addServlet(sessionRefreshServlet, "/api/session/refresh");
     context.addServlet(updateDefaultPasswordServlet, "/api/update/default/password");
-    context.addServlet(sseServlet, "/events");
+    context.addServlet(sseServlet, "/stream/events");
 
     server.setHandler(context);
     try {
