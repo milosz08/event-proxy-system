@@ -4,7 +4,6 @@
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <option name="MAIN_CLASS_NAME" value="pl.miloszgilga.event.desktop.client.EventDesktopClientMain" />
     <module name="event-desktop-client" />
-    <option name="VM_PARAMETERS" value="-XstartOnFirstThread" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="pl.miloszgilga.event.client.*" />
