@@ -64,6 +64,7 @@ public class HttpProxyServerThread extends AbstractThread {
     context.setContextPath("/");
     context.setErrorHandler(new NoBodyErrorHandler());
 
+    // filters
     context.addFilter(new AuthFilter(appConfig, sessionDao), List.of(
       "/api/logout",
       "/api/message/*",
@@ -76,6 +77,7 @@ public class HttpProxyServerThread extends AbstractThread {
     context.addFilter(new IdCheckerFilter(), "/api/message");
     context.addFilter(new EventSourceCheckerFilter(emailParsers), "/api/message/*");
 
+    // servlets
     context.addServlet(new EventSourceAllServlet(i18n, emailParsers), "/api/event/source/all");
     context.addServlet(
       new LoginServlet(appConfig, instancePasswordManager, userDao, sessionDao),
