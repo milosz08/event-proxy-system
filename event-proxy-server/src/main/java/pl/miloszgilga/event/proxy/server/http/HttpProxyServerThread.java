@@ -64,23 +64,7 @@ public class HttpProxyServerThread extends AbstractThread {
     context.setContextPath("/");
     context.setErrorHandler(new NoBodyErrorHandler());
 
-    final var characterEncodingFilter = new CharacterEncodingFilter();
-    final var authFilter = new AuthFilter(appConfig, sessionDao);
-    final var idCheckerFilter = new IdCheckerFilter();
-    final var eventSourceCheckerFilter = new EventSourceCheckerFilter(emailParsers);
-
-    final var eventSourceAllServlet = new EventSourceAllServlet(i18n, emailParsers);
-    final var loginServlet = new LoginServlet(appConfig, instancePasswordManager, userDao,
-      sessionDao);
-    final var logoutServlet = new LogoutServlet(sessionDao);
-    final var messageAllServlet = new MessageAllServlet(eventDao);
-    final var messageServlet = new MessageServlet(i18n, eventDao, emailParserMap);
-    final var sessionRefreshServlet = new SessionRefreshServlet();
-    final var updateDefaultPasswordServlet = new UpdateDefaultPasswordServlet(userDao,
-      instancePasswordManager);
-    final var sseServlet = new SseServlet(eventBroadcaster);
-
-    context.addFilter(authFilter, List.of(
+    context.addFilter(new AuthFilter(appConfig, sessionDao), List.of(
       "/api/logout",
       "/api/message/*",
       "/api/session/refresh",
@@ -88,18 +72,24 @@ public class HttpProxyServerThread extends AbstractThread {
       "/api/event/source/all",
       "/stream/events"
     ));
-    context.addFilter(characterEncodingFilter, "/*");
-    context.addFilter(idCheckerFilter, "/api/message");
-    context.addFilter(eventSourceCheckerFilter, "/api/message/*");
+    context.addFilter(new CharacterEncodingFilter(), "/*");
+    context.addFilter(new IdCheckerFilter(), "/api/message");
+    context.addFilter(new EventSourceCheckerFilter(emailParsers), "/api/message/*");
 
-    context.addServlet(eventSourceAllServlet, "/api/event/source/all");
-    context.addServlet(loginServlet, "/api/login");
-    context.addServlet(logoutServlet, "/api/logout");
-    context.addServlet(messageAllServlet, "/api/message/all");
-    context.addServlet(messageServlet, "/api/message");
-    context.addServlet(sessionRefreshServlet, "/api/session/refresh");
-    context.addServlet(updateDefaultPasswordServlet, "/api/update/default/password");
-    context.addServlet(sseServlet, "/stream/events");
+    context.addServlet(new EventSourceAllServlet(i18n, emailParsers), "/api/event/source/all");
+    context.addServlet(
+      new LoginServlet(appConfig, instancePasswordManager, userDao, sessionDao),
+      "/api/login"
+    );
+    context.addServlet(new LogoutServlet(sessionDao), "/api/logout");
+    context.addServlet(new MessageAllServlet(eventDao), "/api/message/all");
+    context.addServlet(new MessageServlet(i18n, eventDao, emailParserMap), "/api/message");
+    context.addServlet(new SessionRefreshServlet(), "/api/session/refresh");
+    context.addServlet(
+      new UpdateDefaultPasswordServlet(userDao, instancePasswordManager),
+      "/api/update/default/password"
+    );
+    context.addServlet(new SseServlet(eventBroadcaster), "/stream/events");
 
     server.setHandler(context);
     try {
