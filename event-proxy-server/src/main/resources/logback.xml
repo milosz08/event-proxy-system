@@ -2,7 +2,7 @@
 <configuration>
   <property name="PATTERN"
             value="%d{yyyy-MM-dd HH:mm:ss.SSS} > [%-5p] {%thread} \(%-35.35logger{39}\) : %m%n"/>
-  <property name="PATH" value=".logs/client"/>
+  <property name="PATH" value=".log"/>
 
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
@@ -10,7 +10,18 @@
     </encoder>
   </appender>
 
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <encoder>
+      <pattern>${PATTERN}</pattern>
+    </encoder>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>${PATH}/server-%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+      <maxHistory>30</maxHistory>
+    </rollingPolicy>
+  </appender>
+
   <root level="info">
     <appender-ref ref="STDOUT"/>
+    <appender-ref ref="FILE"/>
   </root>
 </configuration>
