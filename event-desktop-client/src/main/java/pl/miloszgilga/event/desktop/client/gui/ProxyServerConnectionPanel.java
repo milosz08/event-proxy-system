@@ -32,8 +32,6 @@ public class ProxyServerConnectionPanel extends JPanel implements ObservableComp
     addProxyServerButton = new JButton("Add proxy server");
     showAllProxyServersButton = new JButton("Show all proxy servers");
 
-    appRootState.updatePersistedProxyServers(List.of(new ProxyServerData("test", "192.168.0.23")));
-
     connectButton.addActionListener(e -> controller.onConnect());
     disconnectButton.addActionListener(e -> controller.onDisconnect());
     addProxyServerButton.addActionListener(e -> controller.onAddProxyServer());
