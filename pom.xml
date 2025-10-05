@@ -24,6 +24,7 @@
     <hikari-cp.version>6.3.0</hikari-cp.version>
     <json.version>20250517</json.version>
     <bcrypt.version>0.10.2</bcrypt.version>
+    <rxjava.version>3.1.12</rxjava.version>
     <!-- configuration -->
     <maven-clean-plugin.version>3.4.1</maven-clean-plugin.version>
     <maven-assembly-plugin.version>2.2-beta-5</maven-assembly-plugin.version>
@@ -86,6 +87,11 @@
         <groupId>at.favre.lib</groupId>
         <artifactId>bcrypt</artifactId>
         <version>${bcrypt.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.reactivex.rxjava3</groupId>
+        <artifactId>rxjava</artifactId>
+        <version>${rxjava.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
