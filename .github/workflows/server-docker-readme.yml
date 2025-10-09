@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      - ".github/workflows/server-docker.yml"
+      - ".github/workflows/server-docker-readme.yml"
       - "docker/README.md"
 
 jobs:
