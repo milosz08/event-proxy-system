@@ -15,6 +15,7 @@ import pl.miloszgilga.event.proxy.server.http.filter.EventSourceCheckerFilter;
 import pl.miloszgilga.event.proxy.server.http.filter.IdCheckerFilter;
 import pl.miloszgilga.event.proxy.server.http.rest.*;
 import pl.miloszgilga.event.proxy.server.http.sse.EventBroadcaster;
+import pl.miloszgilga.event.proxy.server.http.sse.SseHandshakeServlet;
 import pl.miloszgilga.event.proxy.server.http.sse.SseServlet;
 import pl.miloszgilga.event.proxy.server.parser.EmailParser;
 
@@ -71,6 +72,7 @@ public class HttpProxyServerThread extends AbstractThread {
       "/api/session/refresh",
       "/api/update/default/password",
       "/api/event/source/all",
+      "/stream/handshake",
       "/stream/events"
     ));
     context.addFilter(new CharacterEncodingFilter(), "/*");
@@ -91,6 +93,7 @@ public class HttpProxyServerThread extends AbstractThread {
       new UpdateDefaultPasswordServlet(userDao, instancePasswordManager),
       "/api/update/default/password"
     );
+    context.addServlet(new SseHandshakeServlet(eventBroadcaster), "/stream/handshake");
     context.addServlet(new SseServlet(eventBroadcaster), "/stream/events");
 
     server.setHandler(context);

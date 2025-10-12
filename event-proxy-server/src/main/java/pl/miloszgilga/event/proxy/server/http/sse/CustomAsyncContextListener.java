@@ -5,6 +5,7 @@ import jakarta.servlet.AsyncEvent;
 import jakarta.servlet.AsyncListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.miloszgilga.event.proxy.server.Constants;
 
 class CustomAsyncContextListener implements AsyncListener {
   private static final Logger LOG = LoggerFactory.getLogger(CustomAsyncContextListener.class);
@@ -37,8 +38,10 @@ class CustomAsyncContextListener implements AsyncListener {
   }
 
   private void onDisconnectClient() {
-    final String clientId = eventBroadcaster.removeClient(asyncContext);
-    LOG.info("Client {} disconnected. Active clients: {}", clientId,
+    final String sessionId = asyncContext.getRequest().getAttribute(Constants.SSE_SESSION_ID_LABEL)
+      .toString();
+    eventBroadcaster.removeSession(sessionId);
+    LOG.info("SSE client {} disconnected. Active clients: {}", sessionId,
       eventBroadcaster.getClientsCount());
   }
 }

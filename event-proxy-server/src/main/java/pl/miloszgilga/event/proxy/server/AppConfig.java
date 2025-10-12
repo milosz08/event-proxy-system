@@ -34,6 +34,7 @@ public class AppConfig {
   public enum Prop {
     HTTP_PORT("http-port"),
     SSE_HEARTBEAT_INTERVAL_SEC("sse-heartbeat-interval-sec"),
+    SSE_HANDSHAKE_PENDING_SEC("sse-handshake-pending-sec"),
     SMTP_PORT("smtp-port"),
     SMTP_THREAD_POOL_SIZE("smtp-thread-pool-size"),
     SMTP_QUEUE_CAPACITY("smtp-queue-capacity"),

@@ -74,7 +74,8 @@ class EventProxyServerMain implements Runnable {
     initializerRegistry.register(expiredSessionRemoval);
 
     eventBroadcaster = new EventBroadcaster(
-      appConfig.getAsLong(AppConfig.Prop.SSE_HEARTBEAT_INTERVAL_SEC)
+      appConfig.getAsLong(AppConfig.Prop.SSE_HEARTBEAT_INTERVAL_SEC),
+      appConfig.getAsLong(AppConfig.Prop.SSE_HANDSHAKE_PENDING_SEC)
     );
     httpProxyServerThread = new HttpProxyServerThread(
       appConfig.getAsInt(AppConfig.Prop.HTTP_PORT),
