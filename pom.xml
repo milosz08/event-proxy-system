@@ -24,11 +24,15 @@
     <hikari-cp.version>6.3.0</hikari-cp.version>
     <json.version>20250517</json.version>
     <bcrypt.version>0.10.2</bcrypt.version>
+    <javafx.version>21</javafx.version>
+    <controlsfx.version>11.2.1</controlsfx.version>
     <rxjava.version>3.1.12</rxjava.version>
     <!-- configuration -->
     <maven-clean-plugin.version>3.4.1</maven-clean-plugin.version>
     <maven-assembly-plugin.version>2.2-beta-5</maven-assembly-plugin.version>
     <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
+    <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+    <javafx-maven-plugin.version>0.0.8</javafx-maven-plugin.version>
     <java.version>17</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -87,6 +91,31 @@
         <groupId>at.favre.lib</groupId>
         <artifactId>bcrypt</artifactId>
         <version>${bcrypt.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.openjfx</groupId>
+        <artifactId>javafx-controls</artifactId>
+        <version>${javafx.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.openjfx</groupId>
+        <artifactId>javafx-fxml</artifactId>
+        <version>${javafx.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.openjfx</groupId>
+        <artifactId>javafx-swing</artifactId>
+        <version>${javafx.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.openjfx</groupId>
+        <artifactId>javafx-media</artifactId>
+        <version>${javafx.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.controlsfx</groupId>
+        <artifactId>controlsfx</artifactId>
+        <version>${controlsfx.version}</version>
       </dependency>
       <dependency>
         <groupId>io.reactivex.rxjava3</groupId>
