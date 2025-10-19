@@ -24,23 +24,23 @@ import static pl.miloszgilga.event.desktop.client.EventDesktopClientMain.APP_NAM
 
 public class BadgeManager implements Closeable {
   private static final Logger LOG = LoggerFactory.getLogger(BadgeManager.class);
-  private static final String ICON_PATTERN = "assets/icon/icon%d.png";
+  private static final String LOGO_PATTERN = "assets/logo/logo%d.png";
   private static final String AUDIO_CLIP_PATH = "assets/notification.mp3";
   private static final double AUDIO_VOLUME = 0.5;
-  private static final int[] ICON_SIZES = {16, 32, 64, 256};
+  private static final int[] LOGO_SIZES = {16, 32, 64, 256};
   private static final Color BG_COLOR = new Color(178, 34, 34);
   private static final int MAX_VALUE = 9;
   private static final String TITLE_PATTERN = "%s (new events: %d)";
 
   private final CompositeDisposable disposables = new CompositeDisposable();
-  private final Map<Integer, List<Image>> iconCache = new HashMap<>();
-  private final List<Image> baseIcons = new ArrayList<>();
+  private final Map<Integer, List<Image>> logoCache = new HashMap<>();
+  private final List<Image> baseLogos = new ArrayList<>();
   private final AudioClip audioClip = loadAudioClip();
 
   BadgeManager(Stage stage, NotificationStore store) {
     // initialize
-    loadBaseIcons();
-    preloadIconCache();
+    loadBaseLogos();
+    preloadLogoCache();
     // listen reactive streams
     final Observable<Integer> countStream = store.getCountStream();
     disposables.add(
@@ -55,11 +55,11 @@ public class BadgeManager implements Closeable {
     );
   }
 
-  private void loadBaseIcons() {
-    for (final int iconSize : ICON_SIZES) {
-      loadIconImage(iconSize).ifPresent(baseIcons::add);
+  private void loadBaseLogos() {
+    for (final int logoSize : LOGO_SIZES) {
+      loadLogoImage(logoSize).ifPresent(baseLogos::add);
     }
-    LOG.info("Loaded: {} base icons", baseIcons.size());
+    LOG.info("Loaded: {} base logos", baseLogos.size());
   }
 
   private AudioClip loadAudioClip() {
@@ -74,53 +74,53 @@ public class BadgeManager implements Closeable {
     return clip;
   }
 
-  private void preloadIconCache() {
+  private void preloadLogoCache() {
     // 0-9 variants plus 9+
     final int badgeTotalVariants = MAX_VALUE + 2;
     for (int i = 0; i <= badgeTotalVariants; i++) {
-      final List<Image> badgeIcons = new ArrayList<>();
-      for (final Image baseIcon : baseIcons) {
-        badgeIcons.add(createBadgeIcon(baseIcon, i));
+      final List<Image> badgeLogos = new ArrayList<>();
+      for (final Image baseLogo : baseLogos) {
+        badgeLogos.add(createBadgeLogo(baseLogo, i));
       }
-      iconCache.put(i, badgeIcons);
+      logoCache.put(i, badgeLogos);
     }
-    LOG.info("Loaded: {} icons with: {} badge variants (total: {})", baseIcons.size(),
-      badgeTotalVariants, baseIcons.size() * badgeTotalVariants);
+    LOG.info("Loaded: {} logos with: {} badge variants (total: {})", baseLogos.size(),
+      badgeTotalVariants, baseLogos.size() * badgeTotalVariants);
   }
 
   private void updateBadge(Stage stage, int count) {
     final int key = (count <= 0) ? 0 : Math.min(count, 10);
-    final List<Image> iconsToShow = iconCache.get(key);
-    if (iconsToShow != null && !iconsToShow.isEmpty()) {
+    final List<Image> logosToShow = logoCache.get(key);
+    if (logosToShow != null && !logosToShow.isEmpty()) {
       final String title = (count > 0) ? TITLE_PATTERN.formatted(APP_NAME, count) : APP_NAME;
       stage.setTitle(title);
-      stage.getIcons().setAll(iconsToShow);
+      stage.getIcons().setAll(logosToShow);
     }
   }
 
-  private Optional<Image> loadIconImage(int size) {
-    final String path = ICON_PATTERN.formatted(size);
+  private Optional<Image> loadLogoImage(int size) {
+    final String path = LOGO_PATTERN.formatted(size);
     try (final InputStream stream = BadgeManager.class.getResourceAsStream(path)) {
       if (stream == null) {
-        throw new IOException("Icon not present in classpath directory");
+        throw new IOException("Logo not present in classpath directory");
       }
       return Optional.of(new Image(stream));
     } catch (IOException ex) {
-      LOG.error("Unable to load icon {}. Cause: {}", path, ex.getMessage());
+      LOG.error("Unable to load logo {}. Cause: {}", path, ex.getMessage());
     }
     return Optional.empty();
   }
 
   // runs only at startup application, then saves in cache
-  private Image createBadgeIcon(Image baseIcon, int notificationCount) {
+  private Image createBadgeLogo(Image baseLogo, int notificationCount) {
     if (notificationCount <= 0) {
-      return baseIcon;
+      return baseLogo;
     }
-    final int width = (int) baseIcon.getWidth();
-    final int height = (int) baseIcon.getHeight();
+    final int width = (int) baseLogo.getWidth();
+    final int height = (int) baseLogo.getHeight();
 
     final BufferedImage bImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-    SwingFXUtils.fromFXImage(baseIcon, bImage);
+    SwingFXUtils.fromFXImage(baseLogo, bImage);
 
     final Graphics2D g2d = bImage.createGraphics();
     g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
