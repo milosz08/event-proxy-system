@@ -8,6 +8,7 @@ sending them via real-time communication channels (SSE). It also includes a simp
 CRUD operations and desktop application receiving these events from multiple proxy servers.
 
 ## Table of content
+
 * [Basic concept](#basic-concept)
 * [Clone, install and run](#clone-install-and-run)
 * [Disclaimer](#disclaimer)
@@ -24,7 +25,7 @@ even Cloudflare's edge servers, can decrypt the content.
 
 The server does not contain complex and heavyweight frameworks (like Spring, Spring Boot) and is
 built on a pure Jetty server to achieve the smallest possible memory footprint. For the same reason,
-the decision was made to use good old Swing for the client, instead of the heavyweight Electron.
+the decision was made to use JavaFX for the client, instead of the heavyweight Electron.
 
 ![](.github/flow-diagram.svg)
 
