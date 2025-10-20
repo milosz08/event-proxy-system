@@ -3,6 +3,7 @@ import { BrowserWindow, IpcMainEvent, app, ipcMain, shell } from 'electron';
 import { join } from 'path';
 import icon from '../../resources/icon.png?asset';
 import { Badge } from './badge';
+import { logger } from "./logger";
 
 const electronRendererUrl = process.env['ELECTRON_RENDERER_URL'];
 const appId = 'pl.miloszgilga.event-proxy-client';
