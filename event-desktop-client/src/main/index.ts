@@ -69,9 +69,7 @@ const onReady = async (): Promise<void> => {
 };
 
 const onClose = (): void => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+  app.quit();
 };
 
 app.whenReady().then(onReady);
