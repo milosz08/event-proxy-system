@@ -7,10 +7,13 @@ import jakarta.mail.Transport;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import pl.miloszgilga.event.proxy.server.parser.EmailContent;
 
+import java.io.IOException;
+import java.net.Socket;
 import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -30,6 +33,7 @@ class SmtpProxyServerThreadTest {
     queue = new ArrayBlockingQueue<>(1);
     smtpProxyServerThread = new SmtpProxyServerThread(PORT, 1, queue);
     smtpProxyServerThread.start();
+    waitForServerReady(5000); // wait for init 5 seconds, after this time give up
   }
 
   @Test
@@ -126,5 +130,24 @@ class SmtpProxyServerThreadTest {
 
   private String normalizeLineEndings(String str) {
     return str.replace("\r\n", "\n");
+  }
+
+  private void waitForServerReady(long timeoutMs) {
+    final long startTime = System.currentTimeMillis();
+    boolean connected = false;
+    while (!connected && (System.currentTimeMillis() - startTime) < timeoutMs) {
+      try (Socket ignored = new Socket(HOST, PORT)) {
+        connected = true;
+      } catch (IOException e) {
+        try {
+          Thread.sleep(100);
+        } catch (InterruptedException ie) {
+          Thread.currentThread().interrupt();
+        }
+      }
+    }
+    if (!connected) {
+      Assertions.fail("Unable to start SMTP server");
+    }
   }
 }
