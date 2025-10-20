@@ -1,6 +1,6 @@
 FROM eclipse-temurin:17-jre-alpine
 
-ENV BUILD_DIR=/docker
+ENV BUILD_DIR=/event-proxy-server/docker
 ENV ENTRY_DIR=/app/event-proxy-server
 ENV JAR_NAME=event-proxy-server.jar
 
