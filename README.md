@@ -75,7 +75,12 @@ java -Xms=128m -Xmx=128m -jar event-proxy-server.jar
 ```
 
 4. Alternatively, get server from DockerHub repository and run it using `docker-compose.yml` file
-   (check [docker README](/docker/README.md)).
+   (check [docker README](/event-proxy-server/docker/README.md)) or build and run with docker
+   locally:
+
+```bash
+$ docker compose up -d
+```
 
 ## Run client in development environment
 
