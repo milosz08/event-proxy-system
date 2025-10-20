@@ -62,10 +62,11 @@ const onReady = async (): Promise<void> => {
     event.sender.send('app:pong', 'this is pong from main process send via IPC from renderer!');
   });
 
-  ipcMain.on("app:clearPings", () => {
+  ipcMain.on("app:clearPings", (event: IpcMainEvent) => {
     notificationsCounter = 0;
     logger.info('cleared all ping events');
     updateNotificationBadge(mainWindow, badge, notificationsCounter);
+    event.sender.send('app:clearedPings');
   })
 
   app.on('activate', () => {

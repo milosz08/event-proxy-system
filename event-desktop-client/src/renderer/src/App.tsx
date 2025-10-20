@@ -7,14 +7,17 @@ function App(): React.ReactElement {
   const [messages, setMessages] = useState<string[]>([]);
 
   useEffect(() => {
-    const removeListener = window.api.onPong(async (message: string) => {
+    const removeOnPongListener = window.api.onPong(async (message: string) => {
       audio.currentTime = 0;
       await audio.play();
       setMessages(prevState => [...prevState, message]);
     });
-
+    const removeOnClearedPingListener = window.api.onClearedPings(() => {
+      setMessages([]);
+    })
     return () => {
-      removeListener();
+      removeOnPongListener();
+      removeOnClearedPingListener();
     };
   }, [audio]);
 
