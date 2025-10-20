@@ -1,6 +1,6 @@
 FROM eclipse-temurin:17-jdk-alpine AS build
 
-ENV BUILD_DIR=/build/event-proxy-server
+ENV BUILD_DIR=/build/event-proxy-system
 
 RUN mkdir -p $BUILD_DIR
 WORKDIR $BUILD_DIR
@@ -10,6 +10,8 @@ COPY .mvn $BUILD_DIR/.mvn
 COPY mvnw $BUILD_DIR/mvnw
 COPY pom.xml $BUILD_DIR/pom.xml
 COPY event-proxy-server/pom.xml $BUILD_DIR/event-proxy-server/pom.xml
+COPY event-desktop-client/pom.xml $BUILD_DIR/event-desktop-client/pom.xml
+COPY server.properties $BUILD_DIR/server.properties
 
 RUN chmod +x $BUILD_DIR/mvnw
 RUN cd $BUILD_DIR
@@ -17,15 +19,14 @@ RUN cd $BUILD_DIR
 RUN ./mvnw dependency:tree -pl event-proxy-server
 
 # copy rest of resources
-COPY event-proxy-server $BUILD_DIR/event-proxy-server
-COPY docker $BUILD_DIR/docker
+COPY event-proxy-server/src $BUILD_DIR/event-proxy-server/src
+COPY event-proxy-server/docker $BUILD_DIR/event-proxy-server/docker
 
-RUN ./mvnw clean
-RUN ./mvnw package -pl event-proxy-server
+RUN ./mvnw clean package -pl event-proxy-server
 
 FROM eclipse-temurin:17-jre-alpine
 
-ENV BUILD_DIR=/build/event-proxy-server
+ENV BUILD_DIR=/build/event-proxy-system/event-proxy-server
 ENV ENTRY_DIR=/app/event-proxy-server
 ENV JAR_NAME=event-proxy-server.jar
 

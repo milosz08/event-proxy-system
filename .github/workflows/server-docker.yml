@@ -7,7 +7,7 @@ on:
     paths:
       - ".github/workflows/server-docker.yml"
       - "event-proxy-server/**"
-      - "Dockerfile.pipeline"
+      - "event-proxy-server/Dockerfile.pipeline"
       - "mvnw"
       - "pom.xml"
 
@@ -66,7 +66,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./Dockerfile.pipeline
+          file: ./event-proxy-server/Dockerfile.pipeline
           push: true
           tags: milosz08/event-proxy-server:latest
 

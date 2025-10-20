@@ -6,7 +6,7 @@ on:
       - master
     paths:
       - ".github/workflows/server-docker-readme.yml"
-      - "docker/README.md"
+      - "event-proxy-server/docker/README.md"
 
 jobs:
   update:
@@ -22,5 +22,5 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: milosz08/event-proxy-server
-          readme-filepath: ./docker/README.md
+          readme-filepath: ./event-proxy-server/docker/README.md
           short-description: "A lightweight event proxy server with fake SMTP service working in local network."
