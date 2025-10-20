@@ -21,6 +21,7 @@ function App(): React.ReactElement {
   return (
     <div>
       <button onClick={() => window.api.sendPing()}>send ping!</button>
+      <button onClick={() => window.api.clearPings()}>clear pings</button>
       <ul>
         {messages.map((message, index) => (
           <li key={index}>{message}</li>

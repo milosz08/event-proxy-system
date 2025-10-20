@@ -2,6 +2,7 @@ import { IpcRendererEvent, contextBridge, ipcRenderer } from 'electron';
 
 const api = {
   sendPing: () => ipcRenderer.send('app:ping'),
+  clearPings: () => ipcRenderer.send('app:clearPings'),
   onPong: (callback: (message: string) => void) => {
     const listener = (_: IpcRendererEvent, message: string): void => {
       callback(message);
