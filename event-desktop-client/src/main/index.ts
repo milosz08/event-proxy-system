@@ -49,16 +49,16 @@ const onReady = async (): Promise<void> => {
   const mainWindow = await createWindow();
 
   const badge = new Badge();
-  badge.preloadBadges();
+  if (process.platform !== 'darwin' && process.platform !== 'linux') {
+    badge.preloadBadges();
+  }
 
   let notificationsCounter = 0;
 
   ipcMain.on('app:ping', (event: IpcMainEvent) => {
-    console.log('received ping event from client');
-
-    const { nativeImage, description } = badge.takeCachedBadge(++notificationsCounter);
-    mainWindow.setOverlayIcon(nativeImage, description);
-
+    notificationsCounter++;
+    logger.info('received ping event from client');
+    updateNotificationBadge(mainWindow, badge, notificationsCounter);
     event.sender.send('app:pong', 'this is pong from main process send via IPC from renderer!');
   });
 
@@ -68,6 +68,15 @@ const onReady = async (): Promise<void> => {
     }
   });
 };
+
+const updateNotificationBadge = (mainWindow: BrowserWindow, badge: Badge, count: number): void => {
+  if (process.platform === 'darwin' || process.platform === 'linux') {
+    app.badgeCount = count;
+  } else {
+    const {nativeImage, description} = badge.takeCachedBadge(count);
+    mainWindow.setOverlayIcon(nativeImage, description);
+  }
+}
 
 const onClose = (): void => {
   app.quit();
