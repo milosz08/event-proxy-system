@@ -1,8 +1,11 @@
-.idea/
-.bin/
-.log/
+.idea
+.bin
+.log
+.cache
 
-target/
-out/
+node_modules
+dist
+out
+target
 
 *.db
