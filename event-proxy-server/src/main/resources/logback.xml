@@ -2,7 +2,7 @@
 <configuration>
   <property name="PATTERN"
             value="%d{yyyy-MM-dd HH:mm:ss.SSS} > [%-5p] {%thread} \(%-35.35logger{39}\) : %m%n"/>
-  <property name="PATH" value=".log"/>
+  <property name="PATH" value="event-proxy-server/.log"/>
 
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>

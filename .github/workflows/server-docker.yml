@@ -29,17 +29,14 @@ jobs:
       - name: Change wrapper permissions
         run: chmod +x ./mvnw
 
-      - name: Clean build dir
-        run: ./mvnw clean
-
-      - name: Package to JAR
-        run: ./mvnw package -pl event-proxy-server
+      - name: Clean and package to JAR
+        run: ./mvnw clean package -pl event-proxy-server
 
       - name: Upload generated JAR artifact
         uses: actions/upload-artifact@v4
         with:
           name: output-jar
-          path: .bin/event-proxy-server.jar
+          path: event-proxy-server/.bin/event-proxy-server.jar
           retention-days: 1
 
   docker:

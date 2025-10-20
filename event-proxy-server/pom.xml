@@ -65,6 +65,20 @@
 
   <build>
     <plugins>
+      <plugin>
+        <!-- Clean .bin executable JAR file directory -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-clean-plugin</artifactId>
+        <version>${maven-clean-plugin.version}</version>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>.bin</directory>
+              <followSymlinks>false</followSymlinks>
+            </fileset>
+          </filesets>
+        </configuration>
+      </plugin>
       <!-- Package to Uber JAR -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -73,7 +87,7 @@
         <configuration>
           <finalName>event-proxy-server</finalName>
           <appendAssemblyId>false</appendAssemblyId>
-          <outputDirectory>${project.parent.basedir}/.bin</outputDirectory>
+          <outputDirectory>.bin</outputDirectory>
           <archive>
             <manifest>
               <mainClass>pl.miloszgilga.event.proxy.server.EventProxyServerMain</mainClass>
