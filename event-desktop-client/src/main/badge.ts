@@ -11,16 +11,16 @@ class Badge {
   private badgesCache = new Map<number, NativeImage>();
 
   preloadBadges(): void {
-    for (let i = 0; i < this.maxValue + 2; i++) {
+    for (let i = 1; i < this.maxValue + 2; i++) {
       this.badgesCache.set(i, this.generateBadge(i));
     }
   }
 
   takeCachedBadge(count: number): BadgeDescriptor {
-    const key = count <= 0 ? 0 : Math.min(count, 10);
+    const key = count <= 0 ? 0 : Math.min(count, this.maxValue + 1);
     return {
       nativeImage: this.badgesCache.get(key) || null,
-      description: `${Math.min(count, 0)} notifications`,
+      description: `${Math.max(count, 0)} notifications`,
     };
   }
 
