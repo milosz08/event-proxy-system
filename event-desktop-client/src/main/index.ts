@@ -62,6 +62,12 @@ const onReady = async (): Promise<void> => {
     event.sender.send('app:pong', 'this is pong from main process send via IPC from renderer!');
   });
 
+  ipcMain.on("app:clearPings", () => {
+    notificationsCounter = 0;
+    logger.info('cleared all ping events');
+    updateNotificationBadge(mainWindow, badge, notificationsCounter);
+  })
+
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
