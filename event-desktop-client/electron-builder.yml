@@ -13,7 +13,7 @@ asarUnpack:
 win:
   executableName: event-desktop-client
 nsis:
-  artifactName: ${name}-win-${version}.${ext}
+  artifactName: ${name}-${version}.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
@@ -26,7 +26,7 @@ mac:
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
   notarize: false
 dmg:
-  artifactName: ${name}-mac-${version}.${ext}
+  artifactName: ${name}-${version}.${ext}
 linux:
   target:
     - AppImage
@@ -35,5 +35,5 @@ linux:
   maintainer: miloszgilga.pl
   category: Utility
 appImage:
-  artifactName: ${name}-linux-${version}.${ext}
+  artifactName: ${name}-${version}.${ext}
 npmRebuild: false
