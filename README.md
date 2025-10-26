@@ -71,7 +71,7 @@ $ ./mvnw clean package -pl event-proxy-server
 3. Run server in your local network area (on Raspberry Pi or other device with JVM 17):
 
 ```bash
-java -Xms=128m -Xmx=128m -jar event-proxy-server.jar
+$ java -Xms=128m -Xmx=128m -jar event-proxy-server.jar
 ```
 
 4. Alternatively, get server from DockerHub repository and run it using `docker-compose.yml` file
