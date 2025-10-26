@@ -30,6 +30,7 @@
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
     "canvas": "^3.2.0",
+    "electron-store": "^11.0.2",
     "winston": "^3.18.3"
   },
   "devDependencies": {
@@ -52,6 +53,6 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "typescript": "^5.9.2",
-    "vite": "^7.1.6"
+    "vite": "^7.1.11"
   }
 }
