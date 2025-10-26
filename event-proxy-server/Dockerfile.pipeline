@@ -1,14 +1,13 @@
 FROM eclipse-temurin:17-jre-alpine
 
-ENV BUILD_DIR=/event-proxy-server/docker
 ENV ENTRY_DIR=/app/event-proxy-server
 ENV JAR_NAME=event-proxy-server.jar
 
 WORKDIR $ENTRY_DIR
 
 # copy pre-build jar file from CI/CD build task
-COPY $BUILD_DIR/$JAR_NAME $ENTRY_DIR/$JAR_NAME
-COPY $BUILD_DIR/entrypoint $ENTRY_DIR/entrypoint
+COPY .bin/$JAR_NAME $ENTRY_DIR/$JAR_NAME
+COPY docker/entrypoint $ENTRY_DIR/entrypoint
 
 RUN sed -i \
   -e "s/\$JAR_NAME/$JAR_NAME/g" \
