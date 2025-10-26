@@ -7,7 +7,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.miloszgilga.event.proxy.server.Constants;
-import pl.miloszgilga.event.proxy.server.crypto.AesEncryptedData;
+import pl.miloszgilga.event.proxy.server.crypto.AesEncryptedBase64Data;
 import pl.miloszgilga.event.proxy.server.crypto.Crypto;
 import pl.miloszgilga.event.proxy.server.parser.EmailPropertyValue;
 
@@ -92,10 +92,11 @@ public class EventBroadcaster implements Closeable {
       final AsyncContext asyncContext = broadcastClients.get(clientId);
       final SecretKey aesKey = sseAesKeys.get(clientId);
       try {
-        final AesEncryptedData data = Crypto.encryptDataAes(rawJsonData, aesKey);
+        final AesEncryptedBase64Data data = Crypto.encryptDataAes(rawJsonData, aesKey);
         final JSONObject jsonObject = new JSONObject();
         jsonObject.put("iv", data.iv());
-        jsonObject.put("encrypted", data.base64data());
+        jsonObject.put("cipher", data.cipher());
+        jsonObject.put("tag", data.tag());
         sendToChannel(asyncContext, "data", jsonObject.toString());
       } catch (Exception ignored) {
       }

@@ -5,7 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.http.HttpStatus;
 import org.json.JSONObject;
-import pl.miloszgilga.event.proxy.server.crypto.AesEncryptedData;
+import pl.miloszgilga.event.proxy.server.crypto.AesEncryptedBase64Data;
 import pl.miloszgilga.event.proxy.server.crypto.Crypto;
 
 import javax.crypto.SecretKey;
@@ -30,13 +30,14 @@ public abstract class HttpJsonServlet extends HttpServlet {
       final SecretKey aesKey = Crypto.createAesKey(); // generate aes key (once per request)
       // RSA public key reconstruction
       final PublicKey pubKey = Crypto.reconstructPubKey(pubKeyBase64);
-      final AesEncryptedData data = Crypto.encryptDataAes(plainJsonData, aesKey);
+      final AesEncryptedBase64Data data = Crypto.encryptDataAes(plainJsonData, aesKey);
       final String encryptedAes = Crypto.encryptAesKey(aesKey, pubKey);
 
       final JSONObject encryptedPackage = new JSONObject();
+      encryptedPackage.put("cipher", data.cipher());
       encryptedPackage.put("iv", data.iv());
+      encryptedPackage.put("tag", data.tag());
       encryptedPackage.put("aes", encryptedAes);
-      encryptedPackage.put("encrypted", data.base64data());
 
       performJsonRequest(res, encryptedPackage.toString());
     } catch (Exception ignored) {

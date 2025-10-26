@@ -36,7 +36,7 @@ public class SseHandshakeServlet extends HttpJsonServlet {
 
       final JSONObject object = new JSONObject();
       object.put("sessionId", sessionId);
-      object.put("aesEncrypted", encryptedAes);
+      object.put("aes", encryptedAes);
 
       result = object.toString();
     } catch (Exception ex) {
