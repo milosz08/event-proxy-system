@@ -3,7 +3,7 @@ import { BrowserWindow, IpcMainEvent, app, ipcMain, shell } from 'electron';
 import { join } from 'path';
 import icon from '../../resources/icon.png?asset';
 import { Badge } from './badge';
-import { logger } from "./logger";
+import { logger } from './logger';
 
 const electronRendererUrl = process.env['ELECTRON_RENDERER_URL'];
 const appId = 'pl.miloszgilga.event-proxy-client';
@@ -62,12 +62,12 @@ const onReady = async (): Promise<void> => {
     event.sender.send('app:pong', 'this is pong from main process send via IPC from renderer!');
   });
 
-  ipcMain.on("app:clearPings", (event: IpcMainEvent) => {
+  ipcMain.on('app:clearPings', (event: IpcMainEvent) => {
     notificationsCounter = 0;
     logger.info('cleared all ping events');
     updateNotificationBadge(mainWindow, badge, notificationsCounter);
     event.sender.send('app:clearedPings');
-  })
+  });
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -80,10 +80,10 @@ const updateNotificationBadge = (mainWindow: BrowserWindow, badge: Badge, count:
   if (process.platform === 'darwin' || process.platform === 'linux') {
     app.badgeCount = count;
   } else {
-    const {nativeImage, description} = badge.takeCachedBadge(count);
+    const { nativeImage, description } = badge.takeCachedBadge(count);
     mainWindow.setOverlayIcon(nativeImage, description);
   }
-}
+};
 
 const onClose = (): void => {
   app.quit();

@@ -1,6 +1,6 @@
-import winston from 'winston';
 import { app } from 'electron';
-import {join} from 'node:path';
+import { join } from 'node:path';
+import winston from 'winston';
 
 const logDir = join(app.getPath('userData'), 'logs');
 
@@ -19,9 +19,11 @@ const logger = winston.createLogger({
 });
 
 if (!app.isPackaged) {
-  logger.add(new winston.transports.Console({
-    format: winston.format.simple(),
-  }));
+  logger.add(
+    new winston.transports.Console({
+      format: winston.format.simple(),
+    })
+  );
 }
 
 export { logger };

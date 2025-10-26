@@ -14,7 +14,7 @@ function App(): React.ReactElement {
     });
     const removeOnClearedPingListener = window.api.onClearedPings(() => {
       setMessages([]);
-    })
+    });
     return () => {
       removeOnPongListener();
       removeOnClearedPingListener();

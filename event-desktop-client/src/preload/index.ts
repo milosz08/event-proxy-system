@@ -16,7 +16,7 @@ const api = {
     return () => {
       ipcRenderer.removeListener('app:clearedPings', listener);
     };
-  }
+  },
 };
 
 contextBridge.exposeInMainWorld('api', api);
