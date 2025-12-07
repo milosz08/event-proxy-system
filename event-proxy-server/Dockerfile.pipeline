@@ -17,7 +17,7 @@ RUN sed -i \
   entrypoint
 
 RUN chmod +x entrypoint && \
-    chown epuser:epgroup entrypoint \
+    chown epuser:epgroup entrypoint
 
 LABEL maintainer="Miłosz Gilga <miloszgilga@gmail.com>"
 
