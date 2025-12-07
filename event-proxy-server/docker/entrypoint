@@ -1,6 +1,6 @@
 #!/bin/sh
 
-java \
+exec java \
   -Xms$EVENT_PROXY_SERVER_XMS \
   -Xmx$EVENT_PROXY_SERVER_XMX \
   -jar $JAR_NAME
