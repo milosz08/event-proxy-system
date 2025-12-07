@@ -5,17 +5,24 @@ ENV JAR_NAME=event-proxy-server.jar
 
 WORKDIR $ENTRY_DIR
 
+RUN addgroup -S epgroup && \
+    adduser -S epuser -G epgroup
+
 # copy pre-build jar file from CI/CD build task
-COPY .bin/$JAR_NAME $ENTRY_DIR/$JAR_NAME
+COPY --chown=epuser:epgroup .bin/$JAR_NAME $ENTRY_DIR/$JAR_NAME
 COPY docker/entrypoint $ENTRY_DIR/entrypoint
 
 RUN sed -i \
   -e "s/\$JAR_NAME/$JAR_NAME/g" \
   entrypoint
 
-RUN chmod +x entrypoint
+RUN chmod +x entrypoint && \
+    chown epuser:epgroup entrypoint \
 
 LABEL maintainer="Miłosz Gilga <miloszgilga@gmail.com>"
 
-EXPOSE 8080
+EXPOSE 4365 4366
+
+USER epuser
+
 ENTRYPOINT [ "./entrypoint" ]
