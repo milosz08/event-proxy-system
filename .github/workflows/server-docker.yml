@@ -6,7 +6,11 @@ on:
       - master
     paths:
       - ".github/workflows/server-docker.yml"
-      - "event-proxy-server/**"
+      - "event-proxy-server/docker/**"
+      - "!event-proxy-server/docker/*.md"
+      - "event-proxy-server/src"
+      - "event-proxy-server/Dockerfile.pipeline"
+      - "event-proxy-server/pom.xml"
       - "mvnw"
       - "pom.xml"
 
