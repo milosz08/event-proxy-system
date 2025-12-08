@@ -35,6 +35,9 @@ WORKDIR $ENTRY_DIR
 RUN addgroup -S epgroup && \
     adduser -S epuser -G epgroup
 
+# for read/write SQLite database
+RUN chown -R epuser:epgroup $ENTRY_DIR
+
 COPY --chown=epuser:epgroup --from=build $BUILD_DIR/.bin/$JAR_NAME $ENTRY_DIR/$JAR_NAME
 COPY --from=build $BUILD_DIR/docker/entrypoint $ENTRY_DIR/entrypoint
 
