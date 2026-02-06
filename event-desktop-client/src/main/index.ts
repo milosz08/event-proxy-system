@@ -12,6 +12,8 @@ const createWindow = async (): Promise<BrowserWindow> => {
   const mainWindow = new BrowserWindow({
     width: 1280,
     height: 720,
+    minWidth: 1280,
+    minHeight: 720,
     show: false,
     title: 'Event desktop client',
     autoHideMenuBar: true,
