@@ -13,6 +13,8 @@ Build with Lightweight embed Jetty servlet container, Java raw TCP sockets and E
 ## Table of content
 
 * [Basic concept](#basic-concept)
+* [Demo (desktop app)](#demo-desktop-app)
+* [In-transit envelope encryption](#in-transit-envelope-encryption)
 * [Clone, and run server](#clone-and-run-server)
 * [Run client in development environment](#run-client-in-development-environment)
 * [Package client (create executables)](#package-client-create-executables)
@@ -33,6 +35,10 @@ Server does not contain complex and heavyweight frameworks (like Spring, Spring 
 built on a pure Jetty server to achieve the smallest possible memory footprint.
 
 ![](.github/flow-diagram.svg)
+
+## Demo (desktop app)
+
+[TBD]
 
 ## In-transit envelope encryption
 
@@ -131,7 +137,7 @@ is not responsible for any damages resulting from its use.
 * JDBC, SQLite JDBC, SQLite database,
 * Jakarta Mail,
 * BCrypt,
-* Electron with React.
+* Electron with React (Vite), BlueprintJS, styled components.
 
 ## Author
 
