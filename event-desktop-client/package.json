@@ -27,11 +27,20 @@
     "build:linux": "electron-vite build && electron-builder --linux"
   },
   "dependencies": {
+    "@blueprintjs/core": "^6.7.0",
+    "@blueprintjs/icons": "^6.5.1",
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
+    "axios": "^1.13.4",
+    "axios-cookiejar-support": "^6.0.5",
     "canvas": "^3.2.0",
-    "electron-store": "^11.0.2",
-    "winston": "^3.18.3"
+    "classnames": "^2.5.1",
+    "electron-store": "^8.1.0",
+    "react-hook-form": "^7.71.1",
+    "styled-components": "^6.3.8",
+    "tough-cookie": "^6.0.0",
+    "winston": "^3.18.3",
+    "zustand": "^5.0.11"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^3.0.0",
