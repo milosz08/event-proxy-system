@@ -28,9 +28,8 @@ export class AuthService {
       return false;
     }
     logger.info(`[${server.name}] verifying existing session on startup...`);
-    const refreshed = await this.refreshSession(serverId);
-
-    if (refreshed) {
+    const { success } = await this.refreshSession(serverId);
+    if (success) {
       await this.startHeartbeatForServer(serverId);
       return true;
     } else {
@@ -115,23 +114,22 @@ export class AuthService {
     return true;
   }
 
-  public async refreshSession(serverId: string): Promise<boolean> {
+  public async refreshSession(serverId: string): Promise<ResponseResult> {
     const server = this.configService.getServerById(serverId);
     if (!server) {
-      return false;
+      return { success: false };
     }
     const client = this.networkManager.getAxiosForServer(serverId);
-    const result = await safeRequest<void>(
+    const { success, resTimeMillis } = await safeRequest<void>(
       () => client.post('/api/session/refresh'),
       server.name,
       'refresh'
     );
-    if (result.success) {
+    if (success) {
       logger.info(`[${server.name}] session refreshed successfully`);
       await this.safeUpdateSessionCookie(server);
-      return true;
     }
-    return false;
+    return { success, resTimeMillis };
   }
 
   public async removeServer(serverId: string): Promise<ResponseResult> {
