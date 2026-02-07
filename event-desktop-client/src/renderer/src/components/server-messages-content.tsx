@@ -27,7 +27,8 @@ const ServerMessagesContent: React.FC = (): React.ReactElement | null => {
       await AppToaster.error('None connected servers');
       return;
     }
-    selectServer(activeSessions[0]);
+    const [firstActiveSession] = activeSessions;
+    selectServer(firstActiveSession);
   };
 
   if (!selectedServerId || !selectedServerName) {
