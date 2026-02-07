@@ -24,6 +24,7 @@ type AppState = {
   closeServersDrawer: () => void;
   openAddServerDrawer: () => void;
   closeAddServerDrawer: () => void;
+  updateHeartbeat: (serverId: string, status: boolean, resTimeMillis?: number) => void;
 };
 
 export const useAppStore = create<AppState>(set => ({
@@ -77,4 +78,25 @@ export const useAppStore = create<AppState>(set => ({
   closeServersDrawer: () => set({ serversDrawerActive: false }),
   openAddServerDrawer: () => set({ addServerDrawerActive: true }),
   closeAddServerDrawer: () => set({ addServerDrawerActive: false }),
+  updateHeartbeat: (serverId, status, resTimeMillis) =>
+    set(prevState => {
+      if (!prevState.servers.has(serverId)) {
+        return prevState;
+      }
+      const newServers = new Map(prevState.servers);
+      const existingServer = newServers.get(serverId);
+      if (!existingServer) {
+        return prevState;
+      }
+      newServers.set(serverId, {
+        ...existingServer,
+        lastHeartbeatTimestamp: Date.now(),
+        lastHeartbeatStatus: status,
+        lastHeartbeatResTimeMillis: resTimeMillis,
+      });
+      return {
+        ...prevState,
+        servers: newServers,
+      };
+    }),
 }));

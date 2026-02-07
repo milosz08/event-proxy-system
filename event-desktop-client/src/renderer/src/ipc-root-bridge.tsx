@@ -2,7 +2,8 @@ import { useAppStore } from '@renderer/store/use-app-store';
 import React, { useEffect } from 'react';
 
 const IpcRootBridge: React.FC = (): null => {
-  const { setServers, setActiveSessions, removeActiveSession, selectServer } = useAppStore();
+  const { setServers, setActiveSessions, removeActiveSession, selectServer, updateHeartbeat } =
+    useAppStore();
 
   useEffect(() => {
     window.api.getServers().then(setServers);
@@ -16,11 +17,13 @@ const IpcRootBridge: React.FC = (): null => {
         selectServer(ids[0]);
       }
     });
+    const onHeartbeat = window.api.onHeartbeat(updateHeartbeat);
     return () => {
       onSessionExpired();
       onActiveSessions();
+      onHeartbeat();
     };
-  }, [removeActiveSession, selectServer, setActiveSessions, setServers]);
+  }, [removeActiveSession, selectServer, setActiveSessions, setServers, updateHeartbeat]);
 
   return null;
 };

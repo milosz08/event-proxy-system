@@ -19,6 +19,7 @@ export class AuthService {
     private configService: ServerConfigService,
     private networkManager: NetworkSessionManager,
     private heartbeatService: SessionHeartbeatService,
+    private onHeartbeat: (serverId: string, status: boolean, resTimeMillis?: number) => void,
     private onSessionExpired: (serverId: string) => void
   ) {}
 
@@ -203,7 +204,8 @@ export class AuthService {
     this.heartbeatService.start(
       server,
       async () => {
-        const success = await this.refreshSession(serverId);
+        const { success, resTimeMillis } = await this.refreshSession(serverId);
+        this.onHeartbeat(serverId, success, resTimeMillis);
         if (!success) {
           return false;
         }

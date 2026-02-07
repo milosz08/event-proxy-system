@@ -7,6 +7,9 @@ declare global {
       addServer: (data: ServerInput) => Promise<string>;
       getServers: () => Promise<ServerConfigDTO[]>;
       removeServer: (serverId: string) => Promise<ResponseResult>;
+      onHeartbeat: (
+        callback: (serverId: string, status: boolean, resTimeMillis?: number) => void
+      ) => () => void;
       // auth
       connect: (serverId: string) => Promise<LoginResult>;
       disconnect: (serverId: string) => Promise<boolean>;

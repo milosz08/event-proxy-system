@@ -12,6 +12,18 @@ const api = {
   removeServer: (serverId: string): Promise<ResponseResult> => {
     return ipcRenderer.invoke('server:remove', serverId);
   },
+  onHeartbeat: (callback: (serverId: string, status: boolean, resTimeMillis?: number) => void) => {
+    const listener = (
+      _: IpcRendererEvent,
+      serverId: string,
+      status: boolean,
+      resTimeMillis?: number
+    ): void => callback(serverId, status, resTimeMillis);
+    ipcRenderer.on('server:heartbeat', listener);
+    return () => {
+      ipcRenderer.removeListener('server:heartbeat', listener);
+    };
+  },
   // auth
   connect: (serverId: string): Promise<LoginResult> => {
     return ipcRenderer.invoke('auth:connect', serverId);

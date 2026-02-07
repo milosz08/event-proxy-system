@@ -57,11 +57,17 @@ const onReady = async (): Promise<void> => {
   const configService = new ServerConfigService();
   const networkManager = new NetworkSessionManager(configService);
   const heartbeatService = new SessionHeartbeatService();
-  const authService = new AuthService(configService, networkManager, heartbeatService, serverId => {
-    if (!mainWindow.isDestroyed()) {
+  const authService = new AuthService(
+    configService,
+    networkManager,
+    heartbeatService,
+    (serverId, status, resTimeMillis) => {
+      mainWindow.webContents.send('server:heartbeat', serverId, status, resTimeMillis);
+    },
+    serverId => {
       mainWindow.webContents.send('auth:session-expired', serverId);
     }
-  });
+  );
 
   // ipc servers
   ipcMain.handle('server:add', async (_, data) => {
