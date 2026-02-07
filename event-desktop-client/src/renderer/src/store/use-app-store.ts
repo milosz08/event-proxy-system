@@ -1,12 +1,7 @@
+import { ServerConfigDTO } from '@shared-types/shared';
 import { create } from 'zustand';
 
-export type ServerConfig = {
-  id: string;
-  name: string;
-  url: string;
-  username: string;
-  unreadNotifications: number;
-};
+export type ServerConfig = Omit<ServerConfigDTO, 'hasDefaultPassword'>;
 
 type AppState = {
   // state

@@ -8,6 +8,7 @@ export type ServerInput = {
 export type ResponseResult = {
   success: boolean;
   error?: string;
+  resTimeMillis?: number;
 };
 
 export type LoginResult = {
@@ -16,9 +17,9 @@ export type LoginResult = {
 
 export type ServerConfigDTO = {
   id: string;
-  name: string;
-  url: string;
-  username: string;
   hasDefaultPassword?: boolean;
   unreadNotifications: number;
-};
+  lastHeartbeatTimestamp?: number; // as timestamp
+  lastHeartbeatStatus?: boolean;
+  lastHeartbeatResTimeMillis?: number;
+} & Omit<ServerInput, 'password'>;

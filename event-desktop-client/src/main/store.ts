@@ -1,14 +1,11 @@
 import crypto from 'crypto';
 import Store from 'electron-store';
-import { ServerInput } from '../@types/shared';
+import { ServerConfigDTO } from '../@types/shared';
 
 export type ServerConfig = {
-  id: string;
   encryptedPassword: string;
   sessionCookie?: string; // as JSON string
-  hasDefaultPassword?: boolean;
-  unreadNotifications: number;
-} & Omit<ServerInput, 'password'>;
+} & ServerConfigDTO;
 
 type RsaKeys = {
   publicKey: string;
