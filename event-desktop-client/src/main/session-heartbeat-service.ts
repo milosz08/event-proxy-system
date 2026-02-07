@@ -8,33 +8,38 @@ export class SessionHeartbeatService {
   public start(
     server: ServerConfig,
     refreshAction: () => Promise<number | false>,
-    onFailure: () => Promise<void>,
-    intervalMs: number
+    onFailure: () => Promise<void>
   ): void {
     this.stop(server);
-    const scheduleNext = (delayMs: number): void => {
-      const safeDelay = Math.max(delayMs, 20000);
-      logger.info(`[${server.name}] starting heartbeat (every ${safeDelay}ms)`);
-      const timer = setTimeout(async () => {
-        try {
-          const nextIntervalOrFalse = await refreshAction();
-          if (typeof nextIntervalOrFalse === 'boolean' && !nextIntervalOrFalse) {
-            logger.warn(`[${server.name}] heartbeat failed (session invalid)`);
-            this.stop(server);
-            await onFailure();
-          } else {
-            scheduleNext(nextIntervalOrFalse as number);
-          }
-        } catch (err) {
-          const errMsg = extractErrorMessage(err);
-          logger.error(`[${server.name}] heartbeat execution error:`, errMsg);
-          this.stop(server);
+    logger.info(`[${server.name}] starting heartbeat loop (immediate execution)`);
+    const executeCycle = async (): Promise<void> => {
+      try {
+        const nextIntervalOrFalse = await refreshAction();
+        if (!this.timers.has(server.id)) {
+          return;
         }
-      }, safeDelay);
-      timer.unref(); // prevent close blocking node process
-      this.timers.set(server.id, timer);
+        if (typeof nextIntervalOrFalse === 'boolean' && !nextIntervalOrFalse) {
+          logger.warn(`[${server.name}] heartbeat failed (session invalid)`);
+          this.stop(server);
+          await onFailure();
+        } else {
+          const delayMs = nextIntervalOrFalse as number;
+          const safeDelay = Math.max(delayMs, 20000);
+          logger.info(`[${server.name}] scheduling next heartbeat in ${safeDelay}ms`);
+
+          const nextTimer = setTimeout(executeCycle, safeDelay);
+          nextTimer.unref(); // prevent close blocking node process
+          this.timers.set(server.id, nextTimer);
+        }
+      } catch (err) {
+        const errMsg = extractErrorMessage(err);
+        logger.error(`[${server.name}] heartbeat execution error:`, errMsg);
+        this.stop(server);
+      }
     };
-    scheduleNext(intervalMs);
+    const placeholderTimer = setTimeout(() => {}, 0);
+    this.timers.set(server.id, placeholderTimer);
+    executeCycle().then(r => r);
   }
 
   public stop(server: ServerConfig): void {

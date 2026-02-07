@@ -200,7 +200,6 @@ export class AuthService {
     if (!server) {
       return;
     }
-    const intervalMs = await this.calculateSmartRefreshInterval(server);
     this.heartbeatService.start(
       server,
       async () => {
@@ -214,8 +213,7 @@ export class AuthService {
         logger.warn(`[${serverId}] auto-logout due to session expiration`);
         await this.disconnect(serverId);
         this.onSessionExpired(serverId);
-      },
-      intervalMs
+      }
     );
   }
 
