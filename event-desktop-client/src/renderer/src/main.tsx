@@ -1,5 +1,6 @@
-import { FocusStyleManager } from '@blueprintjs/core';
+import { Divider, FocusStyleManager } from '@blueprintjs/core';
 import AddServerDrawer from '@renderer/components/add-server-drawer';
+import AppFooter from '@renderer/components/app-footer';
 import AppNavbar from '@renderer/components/app-navbar';
 import ChangeDefaultPasswordPopup from '@renderer/components/change-default-password-popup';
 import ServerMessagesContent from '@renderer/components/server-messages-content';
@@ -27,6 +28,8 @@ createRoot(appMount).render(
     <AppContainer>
       <AppNavbar />
       <ServerMessagesContent />
+      <Divider compact />
+      <AppFooter />
       <ServersDrawer />
       <AddServerDrawer />
       <ChangeDefaultPasswordPopup />
