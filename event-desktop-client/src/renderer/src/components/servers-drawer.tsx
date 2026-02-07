@@ -5,13 +5,13 @@ import {
   Drawer,
   DrawerSize,
   Elevation,
-  Icon,
   Intent,
   NonIdealState,
   NonIdealStateIconSize,
 } from '@blueprintjs/core';
 import { IconNames } from '@blueprintjs/icons';
 import ConfirmAlert from '@renderer/components/confirm-alert';
+import PulsingIcon from '@renderer/components/pulsing-icon';
 import useSpinner from '@renderer/hooks/use-spinner';
 import { useAppStore } from '@renderer/store/use-app-store';
 import { AppToaster } from '@renderer/utils/app-toaster';
@@ -123,11 +123,7 @@ const ServersDrawer: React.FC = (): React.ReactElement => {
           {servers.map(({ id, name, url, username }) => (
             <ServerCard key={id} compact elevation={Elevation.ZERO}>
               <CardHeader>
-                <CardIcon
-                  icon="symbol-circle"
-                  intent={activeSessions.has(id) ? Intent.SUCCESS : Intent.NONE}
-                  size={12}
-                />
+                <PulsingIcon isConnected={activeSessions.has(id)} noMarginLeft />
                 <ServerName>{name}</ServerName>
               </CardHeader>
               <ServerInfo>
@@ -200,10 +196,6 @@ const CardHeader = styled.div`
   display: flex;
   align-items: center;
   margin-bottom: 5px;
-`;
-
-const CardIcon = styled(Icon)`
-  margin-right: 8px;
 `;
 
 const ServerName = styled.div.attrs({ className: Classes.TEXT_OVERFLOW_ELLIPSIS })`

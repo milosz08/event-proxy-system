@@ -10,6 +10,7 @@ import {
   Position,
   Tag,
 } from '@blueprintjs/core';
+import PulsingIcon from '@renderer/components/pulsing-icon';
 import { ServerConfig, useAppStore } from '@renderer/store/use-app-store';
 import React from 'react';
 import styled from 'styled-components';
@@ -34,13 +35,7 @@ const ServerOverflowSelector: React.FC = (): React.ReactElement => {
           onClick={() => selectServer(server.id)}
           text={server.name}
           title={server.url}
-          icon={
-            <SelectorIcon
-              icon="symbol-circle"
-              intent={activeSessions.has(server.id) ? Intent.SUCCESS : Intent.NONE}
-              size={12}
-            />
-          }
+          icon={<PulsingIcon isConnected={activeSessions.has(server.id)} />}
           endIcon={<ServerTag {...server} />}
         />
       )}
