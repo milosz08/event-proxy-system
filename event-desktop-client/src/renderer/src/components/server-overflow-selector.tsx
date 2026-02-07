@@ -12,7 +12,7 @@ import {
 } from '@blueprintjs/core';
 import PulsingIcon from '@renderer/components/pulsing-icon';
 import { ServerConfig, useAppStore } from '@renderer/store/use-app-store';
-import React from 'react';
+import React, { useMemo } from 'react';
 import styled from 'styled-components';
 
 const ServerOverflowSelector: React.FC = (): React.ReactElement => {
@@ -25,9 +25,18 @@ const ServerOverflowSelector: React.FC = (): React.ReactElement => {
       </Tag>
     ) : null;
 
+  const serversList = useMemo(
+    () =>
+      [...servers].map(([id, config]) => ({
+        id,
+        ...config,
+      })),
+    [servers]
+  );
+
   return (
     <OverflowList
-      items={servers}
+      items={serversList}
       visibleItemRenderer={server => (
         <Button
           key={server.id}

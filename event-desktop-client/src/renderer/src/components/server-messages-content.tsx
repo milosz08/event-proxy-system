@@ -17,8 +17,8 @@ const ServerMessagesContent: React.FC = (): React.ReactElement | null => {
 
   const [loadingConnect, runConnect] = useSpinner();
 
-  const selectedServer = useMemo(
-    () => servers.find(s => s.id === selectedServerId),
+  const selectedServerName = useMemo(
+    () => (selectedServerId ? servers.get(selectedServerId)?.name : undefined),
     [servers, selectedServerId]
   );
 
@@ -30,7 +30,7 @@ const ServerMessagesContent: React.FC = (): React.ReactElement | null => {
     selectServer(activeSessions[0]);
   };
 
-  if (!selectedServer) {
+  if (!selectedServerId || !selectedServerName) {
     return (
       <ProxyServerWaitingScreen
         title="Not following any server"
@@ -46,12 +46,12 @@ const ServerMessagesContent: React.FC = (): React.ReactElement | null => {
     await runConnect(
       () => true,
       async () => {
-        const { success, error, hasDefaultPassword } = await window.api.connect(selectedServer.id);
+        const { success, error, hasDefaultPassword } = await window.api.connect(selectedServerId);
         if (success) {
           if (hasDefaultPassword) {
-            openDefaultPasswordDialog(selectedServer.id);
+            openDefaultPasswordDialog(selectedServerId);
           }
-          addActiveSession(selectedServer.id);
+          addActiveSession(selectedServerId);
           await AppToaster.success('Connected to the server');
         }
         if (error) {
@@ -61,19 +61,19 @@ const ServerMessagesContent: React.FC = (): React.ReactElement | null => {
     );
   };
 
-  if (!activeSessions.has(selectedServer.id)) {
+  if (!activeSessions.has(selectedServerId)) {
     return (
       <ProxyServerWaitingScreen
-        title={`Not connected to server ${selectedServer.name}`}
+        title={`Not connected to server ${selectedServerName}`}
         description="You cannot connected to followed proxy server."
         loadingConnect={loadingConnect}
-        actionDescription={`Connect to server ${selectedServer.name}`}
+        actionDescription={`Connect to server ${selectedServerName}`}
         onAction={connectToServer}
       />
     );
   }
 
-  return <MainContent>SERVER: {selectedServer.name} MESSAGES CONTENT</MainContent>;
+  return <MainContent>SERVER: {selectedServerName} MESSAGES CONTENT</MainContent>;
 };
 
 const MainContent = styled.div`

@@ -39,9 +39,12 @@ const ServersDrawer: React.FC = (): React.ReactElement => {
   const [loadingDisconnect, runDisconnect] = useSpinner();
   const [loadingDelete, runDelete] = useSpinner();
 
-  const serverName = useMemo(() => servers.find(s => s.id === serverId)?.name, [servers, serverId]);
+  const serverName = useMemo(
+    () => (serverId ? servers.get(serverId)?.name : undefined),
+    [servers, serverId]
+  );
   const { connected, all } = useMemo(() => {
-    return { connected: activeSessions.size, all: servers.length };
+    return { connected: activeSessions.size, all: servers.size };
   }, [activeSessions, servers]);
 
   const handleServerConnect = async (id: string): Promise<void> => {
@@ -104,7 +107,7 @@ const ServersDrawer: React.FC = (): React.ReactElement => {
       size={DrawerSize.SMALL}>
       <div className={Classes.DRAWER_BODY}>
         <div className={Classes.DIALOG_BODY}>
-          {servers.length === 0 && (
+          {servers.size === 0 && (
             <NonIdealState
               action={
                 <Button
@@ -120,15 +123,15 @@ const ServersDrawer: React.FC = (): React.ReactElement => {
               title="No results"
             />
           )}
-          {servers.map(({ id, name, url, username }) => (
+          {[...servers].map(([id, config]) => (
             <ServerCard key={id} compact elevation={Elevation.ZERO}>
               <CardHeader>
                 <PulsingIcon isConnected={activeSessions.has(id)} noMarginLeft />
-                <ServerName>{name}</ServerName>
+                <ServerName>{config.name}</ServerName>
               </CardHeader>
               <ServerInfo>
-                <InfoRow>URL: {url}</InfoRow>
-                <InfoRow>Username: {username}</InfoRow>
+                <InfoRow>URL: {config.url}</InfoRow>
+                <InfoRow>Username: {config.username}</InfoRow>
               </ServerInfo>
               <CardActions>
                 <Button

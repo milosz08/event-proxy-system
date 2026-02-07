@@ -8,7 +8,7 @@ const AppNavbar: React.FC = (): React.ReactElement => {
   const { servers, activeSessions, openServersDrawer, openAddServerDrawer } = useAppStore();
 
   const { connected, all } = useMemo(() => {
-    return { connected: activeSessions.size, all: servers.length };
+    return { connected: activeSessions.size, all: servers.size };
   }, [activeSessions, servers]);
 
   return (
@@ -22,7 +22,7 @@ const AppNavbar: React.FC = (): React.ReactElement => {
         />
         <NavbarDivider />
       </StaticSection>
-      <DynamicSection>{servers.length > 0 && <ServerOverflowSelector />}</DynamicSection>
+      <DynamicSection>{servers.size > 0 && <ServerOverflowSelector />}</DynamicSection>
       <StaticSection align={Alignment.END}>
         <Button icon="add" text="Add proxy server" onClick={openAddServerDrawer} />
       </StaticSection>
