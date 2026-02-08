@@ -219,7 +219,10 @@ export class AuthService {
     );
   }
 
-  private async calculateSmartRefreshInterval(server: ServerConfig): Promise<number> {
+  private async calculateSmartRefreshInterval(
+    server: ServerConfig,
+    multiplier: number = 0.1
+  ): Promise<number> {
     const sessionCookie = await this.getSessionCookie(server);
     if (!sessionCookie) {
       return DEFAULT_REFRESH_MS;
@@ -238,6 +241,7 @@ export class AuthService {
     if (refreshInterval <= 0) {
       refreshInterval = timeToLive * 0.8;
     }
-    return refreshInterval;
+    const finalInterval = refreshInterval * multiplier;
+    return Math.max(2000, Math.floor(finalInterval));
   }
 }
