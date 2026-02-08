@@ -20,10 +20,10 @@ public class UpdateDefaultPasswordServlet extends HttpServlet {
   }
 
   @Override
-  protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
+  protected void doPost(HttpServletRequest req, HttpServletResponse res) {
     final String username = (String) req.getAttribute(ReqAttribute.USERNAME.name());
     if (!userDao.userHasDefaultPassword(username)) {
-      resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      res.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return; // default password already changed
     }
     final String newPassword = Objects.requireNonNull(req.getParameter("password"));

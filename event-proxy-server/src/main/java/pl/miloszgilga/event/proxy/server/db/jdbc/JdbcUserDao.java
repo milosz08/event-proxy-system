@@ -140,9 +140,7 @@ public class JdbcUserDao implements UserDao {
          final PreparedStatement ps = conn.prepareStatement(sql)) {
       ps.setString(1, username);
       try (final ResultSet rs = ps.executeQuery()) {
-        if (rs.next()) {
-          return rs.getInt(1) == 1;
-        }
+        return rs.next() ? rs.getBoolean(1) : null;
       }
     } catch (SQLException ex) {
       LOG.error("Unable to get default password info from user with username: {}. Cause: {}",
