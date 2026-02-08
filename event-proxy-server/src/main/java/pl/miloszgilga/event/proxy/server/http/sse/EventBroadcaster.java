@@ -73,11 +73,11 @@ public class EventBroadcaster implements Closeable {
     return broadcastClients.size();
   }
 
-  public void broadcastEvent(String eventSource, EmailProperties emailProperties) {
+  public void broadcastEvent(String eventSource, long eventId, EmailProperties emailProperties) {
     final JSONObject root = new JSONObject();
+    root.put("id", eventId);
     root.put("eventSource", eventSource);
     root.put("subject", emailProperties.subject());
-    root.put("rawBody", emailProperties.rawBody());
     root.put("eventTime", emailProperties.eventTime());
 
     final String rawJsonData = root.toString();

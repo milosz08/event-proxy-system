@@ -168,7 +168,7 @@ public class JdbcEventDao implements EventDao {
 
   // execute with blocking mode on every new incoming event
   @Override
-  public void persist(String eventSource, EmailProperties emailProperties) {
+  public long persist(String eventSource, EmailProperties emailProperties) {
     final String sql = String.format(
       "INSERT INTO `%s` (eventSource, subject, rawBody, eventTime, isUnread) VALUES (?,?,?,?,?)",
       TABLE_NAME
@@ -181,12 +181,23 @@ public class JdbcEventDao implements EventDao {
       ps.setTimestamp(4, Timestamp.valueOf(emailProperties.eventTime()));
       ps.setBoolean(5, true);
       final int rowsAffected = ps.executeUpdate();
-      LOG.debug("Persist event from event source: {}. Rows affected: {}. Event: {}", eventSource,
-        rowsAffected, emailProperties);
+      if (rowsAffected == 0) {
+        return -1;
+      }
+      try (ResultSet rs = ps.getGeneratedKeys()) {
+        if (!rs.next()) {
+          return -1;
+        }
+        final long generatedId = rs.getLong(1);
+        LOG.debug("Persist event from event source: {}. Rows affected: {}. Event: {}",
+          eventSource, rowsAffected, emailProperties);
+        return generatedId;
+      }
     } catch (SQLException ex) {
       LOG.error("Unable to persist event from event source: {}. Cause: {}", eventSource,
         ex.getMessage());
     }
+    return -1;
   }
 
   @Override

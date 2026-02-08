@@ -35,8 +35,8 @@ public class EmailConsumer extends AbstractThread {
           emailContent.rawBody(),
           emailContent.receivedAt()
         );
-        eventBroadcaster.broadcastEvent(emailContent.from(), properties);
-        eventDao.persist(emailContent.from(), properties);
+        final long id = eventDao.persist(emailContent.from(), properties);
+        eventBroadcaster.broadcastEvent(emailContent.from(), id, properties);
       } catch (InterruptedException ignored) {
       }
     }

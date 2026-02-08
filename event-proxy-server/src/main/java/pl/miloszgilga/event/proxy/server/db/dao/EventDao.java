@@ -19,8 +19,8 @@ public interface EventDao extends ContentInitializer {
 
   boolean makeEventRead(long id);
 
-  // executed with blocking mode
-  void persist(String eventSource, EmailProperties emailProperties);
+  // executed with blocking mode, returns persisted id
+  long persist(String eventSource, EmailProperties emailProperties);
 
   boolean deleteAllByEventSource(String eventSource);
 
