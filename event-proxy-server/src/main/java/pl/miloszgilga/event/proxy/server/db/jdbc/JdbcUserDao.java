@@ -108,8 +108,8 @@ public class JdbcUserDao implements UserDao {
   }
 
   @Override
-  public void updateUserPassword(String username, String newHashedPassword,
-                                 boolean defaultPassword) {
+  public boolean updateUserPassword(String username, String newHashedPassword,
+                                    boolean defaultPassword) {
     final String sql = String.format(
       "UPDATE `%s` SET password = ?, defaultPassword = ? WHERE username = ?;",
       TABLE_NAME
@@ -123,10 +123,12 @@ public class JdbcUserDao implements UserDao {
       if (affectedRows > 0) {
         LOG.info("Updated password for user with username: {}", username);
       }
+      return true;
     } catch (SQLException ex) {
       LOG.error("Unable to update password for user with username: {}. Cause: {}",
         username, ex.getMessage());
     }
+    return false;
   }
 
   @Override

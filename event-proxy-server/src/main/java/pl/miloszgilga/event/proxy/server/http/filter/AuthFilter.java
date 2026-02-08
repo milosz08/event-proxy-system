@@ -51,8 +51,10 @@ public class AuthFilter extends HttpFilter {
       final int sessionTtlSec = appConfig.getAsInt(AppConfig.Prop.SESSION_TTL_SEC);
       final Instant updatedSessionTime = Instant.now().plus(Duration.ofSeconds(sessionTtlSec));
 
-      sessionDao.updateSessionTime(sessionId, updatedSessionTime);
-
+      final boolean success = sessionDao.updateSessionTime(sessionId, updatedSessionTime);
+      if (!success) {
+        throw new LoginException();
+      }
       final Cookie cookie = new Cookie(Constants.COOKIE_NAME, sessionId);
       cookie.setHttpOnly(true);
       cookie.setSecure(true);

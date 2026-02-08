@@ -87,7 +87,7 @@ public class JdbcSessionDao implements SessionDao {
   }
 
   @Override
-  public void updateSessionTime(String sessionId, Instant newExpiresAt) {
+  public boolean updateSessionTime(String sessionId, Instant newExpiresAt) {
     final String sql = String.format(
       "UPDATE `%s` SET expiredAtUtc = ? WHERE sessionId = ?;",
       TABLE_NAME
@@ -100,10 +100,12 @@ public class JdbcSessionDao implements SessionDao {
       if (affectedRows > 0) {
         LOG.debug("Updated session time with session id: {}", sessionId);
       }
+      return true;
     } catch (SQLException ex) {
       LOG.error("Unable to update session time for session with id: {}. Cause: {}", sessionId,
         ex.getMessage());
     }
+    return false;
   }
 
   @Override

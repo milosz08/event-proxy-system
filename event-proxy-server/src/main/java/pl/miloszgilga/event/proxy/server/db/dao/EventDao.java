@@ -20,7 +20,7 @@ public interface EventDao extends ContentInitializer {
   // executed with blocking mode
   void persist(String eventSource, EmailProperties emailProperties);
 
-  void deleteAllByEventSource(String eventSource);
+  boolean deleteAllByEventSource(String eventSource);
 
-  void deleteSingleById(String eventSource, long id);
+  boolean deleteSingleById(long id);
 }

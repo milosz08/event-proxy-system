@@ -44,7 +44,9 @@ public class MessageAllServlet extends HttpJsonServlet {
   @Override
   protected void doDelete(HttpServletRequest req, HttpServletResponse res) {
     final String eventSource = (String) req.getAttribute("eventSource");
-    eventDao.deleteAllByEventSource(eventSource);
-    res.setStatus(HttpServletResponse.SC_NO_CONTENT);
+    final boolean success = eventDao.deleteAllByEventSource(eventSource);
+    res.setStatus(success
+      ? HttpServletResponse.SC_NO_CONTENT
+      : HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
   }
 }

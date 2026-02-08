@@ -11,7 +11,7 @@ public interface UserDao extends ContentInitializer {
 
   void createUser(String username, String hashedDefaultPassword);
 
-  void updateUserPassword(String username, String newHashedPassword, boolean customPassword);
+  boolean updateUserPassword(String username, String newHashedPassword, boolean customPassword);
 
   Boolean userHasDefaultPassword(String username);
 

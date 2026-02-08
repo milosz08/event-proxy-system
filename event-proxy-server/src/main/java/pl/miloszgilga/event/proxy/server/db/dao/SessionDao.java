@@ -11,7 +11,7 @@ public interface SessionDao extends ContentInitializer {
 
   SessionData getSession(String sessionId);
 
-  void updateSessionTime(String sessionId, Instant newExpiresAt);
+  boolean updateSessionTime(String sessionId, Instant newExpiresAt);
 
   void destroySession(String sessionId);
 

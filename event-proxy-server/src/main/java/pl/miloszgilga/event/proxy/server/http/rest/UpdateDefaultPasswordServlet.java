@@ -28,7 +28,9 @@ public class UpdateDefaultPasswordServlet extends HttpServlet {
     }
     final String newPassword = Objects.requireNonNull(req.getParameter("password"));
     final String passwordHash = instancePasswordManager.hash(newPassword);
-    userDao.updateUserPassword(username, passwordHash, false);
-    resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+    final boolean success = userDao.updateUserPassword(username, passwordHash, false);
+    res.setStatus(success
+      ? HttpServletResponse.SC_NO_CONTENT
+      : HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
   }
 }

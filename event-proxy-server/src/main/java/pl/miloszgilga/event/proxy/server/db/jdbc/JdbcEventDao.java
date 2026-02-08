@@ -175,35 +175,37 @@ public class JdbcEventDao implements EventDao {
   }
 
   @Override
-  public void deleteAllByEventSource(String eventSource) {
+  public boolean deleteAllByEventSource(String eventSource) {
     final String sql = String.format("DELETE FROM `%s` WHERE eventSource = ?;", TABLE_NAME);
     try (final Connection conn = dbConnectionPool.getConnection();
          final PreparedStatement ps = conn.prepareStatement(sql)) {
       ps.setString(1, eventSource);
       final int affectedRows = ps.executeUpdate(sql);
-      LOG.warn("Deleted all rows ({}) from event source: {}", affectedRows, eventSource);
+      if (affectedRows > 0) {
+        LOG.warn("Deleted all rows ({}) from event source: {}", affectedRows, eventSource);
+      }
+      return true;
     } catch (SQLException ex) {
       LOG.error("Unable to delete all from event source: {}. Cause: {}", eventSource,
         ex.getMessage());
     }
+    return false;
   }
 
   @Override
-  public void deleteSingleById(String eventSource, long id) {
-    final String sql = String.format("""
-      DELETE FROM `%s` WHERE eventSource = ? AND id = ?;
-      """, TABLE_NAME);
+  public boolean deleteSingleById(long id) {
+    final String sql = String.format("DELETE FROM `%s` WHERE id = ?;", TABLE_NAME);
     try (final Connection conn = dbConnectionPool.getConnection();
          final PreparedStatement ps = conn.prepareStatement(sql)) {
-      ps.setString(1, eventSource);
-      ps.setLong(2, id);
+      ps.setLong(1, id);
       final int affectedRows = ps.executeUpdate();
       if (affectedRows > 0) {
-        LOG.info("Deleted row with id: {} from event source: {}", id, eventSource);
+        LOG.info("Deleted row with id: {}", id);
       }
+      return true;
     } catch (SQLException ex) {
-      LOG.error("Unable to delete record by id from event source: {}. Cause: {}", eventSource,
-        ex.getMessage());
+      LOG.error("Unable to delete record by id: {}. Cause: {}", id, ex.getMessage());
     }
+    return false;
   }
 }
