@@ -55,17 +55,22 @@ public class HttpProxyServerThread extends AbstractThread {
 
     // filters
     context.addFilter(new AuthFilter(appConfig, sessionDao), List.of(
+      "/api/event/source/all",
       "/api/logout",
-      "/api/message/*",
+      "/api/message/all",
+      "/api/message/read",
+      "/api/message",
       "/api/session/refresh",
       "/api/update/default/password",
-      "/api/event/source/all",
       "/stream/handshake",
       "/stream/events"
     ));
     context.addFilter(new CharacterEncodingFilter(), "/*");
-    context.addFilter(new IdCheckerFilter(), "/api/message");
-    context.addFilter(new EventSourceCheckerFilter(eventDao), "/api/message/*");
+    context.addFilter(new IdCheckerFilter(), List.of(
+      "/api/message/read",
+      "/api/message"
+    ));
+    context.addFilter(new EventSourceCheckerFilter(eventDao), "/api/message/all");
 
     // servlets
     context.addServlet(new EventSourceAllServlet(eventDao), "/api/event/source/all");
@@ -75,6 +80,7 @@ public class HttpProxyServerThread extends AbstractThread {
     );
     context.addServlet(new LogoutServlet(sessionDao), "/api/logout");
     context.addServlet(new MessageAllServlet(eventDao), "/api/message/all");
+    context.addServlet(new MakeMessageReadServlet(eventDao), "/api/message/read");
     context.addServlet(new MessageServlet(eventDao), "/api/message");
     context.addServlet(new SessionRefreshServlet(), "/api/session/refresh");
     context.addServlet(
