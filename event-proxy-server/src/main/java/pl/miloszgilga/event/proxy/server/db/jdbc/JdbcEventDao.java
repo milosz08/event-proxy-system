@@ -109,14 +109,11 @@ public class JdbcEventDao implements EventDao {
   }
 
   @Override
-  public MessageContentWithBody getSingleById(String eventSource, long id) {
-    final String sql = String.format("""
-         SELECT * FROM `%s` WHERE eventSource = ? AND id = ?;
-      """, TABLE_NAME);
+  public MessageContentWithBody getSingleById(long id) {
+    final String sql = String.format("SELECT * FROM `%s` WHERE id = ?;", TABLE_NAME);
     try (final Connection conn = dbConnectionPool.getConnection();
          final PreparedStatement ps = conn.prepareStatement(sql)) {
-      ps.setString(1, eventSource);
-      ps.setLong(2, id);
+      ps.setLong(1, id);
       try (final ResultSet rs = ps.executeQuery()) {
         if (rs.next()) {
           return new MessageContentWithBody(
@@ -128,8 +125,7 @@ public class JdbcEventDao implements EventDao {
         }
       }
     } catch (SQLException ex) {
-      LOG.error("Unable to get record by id from event source: {}. Cause: {}", eventSource,
-        ex.getMessage());
+      LOG.error("Unable to get record by id: {}. Cause: {}", id, ex.getMessage());
     }
     return null;
   }

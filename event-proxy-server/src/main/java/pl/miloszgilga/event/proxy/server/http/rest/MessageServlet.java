@@ -16,10 +16,8 @@ public class MessageServlet extends HttpJsonServlet {
 
   @Override
   protected String doJsonGet(HttpServletRequest req, HttpServletResponse res) {
-    final String eventSource = (String) req.getAttribute("eventSource");
     final long id = (Long) req.getAttribute("id");
-
-    final MessageContentWithBody messageContent = eventDao.getSingleById(eventSource, id);
+    final MessageContentWithBody messageContent = eventDao.getSingleById(id);
     if (messageContent == null) {
       return null;
     }
@@ -33,7 +31,6 @@ public class MessageServlet extends HttpJsonServlet {
 
   @Override
   protected void doDelete(HttpServletRequest req, HttpServletResponse res) {
-    final String eventSource = (String) req.getAttribute("eventSource");
     final long id = (Long) req.getAttribute("id");
     final boolean success = eventDao.deleteSingleById(id);
     res.setStatus(success

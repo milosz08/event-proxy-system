@@ -13,7 +13,7 @@ public interface EventDao extends ContentInitializer {
 
   Page<MessageContent> getAllByEventSource(String eventSource, int limit, int offset);
 
-  MessageContentWithBody getSingleById(String eventSource, long id);
+  MessageContentWithBody getSingleById(long id);
 
   boolean eventSourceExists(String eventSource);
 
