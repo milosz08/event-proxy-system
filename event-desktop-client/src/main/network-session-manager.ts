@@ -2,11 +2,13 @@ import type { AxiosInstance } from 'axios';
 import axios from 'axios';
 import { wrapper } from 'axios-cookiejar-support';
 import { Cookie, CookieJar } from 'tough-cookie';
-import { logger } from './logger';
+import { createScopedLogger } from './logger';
 import type { ServerConfigService } from './server-config-service';
 import type { ServerConfig } from './store';
+import { extractErrorMessage } from './utils';
 
 export class NetworkSessionManager {
+  private logger = createScopedLogger(this.constructor.name);
   private cookieJars: Map<string, CookieJar> = new Map();
 
   constructor(private configService: ServerConfigService) {}
@@ -57,10 +59,11 @@ export class NetworkSessionManager {
       const restoredCookie = Cookie.fromJSON(cookieObj);
       if (restoredCookie) {
         jar.setCookieSync(restoredCookie, server.url);
-        logger.info(`[${server.name}] restored session from store`);
+        this.logger.info(server.name, 'restored session from store');
       }
     } catch (err) {
-      logger.error(`[${server.name}] failed to restore session cookie:`, err);
+      const errMessage = extractErrorMessage(err);
+      this.logger.error(server.name, 'failed to restore session cookie', errMessage);
     }
   }
 }

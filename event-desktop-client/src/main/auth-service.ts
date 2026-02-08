@@ -28,13 +28,13 @@ export class AuthService {
     if (!server || !server.sessionCookie) {
       return false;
     }
-    logger.info(`[${server.name}] verifying existing session on startup...`);
+    this.logger.info(server.name, 'verifying existing session on startup...');
     const { success } = await this.refreshSession(serverId);
     if (success) {
       await this.startHeartbeatForServer(serverId);
       return true;
     } else {
-      logger.warn(`[${server.name}] session expired or invalid on startup`);
+      this.logger.warn(server.name, 'session expired or invalid on startup');
       await this.disconnect(serverId);
       return false;
     }
@@ -104,14 +104,14 @@ export class AuthService {
     );
 
     if (result.success) {
-      logger.info(`[${server.name}] remote logout successful`);
+      this.logger.info(server.name, 'remote logout successful');
     } else {
-      logger.warn(`[${server.name}] remote logout failed, cleaning locally`);
+      this.logger.warn(server.name, 'remote logout failed, cleaning locally');
     }
     this.networkManager.clearSession(serverId);
     this.configService.updateServerSessionData(serverId, undefined, undefined);
 
-    logger.info(`[${server.name}] logged out locally.`);
+    this.logger.info(server.name, 'logged out locally');
     return true;
   }
 
@@ -127,7 +127,7 @@ export class AuthService {
       'refresh'
     );
     if (success) {
-      logger.info(`[${server.name}] session refreshed successfully`);
+      this.logger.info(server.name, 'session refreshed successfully');
       await this.safeUpdateSessionCookie(server);
     }
     return { success, resTimeMillis };
@@ -165,7 +165,7 @@ export class AuthService {
       'updateDefaultPassword'
     );
     if (result.success) {
-      logger.info(`[${server.name}] successfully updated password`);
+      this.logger.info(server.name, 'successfully updated password');
       this.configService.updateServerPassword(serverId, newPassword);
     }
     return result;
@@ -212,9 +212,9 @@ export class AuthService {
         return await this.calculateSmartRefreshInterval(server);
       },
       async () => {
-        logger.warn(`[${serverId}] auto-logout due to session expiration`);
-        await this.disconnect(serverId);
-        this.onSessionExpired(serverId);
+        this.logger.warn(server.name, 'auto-logout due to session expiration');
+        await this.disconnect(server.id);
+        this.handlers.onSessionExpired(server.id);
       }
     );
   }
