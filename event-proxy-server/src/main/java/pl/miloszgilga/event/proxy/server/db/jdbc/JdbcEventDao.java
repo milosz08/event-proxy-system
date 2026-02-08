@@ -32,7 +32,8 @@ public class JdbcEventDao implements EventDao {
           eventSource TEXT NOT NULL,
           subject TEXT NOT NULL,
           rawBody TEXT NOT NULL,
-          eventTime TIMESTAMP NOT NULL
+          eventTime TIMESTAMP NOT NULL,
+          isUnread INTEGER DEFAULT 0 CHECK (isUnread IN (0, 1))
         );
       """, TABLE_NAME);
     try (final Connection conn = dbConnectionPool.getConnection();
@@ -87,7 +88,8 @@ public class JdbcEventDao implements EventDao {
             final MessageContent messageContent = new MessageContent(
               rs.getLong("id"),
               rs.getString("subject"),
-              rs.getTimestamp("eventTime").toLocalDateTime()
+              rs.getTimestamp("eventTime").toLocalDateTime(),
+              rs.getBoolean("isUnread")
             );
             results.add(messageContent);
           }
@@ -120,7 +122,8 @@ public class JdbcEventDao implements EventDao {
             rs.getLong("id"),
             rs.getString("subject"),
             rs.getString("rawBody"),
-            rs.getTimestamp("eventTime").toLocalDateTime()
+            rs.getTimestamp("eventTime").toLocalDateTime(),
+            rs.getBoolean("isUnread")
           );
         }
       }
@@ -148,11 +151,26 @@ public class JdbcEventDao implements EventDao {
     return false;
   }
 
+  @Override
+  public boolean makeEventRead(long id) {
+    final String sql = String.format("UPDATE `%s` SET isUnread = 0 WHERE id = ?", TABLE_NAME);
+    try (final Connection conn = dbConnectionPool.getConnection();
+         final PreparedStatement ps = conn.prepareStatement(sql)) {
+      ps.setLong(1, id);
+      final int rowsAffected = ps.executeUpdate();
+      LOG.debug("Make event read with id: {}. Rows affected: {}.", id, rowsAffected);
+      return true;
+    } catch (SQLException ex) {
+      LOG.error("Unable to make event with id: {} read. Cause: {}", id, ex.getMessage());
+    }
+    return false;
+  }
+
   // execute with blocking mode on every new incoming event
   @Override
   public void persist(String eventSource, EmailProperties emailProperties) {
     final String sql = String.format(
-      "INSERT INTO `%s` (eventSource, subject, rawBody, eventTime) VALUES (?,?,?,?)",
+      "INSERT INTO `%s` (eventSource, subject, rawBody, eventTime, isUnread) VALUES (?,?,?,?,?)",
       TABLE_NAME
     );
     try (final Connection conn = dbConnectionPool.getConnection();
@@ -161,6 +179,7 @@ public class JdbcEventDao implements EventDao {
       ps.setString(2, emailProperties.subject());
       ps.setString(3, emailProperties.rawBody());
       ps.setTimestamp(4, Timestamp.valueOf(emailProperties.eventTime()));
+      ps.setBoolean(5, true);
       final int rowsAffected = ps.executeUpdate();
       LOG.debug("Persist event from event source: {}. Rows affected: {}. Event: {}", eventSource,
         rowsAffected, emailProperties);
