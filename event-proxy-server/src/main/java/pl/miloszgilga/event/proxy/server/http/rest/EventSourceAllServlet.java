@@ -3,32 +3,24 @@ package pl.miloszgilga.event.proxy.server.http.rest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.json.JSONArray;
-import org.json.JSONObject;
-import pl.miloszgilga.event.proxy.server.http.I18n;
+import pl.miloszgilga.event.proxy.server.db.dao.EventDao;
 import pl.miloszgilga.event.proxy.server.http.HttpJsonServlet;
-import pl.miloszgilga.event.proxy.server.parser.EmailParser;
 
 import java.util.List;
-import java.util.Locale;
 
 public class EventSourceAllServlet extends HttpJsonServlet {
-  private final I18n i18n;
-  private final List<EmailParser> emailParsers;
+  private final EventDao eventDao;
 
-  public EventSourceAllServlet(I18n i18n, List<EmailParser> emailParsers) {
-    this.i18n = i18n;
-    this.emailParsers = emailParsers;
+  public EventSourceAllServlet(EventDao eventDao) {
+    this.eventDao = eventDao;
   }
 
   @Override
   protected String doJsonGet(HttpServletRequest req, HttpServletResponse res) {
-    final Locale locale = req.getLocale();
+    final List<String> eventSourcesNames = eventDao.getEventSources();
     final JSONArray eventSources = new JSONArray();
-    for (final EmailParser emailParser : emailParsers) {
-      final JSONObject eventSource = new JSONObject();
-      eventSource.put("name", emailParser.parserName());
-      eventSource.put("i18n", i18n.getMessage(emailParser.parserName() + ".subject", locale));
-      eventSources.put(eventSource);
+    for (final String eventSourceName : eventSourcesNames) {
+      eventSources.put(eventSourceName);
     }
     return eventSources.toString();
   }

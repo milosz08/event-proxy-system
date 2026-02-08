@@ -1,19 +1,24 @@
 package pl.miloszgilga.event.proxy.server.db.dao;
 
+import pl.miloszgilga.event.proxy.server.db.dto.MessageContent;
+import pl.miloszgilga.event.proxy.server.db.dto.MessageContentWithBody;
 import pl.miloszgilga.event.proxy.server.http.Page;
-import pl.miloszgilga.event.proxy.server.parser.EmailPropertyValue;
+import pl.miloszgilga.event.proxy.server.queue.EmailProperties;
 import pl.miloszgilga.event.proxy.server.registry.ContentInitializer;
 
 import java.util.List;
-import java.util.Map;
 
 public interface EventDao extends ContentInitializer {
-  Page<Map<String, Object>> getAllByEventSource(String eventSource, int limit, int offset);
+  List<String> getEventSources();
 
-  Map<String, Object> getSingleById(String eventSource, long id);
+  Page<MessageContent> getAllByEventSource(String eventSource, int limit, int offset);
+
+  MessageContentWithBody getSingleById(String eventSource, long id);
+
+  boolean eventSourceExists(String eventSource);
 
   // executed with blocking mode
-  void persist(String eventSource, List<EmailPropertyValue> emailProperties);
+  void persist(String eventSource, EmailProperties emailProperties);
 
   void deleteAllByEventSource(String eventSource);
 

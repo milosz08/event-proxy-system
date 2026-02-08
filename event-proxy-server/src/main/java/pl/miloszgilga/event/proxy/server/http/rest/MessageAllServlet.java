@@ -6,10 +6,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import pl.miloszgilga.event.proxy.server.Utils;
 import pl.miloszgilga.event.proxy.server.db.dao.EventDao;
+import pl.miloszgilga.event.proxy.server.db.dto.MessageContent;
 import pl.miloszgilga.event.proxy.server.http.HttpJsonServlet;
 import pl.miloszgilga.event.proxy.server.http.Page;
-
-import java.util.Map;
 
 public class MessageAllServlet extends HttpJsonServlet {
   private final EventDao eventDao;
@@ -24,18 +23,18 @@ public class MessageAllServlet extends HttpJsonServlet {
     final int limit = Utils.safetyParseInt(req.getParameter("limit"), 0);
     final int offset = Utils.safetyParseInt(req.getParameter("offset"), 0);
 
-    final Page<Map<String, Object>> all = eventDao.getAllByEventSource(eventSource, limit, offset);
+    final Page<MessageContent> all = eventDao.getAllByEventSource(eventSource, limit, offset);
 
     final JSONObject root = new JSONObject();
     root.put("totalElements", all.totalElements());
     root.put("hasNext", all.hasNext());
 
     final JSONArray elements = new JSONArray();
-    for (final Map<String, Object> rowElement : all.elements()) {
+    for (final MessageContent rowElement : all.elements()) {
       final JSONObject rowObject = new JSONObject();
-      for (final Map.Entry<String, Object> rowEntry : rowElement.entrySet()) {
-        rowObject.put(rowEntry.getKey(), rowEntry.getValue());
-      }
+      rowObject.put("id", rowElement.id());
+      rowObject.put("subject", rowElement.subject());
+      rowObject.put("eventTime", rowElement.eventTime());
       elements.put(rowObject);
     }
     root.put("elements", elements);

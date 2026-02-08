@@ -3,7 +3,6 @@ package pl.miloszgilga.event.proxy.server.smtp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.miloszgilga.event.proxy.server.AbstractThread;
-import pl.miloszgilga.event.proxy.server.parser.EmailContent;
 
 import java.io.IOException;
 import java.net.ServerSocket;

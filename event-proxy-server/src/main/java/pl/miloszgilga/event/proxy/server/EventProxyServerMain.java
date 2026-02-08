@@ -10,17 +10,12 @@ import pl.miloszgilga.event.proxy.server.db.jdbc.JdbcSessionDao;
 import pl.miloszgilga.event.proxy.server.db.jdbc.JdbcUserDao;
 import pl.miloszgilga.event.proxy.server.http.ExpiredSessionRemoval;
 import pl.miloszgilga.event.proxy.server.http.HttpProxyServerThread;
-import pl.miloszgilga.event.proxy.server.http.I18n;
 import pl.miloszgilga.event.proxy.server.http.sse.EventBroadcaster;
-import pl.miloszgilga.event.proxy.server.parser.EmailContent;
-import pl.miloszgilga.event.proxy.server.parser.EmailParser;
-import pl.miloszgilga.event.proxy.server.parser.message.DvrEmailParser;
-import pl.miloszgilga.event.proxy.server.parser.message.NasEmailParser;
 import pl.miloszgilga.event.proxy.server.queue.EmailConsumer;
 import pl.miloszgilga.event.proxy.server.registry.ContentInitializerRegistry;
+import pl.miloszgilga.event.proxy.server.smtp.EmailContent;
 import pl.miloszgilga.event.proxy.server.smtp.SmtpProxyServerThread;
 
-import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -33,7 +28,6 @@ class EventProxyServerMain implements Runnable {
   private final ExpiredSessionRemoval expiredSessionRemoval;
 
   EventProxyServerMain() {
-    final I18n i18n = new I18n();
     final AppConfig appConfig = new AppConfig();
 
     final ContentInitializerRegistry initializerRegistry = new ContentInitializerRegistry();
@@ -46,13 +40,7 @@ class EventProxyServerMain implements Runnable {
       appConfig.getAsInt(AppConfig.Prop.DB_POOL_SIZE)
     );
 
-    // register here new email parsers
-    final List<EmailParser> emailParsers = List.of(
-      new DvrEmailParser(appConfig),
-      new NasEmailParser(appConfig)
-    );
-
-    final EventDao eventDao = new JdbcEventDao(dbConnectionPool, emailParsers);
+    final EventDao eventDao = new JdbcEventDao(dbConnectionPool);
     final UserDao userDao = new JdbcUserDao(dbConnectionPool);
     final SessionDao sessionDao = new JdbcSessionDao(dbConnectionPool);
 
@@ -83,10 +71,8 @@ class EventProxyServerMain implements Runnable {
       sessionDao,
       eventDao,
       userDao,
-      emailParsers,
       appConfig,
-      instancePasswordManager,
-      i18n
+      instancePasswordManager
     );
     smtpProxyServerThread = new SmtpProxyServerThread(
       appConfig.getAsInt(AppConfig.Prop.SMTP_PORT),
@@ -95,7 +81,7 @@ class EventProxyServerMain implements Runnable {
     );
 
     initializerRegistry.init();
-    emailConsumer = new EmailConsumer(queue, emailParsers, eventBroadcaster, eventDao);
+    emailConsumer = new EmailConsumer(queue, eventBroadcaster, eventDao);
   }
 
   public static void main(String[] args) {

@@ -2,20 +2,22 @@ package pl.miloszgilga.event.proxy.server.http.sse;
 
 import jakarta.servlet.AsyncContext;
 import jakarta.servlet.http.HttpServletRequest;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.miloszgilga.event.proxy.server.Constants;
 import pl.miloszgilga.event.proxy.server.crypto.AesEncryptedBase64Data;
 import pl.miloszgilga.event.proxy.server.crypto.Crypto;
-import pl.miloszgilga.event.proxy.server.parser.EmailPropertyValue;
+import pl.miloszgilga.event.proxy.server.queue.EmailProperties;
 
 import javax.crypto.SecretKey;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.*;
 
 public class EventBroadcaster implements Closeable {
@@ -71,18 +73,12 @@ public class EventBroadcaster implements Closeable {
     return broadcastClients.size();
   }
 
-  public void broadcastEvent(String eventSource, List<EmailPropertyValue> emailProperties) {
+  public void broadcastEvent(String eventSource, EmailProperties emailProperties) {
     final JSONObject root = new JSONObject();
-    final JSONArray dataFields = new JSONArray();
-    for (final EmailPropertyValue eventProperty : emailProperties) {
-      final JSONObject property = new JSONObject();
-      property.put("name", eventProperty.name());
-      property.put("value", eventProperty.value());
-      property.put("type", eventProperty.fieldType().name());
-      dataFields.put(property);
-    }
     root.put("eventSource", eventSource);
-    root.put("dataFields", dataFields);
+    root.put("subject", emailProperties.subject());
+    root.put("rawBody", emailProperties.rawBody());
+    root.put("eventTime", emailProperties.eventTime());
 
     final String rawJsonData = root.toString();
     final Set<String> clients = broadcastClients.keySet();

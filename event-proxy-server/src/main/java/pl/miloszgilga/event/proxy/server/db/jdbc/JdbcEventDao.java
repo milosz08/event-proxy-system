@@ -4,76 +4,92 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.miloszgilga.event.proxy.server.db.DbConnectionPool;
 import pl.miloszgilga.event.proxy.server.db.dao.EventDao;
+import pl.miloszgilga.event.proxy.server.db.dto.MessageContent;
+import pl.miloszgilga.event.proxy.server.db.dto.MessageContentWithBody;
 import pl.miloszgilga.event.proxy.server.http.Page;
-import pl.miloszgilga.event.proxy.server.parser.EmailParser;
-import pl.miloszgilga.event.proxy.server.parser.EmailPropertyValue;
-import pl.miloszgilga.event.proxy.server.parser.FieldType;
+import pl.miloszgilga.event.proxy.server.queue.EmailProperties;
 
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class JdbcEventDao implements EventDao {
   private static final Logger LOG = LoggerFactory.getLogger(JdbcEventDao.class);
+  private static final String TABLE_NAME = "events";
 
   private final DbConnectionPool dbConnectionPool;
-  private final List<EmailParser> emailParsers;
 
-  public JdbcEventDao(DbConnectionPool dbConnectionPool, List<EmailParser> emailParsers) {
+  public JdbcEventDao(DbConnectionPool dbConnectionPool) {
     this.dbConnectionPool = dbConnectionPool;
-    this.emailParsers = emailParsers;
   }
 
   @Override
   public void init() {
-    // generate tables on app init for every email parsers (if this tables does not exist yet)
-    for (final EmailParser emailParser : emailParsers) {
-      final String tableName = emailParser.parserName();
-      final Map<String, FieldType> parserFields = emailParser.declareParserFields();
-
-      final StringBuilder sql = new StringBuilder();
-      sql.append(String.format("CREATE TABLE IF NOT EXISTS `%s` ( ", tableName));
-
-      sql.append("id INTEGER PRIMARY KEY AUTOINCREMENT, ");
-      for (final Map.Entry<String, FieldType> field : parserFields.entrySet()) {
-        sql.append(String.format("%s %s, ", field.getKey(), field.getValue().name()));
-      }
-      sql.setLength(sql.length() - 2);
-      sql.append(");");
-
-      try (final Connection conn = dbConnectionPool.getConnection();
-           final Statement statement = conn.createStatement()) {
-        statement.execute(sql.toString());
-        LOG.info("Init table (or skip): {} for: {}", tableName, emailParser.getClass().getName());
-      } catch (SQLException ex) {
-        LOG.error("Unable to create table: {}. Cause: {}", tableName, ex.getMessage());
-      }
+    final String sql = String.format("""
+        CREATE TABLE IF NOT EXISTS `%s` (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          eventSource TEXT NOT NULL,
+          subject TEXT NOT NULL,
+          rawBody TEXT NOT NULL,
+          eventTime TIMESTAMP NOT NULL
+        );
+      """, TABLE_NAME);
+    try (final Connection conn = dbConnectionPool.getConnection();
+         final Statement statement = conn.createStatement()) {
+      statement.execute(sql);
+      LOG.info("Init table (or skip): {}", TABLE_NAME);
+    } catch (SQLException ex) {
+      LOG.error("Unable to create table: {}. Cause: {}", TABLE_NAME, ex.getMessage());
     }
   }
 
   @Override
-  public Page<Map<String, Object>> getAllByEventSource(String eventSource, int limit, int offset) {
-    final List<Map<String, Object>> results = new ArrayList<>();
+  public List<String> getEventSources() {
+    final List<String> results = new ArrayList<>();
+
+    final String sql = String.format("""
+        SELECT DISTINCT eventSource FROM `%s` ORDER BY eventSource ASC;
+      """, TABLE_NAME);
+
+    try (final Connection conn = dbConnectionPool.getConnection();
+         final Statement statement = conn.createStatement();
+         final ResultSet rs = statement.executeQuery(sql)) {
+      while (rs.next()) {
+        results.add(rs.getString("eventSource"));
+      }
+    } catch (SQLException ex) {
+      LOG.error("Unable to get all event sources from table: {}. Cause: {}", TABLE_NAME,
+        ex.getMessage());
+      return List.of();
+    }
+    return results;
+  }
+
+  @Override
+  public Page<MessageContent> getAllByEventSource(String eventSource, int limit, int offset) {
+    final List<MessageContent> results = new ArrayList<>();
     long totalElements = 0;
 
     final String countSql = String.format("SELECT COUNT(*) FROM `%s`;", eventSource);
     final String sql = String.format("""
-        SELECT id, subject, eventTime FROM `%s` ORDER BY id DESC LIMIT ? OFFSET ?;
-      """, eventSource);
+        SELECT id, subject, eventTime FROM `%s` WHERE eventSource = ?
+        ORDER BY id DESC LIMIT ? OFFSET ?;
+      """, TABLE_NAME);
 
     try (final Connection conn = dbConnectionPool.getConnection()) {
       try (final PreparedStatement ps = conn.prepareStatement(sql)) {
-        ps.setInt(1, limit);
-        ps.setInt(2, offset);
+        ps.setString(1, eventSource);
+        ps.setInt(2, limit);
+        ps.setInt(3, offset);
         try (final ResultSet rs = ps.executeQuery()) {
-          final ResultSetMetaData metaData = rs.getMetaData();
-          final int columnCount = metaData.getColumnCount();
           while (rs.next()) {
-            // linked hashmap persist columns order
-            final Map<String, Object> row = new LinkedHashMap<>();
-            for (int i = 1; i <= columnCount; i++) {
-              row.put(metaData.getColumnName(i), rs.getObject(i));
-            }
-            results.add(row);
+            final MessageContent messageContent = new MessageContent(
+              rs.getLong("id"),
+              rs.getString("subject"),
+              rs.getTimestamp("eventTime").toLocalDateTime()
+            );
+            results.add(messageContent);
           }
         }
       }
@@ -84,7 +100,7 @@ public class JdbcEventDao implements EventDao {
         }
       }
     } catch (SQLException ex) {
-      LOG.error("Unable to get all records from table: {}. Cause: {}", eventSource,
+      LOG.error("Unable to get all records from event source: {}. Cause: {}", eventSource,
         ex.getMessage());
       return new Page<>(Collections.emptyList(), false, 0);
     }
@@ -93,77 +109,100 @@ public class JdbcEventDao implements EventDao {
   }
 
   @Override
-  public Map<String, Object> getSingleById(String eventSource, long id) {
-    final String sql = String.format("SELECT * FROM `%s` WHERE id = ?;", eventSource);
+  public MessageContentWithBody getSingleById(String eventSource, long id) {
+    final String sql = String.format("""
+         SELECT * FROM `%s` WHERE eventSource = ? AND id = ?;
+      """, TABLE_NAME);
     try (final Connection conn = dbConnectionPool.getConnection();
          final PreparedStatement ps = conn.prepareStatement(sql)) {
-      ps.setLong(1, id);
+      ps.setString(1, eventSource);
+      ps.setLong(2, id);
       try (final ResultSet rs = ps.executeQuery()) {
         if (rs.next()) {
-          final ResultSetMetaData metaData = rs.getMetaData();
-          final int columnCount = metaData.getColumnCount();
-          final Map<String, Object> row = new LinkedHashMap<>();
-          for (int i = 1; i <= columnCount; i++) {
-            row.put(metaData.getColumnName(i), rs.getObject(i));
-          }
-          return row;
+          return new MessageContentWithBody(
+            rs.getLong("id"),
+            rs.getString("subject"),
+            rs.getString("rawBody"),
+            rs.getTimestamp("eventTime").toLocalDateTime()
+          );
         }
       }
     } catch (SQLException ex) {
-      LOG.error("Unable to get record by id from table: {}. Cause: {}", eventSource,
+      LOG.error("Unable to get record by id from event source: {}. Cause: {}", eventSource,
         ex.getMessage());
     }
     return null;
   }
 
+  @Override
+  public boolean eventSourceExists(String eventSource) {
+    final String sql = String.format("""
+         SELECT COUNT(*) > 0 FROM `%s` WHERE eventSource = ?;
+      """, TABLE_NAME);
+    try (final Connection conn = dbConnectionPool.getConnection();
+         final PreparedStatement ps = conn.prepareStatement(sql)) {
+      ps.setString(1, eventSource);
+      try (final ResultSet rs = ps.executeQuery()) {
+        if (rs.next()) {
+          return rs.getBoolean(1);
+        }
+      }
+    } catch (SQLException ignored) {
+    }
+    return false;
+  }
+
   // execute with blocking mode on every new incoming event
   @Override
-  public void persist(String eventSource, List<EmailPropertyValue> emailProperties) {
+  public void persist(String eventSource, EmailProperties emailProperties) {
     final String sql = String.format(
-      "INSERT INTO `%s` (%s) VALUES (%s)",
-      eventSource,
-      String.join(",", emailProperties.stream().map(EmailPropertyValue::name).toList()),
-      String.join(",", Collections.nCopies(emailProperties.size(), "?"))
+      "INSERT INTO `%s` (eventSource, subject, rawBody, eventTime) VALUES (?,?,?,?)",
+      TABLE_NAME
     );
     try (final Connection conn = dbConnectionPool.getConnection();
-         final PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
-      for (int i = 0; i < emailProperties.size(); i++) {
-        final EmailPropertyValue emailPropertyValue = emailProperties.get(i);
-        emailPropertyValue.fieldType().executeStatement(preparedStatement, i + 1,
-          emailPropertyValue.value());
-      }
-      final int rowsAffected = preparedStatement.executeUpdate();
-      LOG.debug("Persist event from: {}. Rows affected: {}. Event: {}", eventSource, rowsAffected,
-        emailProperties);
+         final PreparedStatement ps = conn.prepareStatement(sql)) {
+      ps.setString(1, eventSource);
+      ps.setString(2, emailProperties.subject());
+      ps.setString(3, emailProperties.rawBody());
+      ps.setTimestamp(4, Timestamp.valueOf(emailProperties.eventTime()));
+      final int rowsAffected = ps.executeUpdate();
+      LOG.debug("Persist event from event source: {}. Rows affected: {}. Event: {}", eventSource,
+        rowsAffected, emailProperties);
     } catch (SQLException ex) {
-      LOG.error("Unable to persist event from: {}. Cause: {}", eventSource, ex.getMessage());
+      LOG.error("Unable to persist event from event source: {}. Cause: {}", eventSource,
+        ex.getMessage());
     }
   }
 
   @Override
   public void deleteAllByEventSource(String eventSource) {
-    final String sql = String.format("DELETE FROM `%s`;", eventSource);
+    final String sql = String.format("DELETE FROM `%s` WHERE eventSource = ?;", TABLE_NAME);
     try (final Connection conn = dbConnectionPool.getConnection();
-         final Statement statement = conn.createStatement()) {
-      final int affectedRows = statement.executeUpdate(sql);
-      LOG.warn("Deleted all rows ({}) from table: {}", affectedRows, eventSource);
+         final PreparedStatement ps = conn.prepareStatement(sql)) {
+      ps.setString(1, eventSource);
+      final int affectedRows = ps.executeUpdate(sql);
+      LOG.warn("Deleted all rows ({}) from event source: {}", affectedRows, eventSource);
     } catch (SQLException ex) {
-      LOG.error("Unable to delete all from table: {}. Cause: {}", eventSource, ex.getMessage());
+      LOG.error("Unable to delete all from event source: {}. Cause: {}", eventSource,
+        ex.getMessage());
     }
   }
 
   @Override
   public void deleteSingleById(String eventSource, long id) {
-    final String sql = String.format("DELETE FROM `%s` WHERE id = ?;", eventSource);
+    final String sql = String.format("""
+      DELETE FROM `%s` WHERE eventSource = ? AND id = ?;
+      """, TABLE_NAME);
     try (final Connection conn = dbConnectionPool.getConnection();
          final PreparedStatement ps = conn.prepareStatement(sql)) {
-      ps.setLong(1, id);
+      ps.setString(1, eventSource);
+      ps.setLong(2, id);
       final int affectedRows = ps.executeUpdate();
       if (affectedRows > 0) {
-        LOG.info("Deleted row with id: {} from table: {}", id, eventSource);
+        LOG.info("Deleted row with id: {} from event source: {}", id, eventSource);
       }
     } catch (SQLException ex) {
-      LOG.error("Unable to delete record by id from table: {}. Cause: {}", eventSource,
+      LOG.error("Unable to delete record by id from event source: {}. Cause: {}", eventSource,
         ex.getMessage());
     }
   }

@@ -6,10 +6,6 @@ import jakarta.mail.Session;
 import jakarta.mail.Transport;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
-import pl.miloszgilga.event.proxy.server.AppConfig;
-import pl.miloszgilga.event.proxy.server.parser.EmailParser;
-import pl.miloszgilga.event.proxy.server.parser.message.DvrEmailParser;
-import pl.miloszgilga.event.proxy.server.parser.message.NasEmailParser;
 
 import java.util.Properties;
 
@@ -18,7 +14,6 @@ class SmtpProxyServerThreadStandaloneClient {
   private static final int PORT = 4366;
 
   public static void main(String[] args) throws MessagingException {
-    final AppConfig appConfig = new AppConfig();
     final SmtpProxyServerThreadStandaloneClient main = new SmtpProxyServerThreadStandaloneClient();
 
     main.sendEmail(
@@ -35,7 +30,7 @@ class SmtpProxyServerThreadStandaloneClient {
         Sincerely,
         Your dlink-02C972
         """,
-      new NasEmailParser(appConfig)
+      "DLINK"
     );
     main.sendEmail(
       "Embedded Net DVR: Motion Detected On Channel A2",
@@ -48,13 +43,12 @@ class SmtpProxyServerThreadStandaloneClient {
         DVR S/N:       RESTRICTED
         CAMERA NAME(NUM):   CAM 2 Garage(A2)
         """,
-      new DvrEmailParser(appConfig)
+      "DVR"
     );
   }
 
-  private void sendEmail(String subject, String body, EmailParser parser)
+  private void sendEmail(String subject, String body, String from)
     throws MessagingException {
-    final String from = parser.senderName();
     final String to = "receiver@test";
 
     final Properties props = new Properties();

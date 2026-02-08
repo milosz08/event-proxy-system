@@ -17,12 +17,8 @@ import pl.miloszgilga.event.proxy.server.http.rest.*;
 import pl.miloszgilga.event.proxy.server.http.sse.EventBroadcaster;
 import pl.miloszgilga.event.proxy.server.http.sse.SseHandshakeServlet;
 import pl.miloszgilga.event.proxy.server.http.sse.SseServlet;
-import pl.miloszgilga.event.proxy.server.parser.EmailParser;
 
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class HttpProxyServerThread extends AbstractThread {
   private static final Logger LOG = LoggerFactory.getLogger(HttpProxyServerThread.class);
@@ -32,30 +28,22 @@ public class HttpProxyServerThread extends AbstractThread {
   private final SessionDao sessionDao;
   private final EventDao eventDao;
   private final UserDao userDao;
-  private final List<EmailParser> emailParsers;
-  private final I18n i18n;
   private final AppConfig appConfig;
   private final InstancePasswordManager instancePasswordManager;
-  private final Map<String, EmailParser> emailParserMap;
 
   private Server server;
 
   public HttpProxyServerThread(int port, EventBroadcaster eventBroadcaster, SessionDao sessionDao,
-                               EventDao eventDao, UserDao userDao, List<EmailParser> emailParsers,
-                               AppConfig appConfig, InstancePasswordManager instancePasswordManager,
-                               I18n i18n) {
+                               EventDao eventDao, UserDao userDao, AppConfig appConfig,
+                               InstancePasswordManager instancePasswordManager) {
     super("HTTP-Proxy");
     this.port = port;
     this.eventBroadcaster = eventBroadcaster;
     this.sessionDao = sessionDao;
     this.eventDao = eventDao;
     this.userDao = userDao;
-    this.emailParsers = emailParsers;
-    this.i18n = i18n;
     this.appConfig = appConfig;
     this.instancePasswordManager = instancePasswordManager;
-    emailParserMap = emailParsers.stream()
-      .collect(Collectors.toMap(EmailParser::parserName, Function.identity()));
   }
 
   @Override
@@ -77,17 +65,17 @@ public class HttpProxyServerThread extends AbstractThread {
     ));
     context.addFilter(new CharacterEncodingFilter(), "/*");
     context.addFilter(new IdCheckerFilter(), "/api/message");
-    context.addFilter(new EventSourceCheckerFilter(emailParsers), "/api/message/*");
+    context.addFilter(new EventSourceCheckerFilter(eventDao), "/api/message/*");
 
     // servlets
-    context.addServlet(new EventSourceAllServlet(i18n, emailParsers), "/api/event/source/all");
+    context.addServlet(new EventSourceAllServlet(eventDao), "/api/event/source/all");
     context.addServlet(
       new LoginServlet(appConfig, instancePasswordManager, userDao, sessionDao),
       "/api/login"
     );
     context.addServlet(new LogoutServlet(sessionDao), "/api/logout");
     context.addServlet(new MessageAllServlet(eventDao), "/api/message/all");
-    context.addServlet(new MessageServlet(i18n, eventDao, emailParserMap), "/api/message");
+    context.addServlet(new MessageServlet(eventDao), "/api/message");
     context.addServlet(new SessionRefreshServlet(), "/api/session/refresh");
     context.addServlet(
       new UpdateDefaultPasswordServlet(userDao, instancePasswordManager),
