@@ -4,17 +4,20 @@ import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.OAEPParameterSpec;
+import javax.crypto.spec.PSource;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import java.util.Base64;
 
 public class Crypto {
-  private static final String ASYMMETRIC_ALGORITHM = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding";
+  private static final String ASYMMETRIC_ALGORITHM = "RSA/ECB/OAEPPadding";
   private static final String SYMMETRIC_ALGORITHM = "AES/GCM/NoPadding";
   private static final int AES_KEY_SIZE = 256;
   private static final int GCM_IV_LENGTH = 12; // 96 bits
@@ -37,7 +40,13 @@ public class Crypto {
 
   public static String encryptAesKey(SecretKey aesKey, PublicKey pubKey) throws Exception {
     final Cipher rsaCipher = Cipher.getInstance(ASYMMETRIC_ALGORITHM);
-    rsaCipher.init(Cipher.ENCRYPT_MODE, pubKey);
+    final OAEPParameterSpec oaepParams = new OAEPParameterSpec(
+      "SHA-256",
+      "MGF1",
+      MGF1ParameterSpec.SHA256,
+      PSource.PSpecified.DEFAULT
+    );
+    rsaCipher.init(Cipher.ENCRYPT_MODE, pubKey, oaepParams);
     final byte[] encryptedAesKeyBytes = rsaCipher.doFinal(aesKey.getEncoded());
     return Base64.getEncoder().encodeToString(encryptedAesKeyBytes);
   }
