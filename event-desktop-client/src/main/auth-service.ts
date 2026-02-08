@@ -1,27 +1,52 @@
 import { Cookie } from 'tough-cookie';
 import { LoginResult, ResponseResult } from '../@types/shared';
-import { logger } from './logger';
+import { createScopedLogger } from './logger';
 import type { NetworkSessionManager } from './network-session-manager';
+import { safeRequest } from './request';
 import type { ServerConfigService } from './server-config-service';
 import type { SessionHeartbeatService } from './session-heartbeat-service';
 import store, { ServerConfig, ensureCryptoKeys } from './store';
-import { safeRequest } from './utils';
 
 type LoginResponseData = {
   hasDefaultPassword: boolean;
+};
+
+type Handlers = {
+  onHeartbeat: (serverId: string, status: boolean, resTimeMillis?: number) => void;
+  onSessionExpired: (serverId: string) => void;
+  onConnect: (server: ServerConfig) => Promise<void>;
+  onDisconnect: (server: ServerConfig) => Promise<void>;
 };
 
 const DEFAULT_REFRESH_MS = 15 * 60 * 1000;
 const SAFETY_BUFFER_MS = 60 * 1000;
 
 export class AuthService {
+  private logger = createScopedLogger(this.constructor.name);
+
   constructor(
     private configService: ServerConfigService,
     private networkManager: NetworkSessionManager,
     private heartbeatService: SessionHeartbeatService,
-    private onHeartbeat: (serverId: string, status: boolean, resTimeMillis?: number) => void,
-    private onSessionExpired: (serverId: string) => void
+    private handlers: Handlers
   ) {}
+
+  public async autoLogin(): Promise<void> {
+    const servers = this.configService.getServers();
+    if (servers.length === 0) {
+      return;
+    }
+    this.logger.info('?', `checking sessions for ${servers.length} servers...`);
+    await Promise.allSettled(
+      servers.map(async server => {
+        const isValid = await this.initializeSession(server.id);
+        const message = isValid
+          ? 'session active, heartbeat started'
+          : 'session expired or invalid';
+        this.logger.info(server.name, message);
+      })
+    );
+  }
 
   public async initializeSession(serverId: string): Promise<boolean> {
     const server = this.configService.getServerById(serverId);
@@ -31,7 +56,8 @@ export class AuthService {
     this.logger.info(server.name, 'verifying existing session on startup...');
     const { success } = await this.refreshSession(serverId);
     if (success) {
-      await this.startHeartbeatForServer(serverId);
+      await this.startHeartbeatForServer(server);
+      await this.handlers.onConnect(server);
       return true;
     } else {
       this.logger.warn(server.name, 'session expired or invalid on startup');
@@ -61,7 +87,7 @@ export class AuthService {
     params.append('clientId', clientId);
     params.append('pubKey', cleanPubKey);
 
-    const client = this.networkManager.getAxiosForServer(serverId);
+    const client = this.networkManager.getAxiosForServer(server);
     this.heartbeatService.stop(server);
 
     const result = await safeRequest<LoginResponseData>(
@@ -80,8 +106,9 @@ export class AuthService {
 
     const sessionCookieFound = await this.safeUpdateSessionCookie(server, hasDefaultPassword);
     if (sessionCookieFound) {
-      logger.info(`[${server.name}] login successfully.`);
-      await this.startHeartbeatForServer(serverId);
+      this.logger.info(server.name, 'login successfully.');
+      await this.startHeartbeatForServer(server);
+      await this.handlers.onConnect(server);
     }
     return {
       success: sessionCookieFound,
@@ -96,7 +123,8 @@ export class AuthService {
       return true;
     }
     this.heartbeatService.stop(server);
-    const client = this.networkManager.getAxiosForServer(serverId);
+    await this.handlers.onDisconnect(server);
+    const client = this.networkManager.getAxiosForServer(server);
     const result = await safeRequest<void>(
       () => client.delete('/api/logout'),
       server.name,
@@ -120,7 +148,7 @@ export class AuthService {
     if (!server) {
       return { success: false };
     }
-    const client = this.networkManager.getAxiosForServer(serverId);
+    const client = this.networkManager.getAxiosForServer(server);
     const { success, resTimeMillis } = await safeRequest<void>(
       () => client.post('/api/session/refresh'),
       server.name,
@@ -140,7 +168,7 @@ export class AuthService {
     }
     await this.disconnect(serverId);
     this.configService.removeServer(serverId);
-    logger.info(`[${server.name}] disconnected and removed from store`);
+    this.logger.info(server.name, `disconnected and removed from store`);
     return { success: true };
   }
 
@@ -155,7 +183,7 @@ export class AuthService {
     const params = new URLSearchParams();
     params.append('password', newPassword);
 
-    const client = this.networkManager.getAxiosForServer(serverId);
+    const client = this.networkManager.getAxiosForServer(server);
     const result = await safeRequest<void>(
       () =>
         client.post('/api/update/default/password', params, {
@@ -196,16 +224,12 @@ export class AuthService {
     return !!sessionCookie;
   }
 
-  private async startHeartbeatForServer(serverId: string): Promise<void> {
-    const server = this.configService.getServerById(serverId);
-    if (!server) {
-      return;
-    }
+  private async startHeartbeatForServer(server: ServerConfig): Promise<void> {
     this.heartbeatService.start(
       server,
       async () => {
-        const { success, resTimeMillis } = await this.refreshSession(serverId);
-        this.onHeartbeat(serverId, success, resTimeMillis);
+        const { success, resTimeMillis } = await this.refreshSession(server.id);
+        this.handlers.onHeartbeat(server.id, success, resTimeMillis);
         if (!success) {
           return false;
         }

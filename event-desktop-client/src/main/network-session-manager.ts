@@ -13,15 +13,11 @@ export class NetworkSessionManager {
 
   constructor(private configService: ServerConfigService) {}
 
-  public getAxiosForServer(serverId: string): AxiosInstance {
-    const server = this.configService.getServerById(serverId);
-    if (!server) {
-      throw new Error(`unable to find server with id: ${serverId}`);
-    }
+  public getAxiosForServer({ id, url }: ServerConfig): AxiosInstance {
     return wrapper(
       axios.create({
-        baseURL: server.url,
-        jar: this.getJarForServer(serverId),
+        baseURL: url,
+        jar: this.getJarForServer(id),
         withCredentials: true,
       })
     );

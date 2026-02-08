@@ -94,7 +94,8 @@ const onReady = async (): Promise<void> => {
     return await authService.updateDefaultPassword(args.serverId, args.newPassword);
   });
 
-  await autoLogin(mainWindow, configService, authService);
+  await authService.autoLogin();
+  mainWindow.webContents.send('auth:active-sessions', authService.getActiveSessionIds());
 
   // badge
   const badge = new Badge();
@@ -107,26 +108,6 @@ const onReady = async (): Promise<void> => {
       createWindow();
     }
   });
-};
-
-const autoLogin = async (
-  mainWindow: BrowserWindow,
-  configService: ServerConfigService,
-  authService: AuthService
-): Promise<void> => {
-  const servers = configService.getServers();
-  if (servers.length === 0) {
-    return;
-  }
-  logger.info(`checking sessions for ${servers.length} servers...`);
-  await Promise.allSettled(
-    servers.map(async server => {
-      const isValid = await authService.initializeSession(server.id);
-      const message = isValid ? 'session active, heartbeat started' : 'session expired or invalid';
-      logger.info(`[${server.name}] ${message}`);
-    })
-  );
-  mainWindow.webContents.send('auth:active-sessions', authService.getActiveSessionIds());
 };
 
 const onClose = (): void => {
