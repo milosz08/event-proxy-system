@@ -5,6 +5,8 @@ import icon from '../../resources/icon.png?asset';
 import { AuthService } from './auth-service';
 import { Badge } from './badge';
 import { CryptoService } from './crypto-service';
+import { EventSourceService } from './event-source-service';
+import { EventStreamService } from './event-stream-service';
 import { NetworkSessionManager } from './network-session-manager';
 import { ServerConfigService } from './server-config-service';
 import { SessionHeartbeatService } from './session-heartbeat-service';
@@ -108,6 +110,11 @@ const onReady = async (): Promise<void> => {
 
   ipcMain.handle('auth:update-password', async (_, args) => {
     return await authService.updateDefaultPassword(args.serverId, args.newPassword);
+  });
+
+  // ipc event source
+  ipcMain.handle('event-source:all', async (_, serverId: string) => {
+    return await eventSourceService.getEventSources(serverId);
   });
 
   await authService.autoLogin();

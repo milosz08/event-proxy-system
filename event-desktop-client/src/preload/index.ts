@@ -74,6 +74,10 @@ const api = {
       ipcRenderer.removeListener('auth:active-sessions', listener);
     };
   },
+  // event source
+  getEventSources: (serverId: string): Promise<ApiResult<string[]>> => {
+    return ipcRenderer.invoke('event-source:all', serverId);
+  },
 };
 
 contextBridge.exposeInMainWorld('api', api);

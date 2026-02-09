@@ -31,6 +31,8 @@ declare global {
       updateDefaultPassword: (serverId: string, newPassword: string) => Promise<ResponseResult>;
       onSessionExpired: (callback: (serverId: string) => void) => () => void;
       onActiveSessions: (callback: (serverIds: string[]) => void) => () => void;
+      // event source
+      getEventSources: (serverId: string) => Promise<ApiResult<string[]>>;
     };
   }
 }
