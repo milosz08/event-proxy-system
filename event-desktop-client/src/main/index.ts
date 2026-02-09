@@ -64,17 +64,26 @@ const onReady = async (): Promise<void> => {
   const configService = new ServerConfigService();
   const networkManager = new NetworkSessionManager(configService);
   const heartbeatService = new SessionHeartbeatService();
-  const authService = new AuthService(
-    configService,
-    networkManager,
-    heartbeatService,
-    (serverId, status, resTimeMillis) => {
+  const eventStreamService = new EventStreamService(configService, networkManager, cryptoService, {
+    onEventMessage: (serverId, payload) => {
+      mainWindow.webContents.send('sse:message', serverId, payload);
+    },
+  });
+  const authService = new AuthService(configService, networkManager, heartbeatService, {
+    onHeartbeat: (serverId, status, resTimeMillis) => {
       mainWindow.webContents.send('server:heartbeat', serverId, status, resTimeMillis);
     },
-    serverId => {
+    onSessionExpired: serverId => {
       mainWindow.webContents.send('auth:session-expired', serverId);
-    }
-  );
+    },
+    onConnect: async server => {
+      await eventStreamService.startStream(server.id);
+    },
+    onDisconnect: async server => {
+      eventStreamService.stopStream(server.id);
+    },
+  });
+  const eventSourceService = new EventSourceService(configService, networkManager, cryptoService);
 
   // ipc servers
   ipcMain.handle('server:add', async (_, data) => {

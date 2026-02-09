@@ -1,5 +1,12 @@
 import { IpcRendererEvent, contextBridge, ipcRenderer } from 'electron';
-import { LoginResult, ResponseResult, ServerConfigDTO, ServerInput } from '../@types/shared';
+import {
+  ApiResult,
+  LoginResult,
+  ResponseResult,
+  ServerConfigDTO,
+  ServerInput,
+  SseEventMessage,
+} from '../@types/shared';
 
 const api = {
   // servers
@@ -22,6 +29,25 @@ const api = {
     ipcRenderer.on('server:heartbeat', listener);
     return () => {
       ipcRenderer.removeListener('server:heartbeat', listener);
+    };
+  },
+  // sse
+  onSseMessage: (
+    callback: (
+      serverId: string,
+      payload: SseEventMessage | undefined,
+      error: string | undefined
+    ) => void
+  ) => {
+    const listener = (
+      _: IpcRendererEvent,
+      serverId: string,
+      payload: SseEventMessage | undefined,
+      error: string | undefined
+    ): void => callback(serverId, payload, error);
+    ipcRenderer.on('sse:message', listener);
+    return () => {
+      ipcRenderer.removeListener('sse:message', listener);
     };
   },
   // auth

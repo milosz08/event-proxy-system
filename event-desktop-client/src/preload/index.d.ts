@@ -1,4 +1,11 @@
-import { LoginResult, ResponseResult, ServerConfigDTO, ServerInput } from '../@types/shared';
+import {
+  ApiResult,
+  LoginResult,
+  ResponseResult,
+  ServerConfigDTO,
+  ServerInput,
+  SseEventMessage,
+} from '../@types/shared';
 
 declare global {
   interface Window {
@@ -9,6 +16,14 @@ declare global {
       removeServer: (serverId: string) => Promise<ResponseResult>;
       onHeartbeat: (
         callback: (serverId: string, status: boolean, resTimeMillis?: number) => void
+      ) => () => void;
+      // sse
+      onSseMessage: (
+        callback: (
+          serverId: string,
+          payload: SseEventMessage | undefined,
+          error: string | undefined
+        ) => void
       ) => () => void;
       // auth
       connect: (serverId: string) => Promise<LoginResult>;
