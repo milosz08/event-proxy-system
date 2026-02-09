@@ -23,3 +23,14 @@ export type ServerConfigDTO = {
   lastHeartbeatStatus?: boolean;
   lastHeartbeatResTimeMillis?: number;
 } & Omit<ServerInput, 'password'>;
+
+export type ApiResult<T> = {
+  data?: T;
+} & ResponseResult;
+
+export type SseEventMessage = {
+  id: number;
+  eventSource: string;
+  subject: string;
+  eventTime: string;
+};
