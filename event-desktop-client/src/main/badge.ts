@@ -1,5 +1,6 @@
 import { createCanvas } from 'canvas';
-import { NativeImage, nativeImage } from 'electron';
+import type { NativeImage } from 'electron';
+import { nativeImage } from 'electron';
 
 type BadgeDescriptor = {
   nativeImage: NativeImage | null;

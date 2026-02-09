@@ -1,5 +1,5 @@
 import { createScopedLogger } from './logger';
-import { ServerConfig } from './store';
+import type { ServerConfig } from './store';
 import { extractErrorMessage } from './utils';
 
 export class SessionHeartbeatService {
