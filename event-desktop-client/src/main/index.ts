@@ -4,7 +4,7 @@ import { join } from 'path';
 import icon from '../../resources/icon.png?asset';
 import { AuthService } from './auth-service';
 import { Badge } from './badge';
-import { logger } from './logger';
+import { CryptoService } from './crypto-service';
 import { NetworkSessionManager } from './network-session-manager';
 import { ServerConfigService } from './server-config-service';
 import { SessionHeartbeatService } from './session-heartbeat-service';
@@ -54,6 +54,13 @@ const onReady = async (): Promise<void> => {
 
   const mainWindow = await createWindow();
 
+  // badge
+  const badge = new Badge();
+  if (process.platform !== 'darwin' && process.platform !== 'linux') {
+    badge.preloadBadges();
+  }
+
+  const cryptoService = new CryptoService();
   const configService = new ServerConfigService();
   const networkManager = new NetworkSessionManager(configService);
   const heartbeatService = new SessionHeartbeatService();
@@ -96,12 +103,6 @@ const onReady = async (): Promise<void> => {
 
   await authService.autoLogin();
   mainWindow.webContents.send('auth:active-sessions', authService.getActiveSessionIds());
-
-  // badge
-  const badge = new Badge();
-  if (process.platform !== 'darwin' && process.platform !== 'linux') {
-    badge.preloadBadges();
-  }
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
