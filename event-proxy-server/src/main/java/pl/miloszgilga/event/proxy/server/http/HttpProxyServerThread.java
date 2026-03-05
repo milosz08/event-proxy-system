@@ -53,7 +53,7 @@ public class HttpProxyServerThread extends AbstractThread {
     // filters
     context.addFilter(new AuthFilter(appConfig, sessionDao), List.of(
       "/api/logout",
-      "/api/event/all",
+      "/api/all/event",
       "/api/event/read",
       "/api/event",
       "/api/session/refresh",
@@ -64,7 +64,7 @@ public class HttpProxyServerThread extends AbstractThread {
     context.addFilter(new CharacterEncodingFilter(), "/*");
     context.addFilter(new IdCheckerFilter(), "/api/event/read");
     context.addFilter(new MultipleIdsCheckerFilter(), "/api/bulk/*");
-    context.addFilter(new EventSourceCheckerFilter(eventDao), "/api/event/all");
+    context.addFilter(new EventSourceCheckerFilter(eventDao), "/api/all/event");
 
     // servlets
     context.addServlet(
@@ -72,7 +72,7 @@ public class HttpProxyServerThread extends AbstractThread {
       "/api/login"
     );
     context.addServlet(new LogoutServlet(sessionDao), "/api/logout");
-    context.addServlet(new AllEventServlet(eventDao), "/api/event/all");
+    context.addServlet(new AllEventServlet(eventDao), "/api/all/event");
     context.addServlet(new MakeEventReadServlet(eventDao), "/api/event/read");
     context.addServlet(new EventServlet(eventDao), "/api/event");
     context.addServlet(new BulkEventServlet(eventDao), "/api/bulk/event");
