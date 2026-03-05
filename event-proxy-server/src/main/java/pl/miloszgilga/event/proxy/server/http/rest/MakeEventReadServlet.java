@@ -5,10 +5,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import pl.miloszgilga.event.proxy.server.db.dao.EventDao;
 import pl.miloszgilga.event.proxy.server.http.HttpJsonServlet;
 
-public class MakeMessageReadServlet extends HttpJsonServlet {
+public class MakeEventReadServlet extends HttpJsonServlet {
   private final EventDao eventDao;
 
-  public MakeMessageReadServlet(EventDao eventDao) {
+  public MakeEventReadServlet(EventDao eventDao) {
     this.eventDao = eventDao;
   }
 

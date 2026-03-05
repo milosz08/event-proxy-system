@@ -1,13 +1,13 @@
 package pl.miloszgilga.event.proxy.server.db.dao;
 
-import pl.miloszgilga.event.proxy.server.db.dto.MessageContent;
-import pl.miloszgilga.event.proxy.server.db.dto.MessageContentWithBody;
+import pl.miloszgilga.event.proxy.server.db.dto.EventContent;
+import pl.miloszgilga.event.proxy.server.db.dto.EventContentWithBody;
 import pl.miloszgilga.event.proxy.server.http.Page;
 import pl.miloszgilga.event.proxy.server.queue.EmailProperties;
 import pl.miloszgilga.event.proxy.server.registry.ContentInitializer;
 
 public interface EventDao extends ContentInitializer {
-  List<String> getEventSources();
+  Page<EventContent> getAllByEventSource(String eventSource, int limit, int offset);
 
   EventContentWithBody getSingleById(long id);
 

@@ -3,7 +3,7 @@ import {
   ResponseResult,
   ServerConfigDTO,
   ServerInput,
-  SseEventMessage,
+  SseEventPayload,
 } from '../@types/shared';
 
 declare global {
@@ -17,10 +17,10 @@ declare global {
         callback: (serverId: string, status: boolean, resTimeMillis?: number) => void
       ) => () => void;
       // sse
-      onSseMessage: (
+      onSseEvent: (
         callback: (
           serverId: string,
-          payload: SseEventMessage | undefined,
+          payload: SseEventPayload | undefined,
           error: string | undefined
         ) => void
       ) => () => void;
@@ -30,6 +30,9 @@ declare global {
       updateDefaultPassword: (serverId: string, newPassword: string) => Promise<ResponseResult>;
       onSessionExpired: (callback: (serverId: string) => void) => () => void;
       onActiveSessions: (callback: (serverIds: string[]) => void) => () => void;
+      // ui config
+      getUiConfig: () => Promise<UiConfig>;
+      updateUiConfig: (uiConfig: Partial<UiConfig>) => Promise<UiConfig>;
     };
   }
 }

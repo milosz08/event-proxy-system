@@ -4,28 +4,28 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 import pl.miloszgilga.event.proxy.server.db.dao.EventDao;
-import pl.miloszgilga.event.proxy.server.db.dto.MessageContentWithBody;
+import pl.miloszgilga.event.proxy.server.db.dto.EventContentWithBody;
 import pl.miloszgilga.event.proxy.server.http.HttpJsonServlet;
 
-public class MessageServlet extends HttpJsonServlet {
+public class EventServlet extends HttpJsonServlet {
   private final EventDao eventDao;
 
-  public MessageServlet(EventDao eventDao) {
+  public EventServlet(EventDao eventDao) {
     this.eventDao = eventDao;
   }
 
   @Override
   protected String doJsonGet(HttpServletRequest req, HttpServletResponse res) {
     final long id = (Long) req.getAttribute("id");
-    final MessageContentWithBody messageContent = eventDao.getSingleById(id);
-    if (messageContent == null) {
+    final EventContentWithBody eventContent = eventDao.getSingleById(id);
+    if (eventContent == null) {
       return null;
     }
     final JSONObject element = new JSONObject();
-    element.put("id", messageContent.id());
-    element.put("subject", messageContent.subject());
-    element.put("rawBody", messageContent.rawBody());
-    element.put("eventTime", messageContent.eventTime());
+    element.put("id", eventContent.id());
+    element.put("subject", eventContent.subject());
+    element.put("rawBody", eventContent.rawBody());
+    element.put("eventTime", eventContent.eventTime());
     return element.toString();
   }
 

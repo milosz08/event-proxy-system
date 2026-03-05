@@ -4,8 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.miloszgilga.event.proxy.server.db.DbConnectionPool;
 import pl.miloszgilga.event.proxy.server.db.dao.EventDao;
-import pl.miloszgilga.event.proxy.server.db.dto.MessageContent;
-import pl.miloszgilga.event.proxy.server.db.dto.MessageContentWithBody;
+import pl.miloszgilga.event.proxy.server.db.dto.EventContent;
+import pl.miloszgilga.event.proxy.server.db.dto.EventContentWithBody;
 import pl.miloszgilga.event.proxy.server.http.Page;
 import pl.miloszgilga.event.proxy.server.queue.EmailProperties;
 
@@ -46,8 +46,8 @@ public class JdbcEventDao implements EventDao {
   }
 
   @Override
-  public Page<MessageContent> getAllByEventSource(String eventSource, int limit, int offset) {
-    final List<MessageContent> results = new ArrayList<>();
+  public Page<EventContent> getAllByEventSource(String eventSource, int limit, int offset) {
+    final List<EventContent> results = new ArrayList<>();
     long totalElements = 0;
 
     final String countSql = String.format("SELECT COUNT(*) FROM `%s`;", eventSource);
@@ -63,13 +63,13 @@ public class JdbcEventDao implements EventDao {
         ps.setInt(3, offset);
         try (final ResultSet rs = ps.executeQuery()) {
           while (rs.next()) {
-            final MessageContent messageContent = new MessageContent(
+            final EventContent eventContent = new EventContent(
               rs.getLong("id"),
               rs.getString("subject"),
               rs.getTimestamp("eventTime").toLocalDateTime(),
               rs.getBoolean("isUnread")
             );
-            results.add(messageContent);
+            results.add(eventContent);
           }
         }
       }
@@ -89,14 +89,14 @@ public class JdbcEventDao implements EventDao {
   }
 
   @Override
-  public MessageContentWithBody getSingleById(long id) {
+  public EventContentWithBody getSingleById(long id) {
     final String sql = String.format("SELECT * FROM `%s` WHERE id = ?;", TABLE_NAME);
     try (final Connection conn = dbConnectionPool.getConnection();
          final PreparedStatement ps = conn.prepareStatement(sql)) {
       ps.setLong(1, id);
       try (final ResultSet rs = ps.executeQuery()) {
         if (rs.next()) {
-          return new MessageContentWithBody(
+          return new EventContentWithBody(
             rs.getLong("id"),
             rs.getString("subject"),
             rs.getString("rawBody"),

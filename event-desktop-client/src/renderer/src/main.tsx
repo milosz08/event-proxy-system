@@ -3,7 +3,7 @@ import AddServerDrawer from '@renderer/components/add-server-drawer';
 import AppFooter from '@renderer/components/app-footer';
 import AppNavbar from '@renderer/components/app-navbar';
 import ChangeDefaultPasswordPopup from '@renderer/components/change-default-password-popup';
-import ServerMessagesContent from '@renderer/components/server-messages-content';
+import ServerEventsContent from '@renderer/components/server-events-content';
 import ServersDrawer from '@renderer/components/servers-drawer';
 import IpcRootBridge from '@renderer/ipc-root-bridge';
 import { StrictMode } from 'react';
@@ -27,7 +27,7 @@ createRoot(appMount).render(
     <IpcRootBridge />
     <AppContainer>
       <AppNavbar />
-      <ServerMessagesContent />
+      <ServerEventsContent />
       <Divider compact />
       <AppFooter />
       <ServersDrawer />

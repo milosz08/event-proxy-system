@@ -28,9 +28,9 @@ export type ApiResult<T> = {
   data?: T;
 } & ResponseResult;
 
-export type SseEventMessage = {
+export type SseEventPayload = {
   id: number;
-  eventSource: string;
   subject: string;
+  eventSource: string;
   eventTime: string;
 };

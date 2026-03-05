@@ -6,8 +6,7 @@ import { AuthService } from './auth-service';
 import { Badge } from './badge';
 import { ConfigService } from './config-service';
 import { CryptoService } from './crypto-service';
-import { EventSourceService } from './event-source-service';
-import { EventStreamService } from './event-stream-service';
+import { EventService } from './event-service';
 import { NetworkSessionManager } from './network-session-manager';
 import { SessionHeartbeatService } from './session-heartbeat-service';
 
@@ -66,9 +65,9 @@ const onReady = async (): Promise<void> => {
   const configService = new ConfigService();
   const networkManager = new NetworkSessionManager(configService);
   const heartbeatService = new SessionHeartbeatService();
-  const eventStreamService = new EventStreamService(configService, networkManager, cryptoService, {
-    onEventMessage: (serverId, payload) => {
-      mainWindow.webContents.send('sse:message', serverId, payload);
+  const eventService = new EventService(configService, networkManager, cryptoService, {
+    onEvent: (serverId, payload) => {
+      mainWindow.webContents.send('sse:event', serverId, payload);
     },
   });
   const authService = new AuthService(configService, networkManager, heartbeatService, {
@@ -79,19 +78,17 @@ const onReady = async (): Promise<void> => {
       mainWindow.webContents.send('auth:session-expired', serverId);
     },
     onConnect: async server => {
-      await eventStreamService.startStream(server.id);
+      await eventService.startEventsStream(server.id);
     },
     onDisconnect: async server => {
-      eventStreamService.stopStream(server.id);
+      eventService.stopEventsStream(server.id);
     },
   });
-  const eventSourceService = new EventSourceService(configService, networkManager, cryptoService);
 
   // ipc servers
   ipcMain.handle('server:add', async (_, data) => {
     return configService.addServer(data.name, data.url, data.username, data.password);
   });
-
   ipcMain.handle('server:get-all', () => {
     return configService.getServers();
   });
@@ -103,18 +100,13 @@ const onReady = async (): Promise<void> => {
   ipcMain.handle('auth:connect', async (_, serverId: string) => {
     return await authService.connect(serverId);
   });
-
   ipcMain.handle('auth:disconnect', async (_, serverId: string) => {
     return await authService.disconnect(serverId);
   });
-
   ipcMain.handle('auth:update-password', async (_, args) => {
     return await authService.updateDefaultPassword(args.serverId, args.newPassword);
   });
 
-  // ipc event source
-  ipcMain.handle('event-source:all', async (_, serverId: string) => {
-    return await eventSourceService.getEventSources(serverId);
   });
 
   await authService.autoLogin();

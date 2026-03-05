@@ -6,14 +6,14 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import pl.miloszgilga.event.proxy.server.Utils;
 import pl.miloszgilga.event.proxy.server.db.dao.EventDao;
-import pl.miloszgilga.event.proxy.server.db.dto.MessageContent;
+import pl.miloszgilga.event.proxy.server.db.dto.EventContent;
 import pl.miloszgilga.event.proxy.server.http.HttpJsonServlet;
 import pl.miloszgilga.event.proxy.server.http.Page;
 
-public class MessageAllServlet extends HttpJsonServlet {
+public class EventAllServlet extends HttpJsonServlet {
   private final EventDao eventDao;
 
-  public MessageAllServlet(EventDao eventDao) {
+  public EventAllServlet(EventDao eventDao) {
     this.eventDao = eventDao;
   }
 
@@ -23,14 +23,14 @@ public class MessageAllServlet extends HttpJsonServlet {
     final int limit = Utils.safetyParseInt(req.getParameter("limit"), 0);
     final int offset = Utils.safetyParseInt(req.getParameter("offset"), 0);
 
-    final Page<MessageContent> all = eventDao.getAllByEventSource(eventSource, limit, offset);
+    final Page<EventContent> all = eventDao.getAllByEventSource(eventSource, limit, offset);
 
     final JSONObject root = new JSONObject();
     root.put("totalElements", all.totalElements());
     root.put("hasNext", all.hasNext());
 
     final JSONArray elements = new JSONArray();
-    for (final MessageContent rowElement : all.elements()) {
+    for (final EventContent rowElement : all.elements()) {
       final JSONObject rowObject = new JSONObject();
       rowObject.put("id", rowElement.id());
       rowObject.put("subject", rowElement.subject());

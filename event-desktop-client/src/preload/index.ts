@@ -4,7 +4,7 @@ import {
   ResponseResult,
   ServerConfigDTO,
   ServerInput,
-  SseEventMessage,
+  SseEventPayload,
 } from '../@types/shared';
 
 const api = {
@@ -31,22 +31,22 @@ const api = {
     };
   },
   // sse
-  onSseMessage: (
+  onSseEvent: (
     callback: (
       serverId: string,
-      payload: SseEventMessage | undefined,
+      payload: SseEventPayload | undefined,
       error: string | undefined
     ) => void
   ) => {
     const listener = (
       _: IpcRendererEvent,
       serverId: string,
-      payload: SseEventMessage | undefined,
+      payload: SseEventPayload | undefined,
       error: string | undefined
     ): void => callback(serverId, payload, error);
-    ipcRenderer.on('sse:message', listener);
+    ipcRenderer.on('sse:event', listener);
     return () => {
-      ipcRenderer.removeListener('sse:message', listener);
+      ipcRenderer.removeListener('sse:event', listener);
     };
   },
   // auth
@@ -73,6 +73,12 @@ const api = {
       ipcRenderer.removeListener('auth:active-sessions', listener);
     };
   },
+  // ui config
+  getUiConfig: (): Promise<UiConfig> => {
+    return ipcRenderer.invoke('ui-config:get');
+  },
+  updateUiConfig: (uiConfig: Partial<UiConfig>): Promise<UiConfig> => {
+    return ipcRenderer.invoke('ui-config:set', uiConfig);
   },
 };
 

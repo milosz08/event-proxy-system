@@ -5,7 +5,7 @@ import { AppToaster } from '@renderer/utils/app-toaster';
 import React, { useMemo } from 'react';
 import styled from 'styled-components';
 
-const ServerMessagesContent: React.FC = (): React.ReactElement | null => {
+const ServerEventsContent: React.FC = (): React.ReactElement | null => {
   const {
     servers,
     selectedServerId,

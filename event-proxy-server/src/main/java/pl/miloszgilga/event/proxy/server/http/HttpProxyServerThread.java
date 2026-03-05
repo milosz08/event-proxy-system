@@ -56,9 +56,9 @@ public class HttpProxyServerThread extends AbstractThread {
     // filters
     context.addFilter(new AuthFilter(appConfig, sessionDao), List.of(
       "/api/logout",
-      "/api/message/all",
-      "/api/message/read",
-      "/api/message",
+      "/api/event/all",
+      "/api/event/read",
+      "/api/event",
       "/api/session/refresh",
       "/api/update/default/password",
       "/stream/handshake",
@@ -66,10 +66,10 @@ public class HttpProxyServerThread extends AbstractThread {
     ));
     context.addFilter(new CharacterEncodingFilter(), "/*");
     context.addFilter(new IdCheckerFilter(), List.of(
-      "/api/message/read",
-      "/api/message"
+      "/api/event/read",
+      "/api/event"
     ));
-    context.addFilter(new EventSourceCheckerFilter(eventDao), "/api/message/all");
+    context.addFilter(new EventSourceCheckerFilter(eventDao), "/api/event/all");
 
     // servlets
     context.addServlet(
@@ -77,9 +77,9 @@ public class HttpProxyServerThread extends AbstractThread {
       "/api/login"
     );
     context.addServlet(new LogoutServlet(sessionDao), "/api/logout");
-    context.addServlet(new MessageAllServlet(eventDao), "/api/message/all");
-    context.addServlet(new MakeMessageReadServlet(eventDao), "/api/message/read");
-    context.addServlet(new MessageServlet(eventDao), "/api/message");
+    context.addServlet(new EventAllServlet(eventDao), "/api/event/all");
+    context.addServlet(new MakeEventReadServlet(eventDao), "/api/event/read");
+    context.addServlet(new EventServlet(eventDao), "/api/event");
     context.addServlet(new SessionRefreshServlet(), "/api/session/refresh");
     context.addServlet(
       new UpdateDefaultPasswordServlet(userDao, instancePasswordManager),
