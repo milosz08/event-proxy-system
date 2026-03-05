@@ -7,7 +7,7 @@ import pl.miloszgilga.event.proxy.server.queue.EmailProperties;
 import pl.miloszgilga.event.proxy.server.registry.ContentInitializer;
 
 public interface EventDao extends ContentInitializer {
-  Page<EventContent> getAllByEventSource(String eventSource, int limit, int offset);
+  Page<EventContent> getAllByOptionalEventSource(String eventSource, int limit, int offset);
 
   EventContentWithBody getSingleById(long id);
 
@@ -18,7 +18,7 @@ public interface EventDao extends ContentInitializer {
   // executed with blocking mode, returns persisted id
   long persist(String eventSource, EmailProperties emailProperties);
 
-  boolean deleteAllByEventSource(String eventSource);
+  boolean deleteAllByOptionalEventSource(String eventSource);
 
   boolean deleteMultipleByIds(long[] id);
 }

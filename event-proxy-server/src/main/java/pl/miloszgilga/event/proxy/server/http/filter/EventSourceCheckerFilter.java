@@ -21,7 +21,7 @@ public class EventSourceCheckerFilter extends HttpFilter {
     throws IOException, ServletException {
     final String eventSource = req.getParameter("eventSource");
     // eventSource might be null
-    if (eventSource == null || !eventDao.eventSourceExists(eventSource)) {
+    if (eventSource != null && !eventDao.eventSourceExists(eventSource)) {
       res.setStatus(HttpServletResponse.SC_NOT_FOUND);
       return;
     }

@@ -23,7 +23,7 @@ public class AllEventServlet extends HttpJsonServlet {
     final int limit = Utils.safetyParseInt(req.getParameter("limit"), 0);
     final int offset = Utils.safetyParseInt(req.getParameter("offset"), 0);
 
-    final Page<EventContent> all = eventDao.getAllByEventSource(eventSource, limit, offset);
+    final Page<EventContent> all = eventDao.getAllByOptionalEventSource(eventSource, limit, offset);
 
     final JSONObject root = new JSONObject();
     root.put("totalElements", all.totalElements());
@@ -46,7 +46,7 @@ public class AllEventServlet extends HttpJsonServlet {
   @Override
   protected void doDelete(HttpServletRequest req, HttpServletResponse res) {
     final String eventSource = (String) req.getAttribute("eventSource");
-    final boolean success = eventDao.deleteAllByEventSource(eventSource);
+    final boolean success = eventDao.deleteAllByOptionalEventSource(eventSource);
     res.setStatus(success
       ? HttpServletResponse.SC_NO_CONTENT
       : HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

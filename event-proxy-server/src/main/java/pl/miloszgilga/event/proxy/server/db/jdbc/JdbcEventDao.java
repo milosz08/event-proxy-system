@@ -46,7 +46,7 @@ public class JdbcEventDao implements EventDao {
   }
 
   @Override
-  public Page<EventContent> getAllByEventSource(String eventSource, int limit, int offset) {
+  public Page<EventContent> getAllByOptionalEventSource(String eventSource, int limit, int offset) {
     final List<EventContent> results = new ArrayList<>();
     long totalElements = 0;
 
@@ -184,11 +184,16 @@ public class JdbcEventDao implements EventDao {
   }
 
   @Override
-  public boolean deleteAllByEventSource(String eventSource) {
-    final String sql = String.format("DELETE FROM `%s` WHERE eventSource = ?;", TABLE_NAME);
+  public boolean deleteAllByOptionalEventSource(String eventSource) {
+    final String sql = String.format(
+      "DELETE FROM `%s` %s;",
+      TABLE_NAME, eventSource != null ? "WHERE eventSource = ?" : ""
+    );
     try (final Connection conn = dbConnectionPool.getConnection();
          final PreparedStatement ps = conn.prepareStatement(sql)) {
-      ps.setString(1, eventSource);
+      if (eventSource != null) {
+        ps.setString(1, eventSource);
+      }
       final int affectedRows = ps.executeUpdate(sql);
       if (affectedRows > 0) {
         LOG.warn("Deleted all rows ({}) from event source: {}", affectedRows, eventSource);
