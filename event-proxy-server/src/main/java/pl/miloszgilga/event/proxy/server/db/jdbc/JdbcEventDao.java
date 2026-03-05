@@ -70,6 +70,7 @@ public class JdbcEventDao implements EventDao {
               rs.getLong("id"),
               rs.getString("subject"),
               rs.getTimestamp("eventTime").toLocalDateTime(),
+              rs.getString("eventSource"),
               rs.getBoolean("isUnread")
             );
             results.add(eventContent);
@@ -104,6 +105,7 @@ public class JdbcEventDao implements EventDao {
             rs.getString("subject"),
             rs.getString("rawBody"),
             rs.getTimestamp("eventTime").toLocalDateTime(),
+            rs.getString("eventSource"),
             rs.getBoolean("isUnread")
           );
         }

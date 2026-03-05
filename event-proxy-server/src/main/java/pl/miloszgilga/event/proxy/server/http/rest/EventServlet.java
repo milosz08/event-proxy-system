@@ -26,6 +26,8 @@ public class EventServlet extends HttpJsonServlet {
     element.put("subject", eventContent.subject());
     element.put("rawBody", eventContent.rawBody());
     element.put("eventTime", eventContent.eventTime());
+    element.put("eventSource", eventContent.eventSource());
+    element.put("isUnread", eventContent.isUnread());
     return element.toString();
   }
 

@@ -35,6 +35,8 @@ public class EventAllServlet extends HttpJsonServlet {
       rowObject.put("id", rowElement.id());
       rowObject.put("subject", rowElement.subject());
       rowObject.put("eventTime", rowElement.eventTime());
+      rowObject.put("eventSource", rowElement.eventSource());
+      rowObject.put("isUnread", rowElement.isUnread());
       elements.put(rowObject);
     }
     root.put("elements", elements);
