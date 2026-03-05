@@ -12,6 +12,7 @@ type AppState = {
   updateDefaultPasswordServerId: string | null;
   serversDrawerActive: boolean;
   addServerDrawerActive: boolean;
+  selectedEvents: number[];
   // actions
   setServers: (servers: ServerConfig[]) => void;
   setUiConfig: (uiConfig: UiConfig) => void;
@@ -26,6 +27,8 @@ type AppState = {
   closeServersDrawer: () => void;
   openAddServerDrawer: () => void;
   closeAddServerDrawer: () => void;
+  addSelectedEvents: (ids: number[]) => void;
+  removeSelectedEvents: (ids: number[]) => void;
   updateHeartbeat: (serverId: string, status: boolean, resTimeMillis?: number) => void;
 };
 
@@ -40,6 +43,7 @@ export const useAppStore = create<AppState>(set => ({
   updateDefaultPasswordServerId: null,
   serversDrawerActive: false,
   addServerDrawerActive: false,
+  selectedEvents: [],
   // actions
   setServers: servers =>
     set(prevState => ({
@@ -84,6 +88,16 @@ export const useAppStore = create<AppState>(set => ({
   closeServersDrawer: () => set({ serversDrawerActive: false }),
   openAddServerDrawer: () => set({ addServerDrawerActive: true }),
   closeAddServerDrawer: () => set({ addServerDrawerActive: false }),
+  addSelectedEvents: ids =>
+    set(prevState => ({
+      ...prevState,
+      selectedEvents: [...ids, ...prevState.selectedEvents],
+    })),
+  removeSelectedEvents: ids =>
+    set(prevState => ({
+      ...prevState,
+      selectedEvents: prevState.selectedEvents.filter(eventId => ids.includes(eventId)),
+    })),
   updateHeartbeat: (serverId, status, resTimeMillis) =>
     set(prevState => {
       if (!prevState.servers.has(serverId)) {
