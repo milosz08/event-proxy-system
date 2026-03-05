@@ -10,10 +10,10 @@ import pl.miloszgilga.event.proxy.server.db.dto.EventContent;
 import pl.miloszgilga.event.proxy.server.http.HttpJsonServlet;
 import pl.miloszgilga.event.proxy.server.http.Page;
 
-public class EventAllServlet extends HttpJsonServlet {
+public class AllEventServlet extends HttpJsonServlet {
   private final EventDao eventDao;
 
-  public EventAllServlet(EventDao eventDao) {
+  public AllEventServlet(EventDao eventDao) {
     this.eventDao = eventDao;
   }
 

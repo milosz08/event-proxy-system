@@ -72,7 +72,7 @@ public class HttpProxyServerThread extends AbstractThread {
       "/api/login"
     );
     context.addServlet(new LogoutServlet(sessionDao), "/api/logout");
-    context.addServlet(new EventAllServlet(eventDao), "/api/event/all");
+    context.addServlet(new AllEventServlet(eventDao), "/api/event/all");
     context.addServlet(new MakeEventReadServlet(eventDao), "/api/event/read");
     context.addServlet(new EventServlet(eventDao), "/api/event");
     context.addServlet(new BulkEventServlet(eventDao), "/api/bulk/event");
