@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 import pl.miloszgilga.event.proxy.server.db.dao.EventDao;
 import pl.miloszgilga.event.proxy.server.db.dto.EventContentWithBody;
+import pl.miloszgilga.event.proxy.server.http.EventTableSource;
 import pl.miloszgilga.event.proxy.server.http.HttpJsonServlet;
 
 public class EventServlet extends HttpJsonServlet {
@@ -17,7 +18,9 @@ public class EventServlet extends HttpJsonServlet {
   @Override
   protected String doJsonGet(HttpServletRequest req, HttpServletResponse res) {
     final long id = (Long) req.getAttribute("id");
-    final EventContentWithBody eventContent = eventDao.getSingleById(id);
+    final EventTableSource tableSource = (EventTableSource) req.getAttribute("eventTable");
+
+    final EventContentWithBody eventContent = eventDao.getSingleById(tableSource, id);
     if (eventContent == null) {
       return null;
     }
