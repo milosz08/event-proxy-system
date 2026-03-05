@@ -4,6 +4,7 @@ import {
   ServerConfigDTO,
   ServerInput,
   SseEventPayload,
+  UiConfig,
 } from '../@types/shared';
 
 declare global {

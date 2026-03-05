@@ -5,6 +5,7 @@ import {
   ServerConfigDTO,
   ServerInput,
   SseEventPayload,
+  UiConfig,
 } from '../@types/shared';
 
 const api = {

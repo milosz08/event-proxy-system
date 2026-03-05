@@ -1,4 +1,4 @@
-import { ServerConfigDTO } from '@shared-types/shared';
+import { ServerConfigDTO, UiConfig } from '@shared-types/shared';
 import { create } from 'zustand';
 
 export type ServerConfig = Omit<ServerConfigDTO, 'hasDefaultPassword'>;
@@ -6,6 +6,7 @@ export type ServerConfig = Omit<ServerConfigDTO, 'hasDefaultPassword'>;
 type AppState = {
   // state
   servers: Map<string, Omit<ServerConfig, 'id'>>;
+  uiConfig: UiConfig;
   activeSessions: Set<string>;
   selectedServerId: string | null;
   updateDefaultPasswordServerId: string | null;
@@ -13,6 +14,7 @@ type AppState = {
   addServerDrawerActive: boolean;
   // actions
   setServers: (servers: ServerConfig[]) => void;
+  setUiConfig: (uiConfig: UiConfig) => void;
   selectServer: (id: string) => void;
   removeServer: (id: string) => void;
   setActiveSessions: (ids: string[]) => void;
@@ -30,6 +32,9 @@ type AppState = {
 export const useAppStore = create<AppState>(set => ({
   // state
   servers: new Map(),
+  uiConfig: {
+    sideBySideLook: false,
+  },
   activeSessions: new Set(),
   selectedServerId: null,
   updateDefaultPasswordServerId: null,
@@ -41,6 +46,7 @@ export const useAppStore = create<AppState>(set => ({
       ...prevState,
       servers: new Map(servers.map(server => [server.id, server])),
     })),
+  setUiConfig: uiConfig => set(prevState => ({ ...prevState, uiConfig })),
   selectServer: id => set({ selectedServerId: id }),
   removeServer: id =>
     set(prevState => {

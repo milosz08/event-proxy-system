@@ -1,5 +1,6 @@
 import type { UUID } from 'crypto';
 import { safeStorage } from 'electron';
+import { UiConfig } from '../@types/shared';
 import type { ServerConfig } from './store';
 import store from './store';
 
@@ -65,6 +66,17 @@ export class ConfigService {
         : Buffer.from(newPassword).toString('base64');
       server.hasDefaultPassword = false;
     });
+  }
+
+  public getUiConfig(): UiConfig {
+    return store.get('uiConfig');
+  }
+
+  public updateUiConfig(uiConfig: Partial<UiConfig>): UiConfig {
+    const currentConfig = store.get('uiConfig');
+    const mergedConfig = { ...currentConfig, ...uiConfig };
+    store.set('uiConfig', mergedConfig);
+    return mergedConfig;
   }
 
   private safetyUpdateServer(serverId: string, callback: (server: ServerConfig) => void): void {

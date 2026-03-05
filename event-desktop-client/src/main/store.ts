@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import Store from 'electron-store';
-import { ServerConfigDTO } from '../@types/shared';
+import { ServerConfigDTO, UiConfig } from '../@types/shared';
 
 export type ServerConfig = {
   encryptedPassword: string;
@@ -16,6 +16,7 @@ type AppSchema = {
   clientId: string;
   rsaKeys: RsaKeys;
   servers: ServerConfig[];
+  uiConfig: UiConfig;
 };
 
 const store = new Store<AppSchema>({
@@ -26,6 +27,9 @@ const store = new Store<AppSchema>({
       privateKey: '',
     },
     servers: [],
+    uiConfig: {
+      sideBySideLook: false,
+    },
   },
 });
 

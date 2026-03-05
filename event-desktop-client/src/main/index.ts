@@ -2,6 +2,7 @@ import { electronApp, is, optimizer } from '@electron-toolkit/utils';
 import { BrowserWindow, app, ipcMain, shell } from 'electron';
 import { join } from 'path';
 import icon from '../../resources/icon.png?asset';
+import { UiConfig } from '../@types/shared';
 import { AuthService } from './auth-service';
 import { Badge } from './badge';
 import { ConfigService } from './config-service';
@@ -107,6 +108,12 @@ const onReady = async (): Promise<void> => {
     return await authService.updateDefaultPassword(args.serverId, args.newPassword);
   });
 
+  // ui config
+  ipcMain.handle('ui-config:get', () => {
+    return configService.getUiConfig();
+  });
+  ipcMain.handle('ui-config:set', (_, uiConfig: Partial<UiConfig>) => {
+    return configService.updateUiConfig(uiConfig);
   });
 
   await authService.autoLogin();

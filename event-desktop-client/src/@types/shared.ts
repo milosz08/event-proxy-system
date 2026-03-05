@@ -1,3 +1,7 @@
+export type UiConfig = {
+  sideBySideLook: boolean;
+};
+
 export type ServerInput = {
   name: string;
   url: string;
