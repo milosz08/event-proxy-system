@@ -1,10 +1,10 @@
-import { SseEventPayload } from '../@types/shared';
+import { SseEventPayload } from '../../@types/shared';
+import { createScopedLogger } from '../logger';
+import type { NetworkSessionManager } from '../network/network-session-manager';
+import { safeRequest, safeStreamRequest } from '../network/request';
+import store from '../store';
 import type { ConfigService } from './config-service';
 import type { CryptoService, EncryptedStreamMessage } from './crypto-service';
-import { createScopedLogger } from './logger';
-import type { NetworkSessionManager } from './network-session-manager';
-import { safeRequest, safeStreamRequest } from './request';
-import store from './store';
 
 type SseHandshakeRes = {
   sessionId: string;

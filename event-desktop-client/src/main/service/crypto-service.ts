@@ -1,7 +1,7 @@
 import { constants, createDecipheriv, privateDecrypt } from 'crypto';
-import { createScopedLogger } from './logger';
-import type { ServerConfig } from './store';
-import { extractErrorMessage } from './utils';
+import { createScopedLogger } from '../logger';
+import type { ServerConfig } from '../store';
+import { extractErrorMessage } from '../utils';
 
 export type EncryptedStreamMessage = {
   cipher: string;

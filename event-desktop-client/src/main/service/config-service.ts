@@ -1,8 +1,8 @@
 import type { UUID } from 'crypto';
 import { safeStorage } from 'electron';
-import { UiConfig } from '../@types/shared';
-import type { ServerConfig } from './store';
-import store from './store';
+import { UiConfig } from '../../@types/shared';
+import type { ServerConfig } from '../store';
+import store from '../store';
 
 export class ConfigService {
   public getServers(): ServerConfig[] {

@@ -1,10 +1,10 @@
 import type { AxiosInstance, AxiosResponse } from 'axios';
 import axios from 'axios';
-import type { ApiResult } from '../@types/shared';
-import { CryptoService, EncryptedRestMessage } from './crypto-service';
-import { createScopedLogger } from './logger';
-import store, { ServerConfig } from './store';
-import { extractErrorMessage } from './utils';
+import type { ApiResult } from '../../@types/shared';
+import { createScopedLogger } from '../logger';
+import { CryptoService, EncryptedRestMessage } from '../service/crypto-service';
+import store, { ServerConfig } from '../store';
+import { extractErrorMessage } from '../utils';
 
 export type StreamHandlers<T> = {
   onData: (encryptedData: T) => void;

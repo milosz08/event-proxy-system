@@ -1,6 +1,6 @@
-import { createScopedLogger } from './logger';
-import type { ServerConfig } from './store';
-import { extractErrorMessage } from './utils';
+import { createScopedLogger } from '../logger';
+import type { ServerConfig } from '../store';
+import { extractErrorMessage } from '../utils';
 
 export class SessionHeartbeatService {
   private logger = createScopedLogger(this.constructor.name);

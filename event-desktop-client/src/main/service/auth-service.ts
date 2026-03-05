@@ -1,12 +1,12 @@
 import type { Cookie } from 'tough-cookie';
-import type { LoginResult, ResponseResult } from '../@types/shared';
+import type { LoginResult, ResponseResult } from '../../@types/shared';
+import { createScopedLogger } from '../logger';
+import type { NetworkSessionManager } from '../network/network-session-manager';
+import { safeRequest } from '../network/request';
+import type { SessionHeartbeatService } from '../network/session-heartbeat-service';
+import type { ServerConfig } from '../store';
+import store, { ensureCryptoKeys } from '../store';
 import type { ConfigService } from './config-service';
-import { createScopedLogger } from './logger';
-import type { NetworkSessionManager } from './network-session-manager';
-import { safeRequest } from './request';
-import type { SessionHeartbeatService } from './session-heartbeat-service';
-import type { ServerConfig } from './store';
-import store, { ensureCryptoKeys } from './store';
 
 type LoginResponseData = {
   hasDefaultPassword: boolean;

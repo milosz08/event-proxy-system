@@ -2,10 +2,10 @@ import type { AxiosInstance } from 'axios';
 import axios from 'axios';
 import { wrapper } from 'axios-cookiejar-support';
 import { Cookie, CookieJar } from 'tough-cookie';
-import type { ConfigService } from './config-service';
-import { createScopedLogger } from './logger';
-import type { ServerConfig } from './store';
-import { extractErrorMessage } from './utils';
+import { createScopedLogger } from '../logger';
+import type { ConfigService } from '../service/config-service';
+import type { ServerConfig } from '../store';
+import { extractErrorMessage } from '../utils';
 
 export class NetworkSessionManager {
   private logger = createScopedLogger(this.constructor.name);
