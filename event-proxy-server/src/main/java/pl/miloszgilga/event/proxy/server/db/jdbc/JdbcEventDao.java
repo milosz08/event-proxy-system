@@ -50,7 +50,7 @@ public class JdbcEventDao implements EventDao {
     final List<EventContent> results = new ArrayList<>();
     long totalElements = 0;
 
-    final String countSql = String.format("SELECT COUNT(*) FROM `%s`;", eventSource);
+    final String countSql = String.format("SELECT COUNT(*) FROM `%s`;", TABLE_NAME);
     final String sql = String.format("""
         SELECT id, subject, eventTime FROM `%s` WHERE eventSource = ?
         ORDER BY id DESC LIMIT ? OFFSET ?;
