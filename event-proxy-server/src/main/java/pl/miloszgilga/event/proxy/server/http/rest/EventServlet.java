@@ -30,13 +30,4 @@ public class EventServlet extends HttpJsonServlet {
     element.put("isUnread", eventContent.isUnread());
     return element.toString();
   }
-
-  @Override
-  protected void doDelete(HttpServletRequest req, HttpServletResponse res) {
-    final long id = (Long) req.getAttribute("id");
-    final boolean success = eventDao.deleteSingleById(id);
-    res.setStatus(success
-      ? HttpServletResponse.SC_NO_CONTENT
-      : HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-  }
 }

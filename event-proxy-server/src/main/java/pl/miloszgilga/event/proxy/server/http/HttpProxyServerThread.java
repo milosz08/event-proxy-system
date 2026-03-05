@@ -9,10 +9,7 @@ import pl.miloszgilga.event.proxy.server.db.InstancePasswordManager;
 import pl.miloszgilga.event.proxy.server.db.dao.EventDao;
 import pl.miloszgilga.event.proxy.server.db.dao.SessionDao;
 import pl.miloszgilga.event.proxy.server.db.dao.UserDao;
-import pl.miloszgilga.event.proxy.server.http.filter.AuthFilter;
-import pl.miloszgilga.event.proxy.server.http.filter.CharacterEncodingFilter;
-import pl.miloszgilga.event.proxy.server.http.filter.EventSourceCheckerFilter;
-import pl.miloszgilga.event.proxy.server.http.filter.IdCheckerFilter;
+import pl.miloszgilga.event.proxy.server.http.filter.*;
 import pl.miloszgilga.event.proxy.server.http.rest.*;
 import pl.miloszgilga.event.proxy.server.http.sse.EventBroadcaster;
 import pl.miloszgilga.event.proxy.server.http.sse.SseHandshakeServlet;
@@ -65,10 +62,8 @@ public class HttpProxyServerThread extends AbstractThread {
       "/stream/events"
     ));
     context.addFilter(new CharacterEncodingFilter(), "/*");
-    context.addFilter(new IdCheckerFilter(), List.of(
-      "/api/event/read",
-      "/api/event"
-    ));
+    context.addFilter(new IdCheckerFilter(), "/api/event/read");
+    context.addFilter(new MultipleIdsCheckerFilter(), "/api/bulk/*");
     context.addFilter(new EventSourceCheckerFilter(eventDao), "/api/event/all");
 
     // servlets
@@ -80,6 +75,7 @@ public class HttpProxyServerThread extends AbstractThread {
     context.addServlet(new EventAllServlet(eventDao), "/api/event/all");
     context.addServlet(new MakeEventReadServlet(eventDao), "/api/event/read");
     context.addServlet(new EventServlet(eventDao), "/api/event");
+    context.addServlet(new BulkEventServlet(eventDao), "/api/bulk/event");
     context.addServlet(new SessionRefreshServlet(), "/api/session/refresh");
     context.addServlet(
       new UpdateDefaultPasswordServlet(userDao, instancePasswordManager),

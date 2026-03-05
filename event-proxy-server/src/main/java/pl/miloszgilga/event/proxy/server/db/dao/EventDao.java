@@ -20,5 +20,5 @@ public interface EventDao extends ContentInitializer {
 
   boolean deleteAllByEventSource(String eventSource);
 
-  boolean deleteSingleById(long id);
+  boolean deleteMultipleByIds(long[] id);
 }

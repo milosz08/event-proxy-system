@@ -202,18 +202,28 @@ public class JdbcEventDao implements EventDao {
   }
 
   @Override
-  public boolean deleteSingleById(long id) {
+  public boolean deleteMultipleByIds(long[] ids) {
+    if (ids == null || ids.length == 0) {
+      return false;
+    }
     final String sql = String.format("DELETE FROM `%s` WHERE id = ?;", TABLE_NAME);
     try (final Connection conn = dbConnectionPool.getConnection();
          final PreparedStatement ps = conn.prepareStatement(sql)) {
-      ps.setLong(1, id);
-      final int affectedRows = ps.executeUpdate();
-      if (affectedRows > 0) {
-        LOG.info("Deleted row with id: {}", id);
+      conn.setAutoCommit(false);
+      for (Long id : ids) {
+        ps.setLong(1, id);
+        ps.addBatch();
       }
+      final int[] affectedRows = ps.executeBatch();
+      conn.commit();
+      int totalDeleted = 0;
+      for (int rows : affectedRows) {
+        if (rows > 0) totalDeleted += rows;
+      }
+      LOG.info("Successfully deleted {} rows from {}", totalDeleted, TABLE_NAME);
       return true;
     } catch (SQLException ex) {
-      LOG.error("Unable to delete record by id: {}. Cause: {}", id, ex.getMessage());
+      LOG.error("Unable to delete record by ids: {}. Cause: {}", ids, ex.getMessage());
     }
     return false;
   }
