@@ -20,7 +20,7 @@ public class JdbcUserDao implements UserDao {
   public void init() {
     final String sql = String.format("""
       CREATE TABLE IF NOT EXISTS `%s` (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id INTEGER PRIMARY KEY,
         username TEXT NOT NULL UNIQUE,
         password TEXT NOT NULL,
         defaultPassword INTEGER NOT NULL DEFAULT 1

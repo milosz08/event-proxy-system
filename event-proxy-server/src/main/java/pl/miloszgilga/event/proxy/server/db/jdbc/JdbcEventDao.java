@@ -28,7 +28,7 @@ public class JdbcEventDao implements EventDao {
   public void init() {
     final String sql = String.format("""
         CREATE TABLE IF NOT EXISTS `%s` (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          id INTEGER PRIMARY KEY,
           eventSource TEXT NOT NULL,
           subject TEXT NOT NULL,
           rawBody TEXT NOT NULL,
