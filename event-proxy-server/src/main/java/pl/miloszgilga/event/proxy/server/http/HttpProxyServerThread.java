@@ -52,19 +52,35 @@ public class HttpProxyServerThread extends AbstractThread {
 
     // filters
     context.addFilter(new AuthFilter(appConfig, sessionDao), List.of(
+      // auth
       "/api/logout",
-      "/api/all/event",
-      "/api/event/read",
-      "/api/event",
       "/api/session/refresh",
       "/api/update/default/password",
+      // all
+      "/api/all/event",
+      "/api/all/event/archive",
+      "/api/all/event/unarchive",
+      // single
+      "/api/single/event",
+      "/api/single/event/read",
+      // bulk
+      "/api/bulk/event",
+      "/api/bulk/event/archive",
+      "/api/bulk/event/unarchive",
+      // stream
       "/stream/handshake",
       "/stream/events"
     ));
     context.addFilter(new CharacterEncodingFilter(), "/*");
-    context.addFilter(new IdCheckerFilter(), "/api/event/read");
+    context.addFilter(new IdCheckerFilter(), "/api/single/*");
     context.addFilter(new MultipleIdsCheckerFilter(), "/api/bulk/*");
-    context.addFilter(new EventSourceCheckerFilter(eventDao), "/api/all/event");
+    context.addFilter(new EventSourceCheckerFilter(eventDao), "/api/all/*");
+    context.addFilter(new EventTableSourceCheckerFilter(), List.of(
+      "/api/all/event",
+      "/api/single/event",
+      "/api/single/event/read",
+      "/api/bulk/event"
+    ));
 
     // servlets
     context.addServlet(
@@ -72,15 +88,19 @@ public class HttpProxyServerThread extends AbstractThread {
       "/api/login"
     );
     context.addServlet(new LogoutServlet(sessionDao), "/api/logout");
-    context.addServlet(new AllEventServlet(eventDao), "/api/all/event");
-    context.addServlet(new MakeEventReadServlet(eventDao), "/api/event/read");
-    context.addServlet(new EventServlet(eventDao), "/api/event");
-    context.addServlet(new BulkEventServlet(eventDao), "/api/bulk/event");
     context.addServlet(new SessionRefreshServlet(), "/api/session/refresh");
     context.addServlet(
       new UpdateDefaultPasswordServlet(userDao, instancePasswordManager),
       "/api/update/default/password"
     );
+    context.addServlet(new AllEventServlet(eventDao), "/api/all/event");
+    context.addServlet(new AllEventArchiveServlet(eventDao), "/api/all/event/archive");
+    context.addServlet(new AllEventUnarchiveServlet(eventDao), "/api/all/event/unarchive");
+    context.addServlet(new EventServlet(eventDao), "/api/single/event");
+    context.addServlet(new MakeEventReadServlet(eventDao), "/api/single/event/read");
+    context.addServlet(new BulkEventServlet(eventDao), "/api/bulk/event");
+    context.addServlet(new BulkEventArchiveServlet(eventDao), "/api/bulk/event/archive");
+    context.addServlet(new BulkEventUnarchiveServlet(eventDao), "/api/bulk/event/unarchive");
     context.addServlet(new SseHandshakeServlet(eventBroadcaster), "/stream/handshake");
     context.addServlet(new SseServlet(eventBroadcaster), "/stream/events");
 
