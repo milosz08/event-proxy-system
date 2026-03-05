@@ -52,15 +52,18 @@ public class JdbcEventDao implements EventDao {
 
     final String countSql = String.format("SELECT COUNT(*) FROM `%s`;", TABLE_NAME);
     final String sql = String.format("""
-        SELECT id, subject, eventTime FROM `%s` WHERE eventSource = ?
+        SELECT id, subject, eventTime FROM `%s` %s
         ORDER BY id DESC LIMIT ? OFFSET ?;
-      """, TABLE_NAME);
+      """, TABLE_NAME, eventSource != null ? "WHERE eventSource = ?" : "");
 
     try (final Connection conn = dbConnectionPool.getConnection()) {
       try (final PreparedStatement ps = conn.prepareStatement(sql)) {
-        ps.setString(1, eventSource);
-        ps.setInt(2, limit);
-        ps.setInt(3, offset);
+        int columnIndex = 1;
+        if (eventSource != null) {
+          ps.setString(columnIndex++, eventSource);
+        }
+        ps.setInt(columnIndex++, limit);
+        ps.setInt(columnIndex, offset);
         try (final ResultSet rs = ps.executeQuery()) {
           while (rs.next()) {
             final EventContent eventContent = new EventContent(
