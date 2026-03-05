@@ -3,7 +3,7 @@ import { safeStorage } from 'electron';
 import type { ServerConfig } from './store';
 import store from './store';
 
-export class ServerConfigService {
+export class ConfigService {
   public getServers(): ServerConfig[] {
     return store.get('servers');
   }

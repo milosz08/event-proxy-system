@@ -4,11 +4,11 @@ import { join } from 'path';
 import icon from '../../resources/icon.png?asset';
 import { AuthService } from './auth-service';
 import { Badge } from './badge';
+import { ConfigService } from './config-service';
 import { CryptoService } from './crypto-service';
 import { EventSourceService } from './event-source-service';
 import { EventStreamService } from './event-stream-service';
 import { NetworkSessionManager } from './network-session-manager';
-import { ServerConfigService } from './server-config-service';
 import { SessionHeartbeatService } from './session-heartbeat-service';
 
 const electronRendererUrl = process.env['ELECTRON_RENDERER_URL'];
@@ -63,7 +63,7 @@ const onReady = async (): Promise<void> => {
   }
 
   const cryptoService = new CryptoService();
-  const configService = new ServerConfigService();
+  const configService = new ConfigService();
   const networkManager = new NetworkSessionManager(configService);
   const heartbeatService = new SessionHeartbeatService();
   const eventStreamService = new EventStreamService(configService, networkManager, cryptoService, {

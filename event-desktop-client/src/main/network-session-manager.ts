@@ -2,8 +2,8 @@ import type { AxiosInstance } from 'axios';
 import axios from 'axios';
 import { wrapper } from 'axios-cookiejar-support';
 import { Cookie, CookieJar } from 'tough-cookie';
+import type { ConfigService } from './config-service';
 import { createScopedLogger } from './logger';
-import type { ServerConfigService } from './server-config-service';
 import type { ServerConfig } from './store';
 import { extractErrorMessage } from './utils';
 
@@ -11,7 +11,7 @@ export class NetworkSessionManager {
   private logger = createScopedLogger(this.constructor.name);
   private cookieJars: Map<string, CookieJar> = new Map();
 
-  constructor(private configService: ServerConfigService) {}
+  constructor(private configService: ConfigService) {}
 
   public getAxiosForServer({ id, url }: ServerConfig): AxiosInstance {
     return wrapper(

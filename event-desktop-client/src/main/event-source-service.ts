@@ -1,15 +1,15 @@
 import type { ApiResult } from '../@types/shared';
+import type { ConfigService } from './config-service';
 import type { CryptoService, EncryptedRestMessage } from './crypto-service';
 import { createScopedLogger } from './logger';
 import type { NetworkSessionManager } from './network-session-manager';
 import { safeEncryptedRequest } from './request';
-import type { ServerConfigService } from './server-config-service';
 
 export class EventSourceService {
   private logger = createScopedLogger(this.constructor.name);
 
   constructor(
-    private configService: ServerConfigService,
+    private configService: ConfigService,
     private networkManager: NetworkSessionManager,
     private cryptoService: CryptoService
   ) {}

@@ -1,9 +1,9 @@
 import { SseEventMessage } from '../@types/shared';
+import type { ConfigService } from './config-service';
 import { CryptoService, EncryptedStreamMessage } from './crypto-service';
 import { createScopedLogger } from './logger';
 import type { NetworkSessionManager } from './network-session-manager';
 import { safeRequest, safeStreamRequest } from './request';
-import type { ServerConfigService } from './server-config-service';
 import store from './store';
 
 type SseHandshakeRes = {
@@ -24,7 +24,7 @@ export class EventStreamService {
   private activeStreams = new Map<string, () => void>();
 
   constructor(
-    private configService: ServerConfigService,
+    private configService: ConfigService,
     private networkManager: NetworkSessionManager,
     private cryptoService: CryptoService,
     private handlers: Handlers

@@ -1,9 +1,9 @@
 import type { Cookie } from 'tough-cookie';
 import type { LoginResult, ResponseResult } from '../@types/shared';
+import type { ConfigService } from './config-service';
 import { createScopedLogger } from './logger';
 import type { NetworkSessionManager } from './network-session-manager';
 import { safeRequest } from './request';
-import type { ServerConfigService } from './server-config-service';
 import type { SessionHeartbeatService } from './session-heartbeat-service';
 import type { ServerConfig } from './store';
 import store, { ensureCryptoKeys } from './store';
@@ -26,7 +26,7 @@ export class AuthService {
   private logger = createScopedLogger(this.constructor.name);
 
   constructor(
-    private configService: ServerConfigService,
+    private configService: ConfigService,
     private networkManager: NetworkSessionManager,
     private heartbeatService: SessionHeartbeatService,
     private handlers: Handlers
