@@ -46,28 +46,6 @@ public class JdbcEventDao implements EventDao {
   }
 
   @Override
-  public List<String> getEventSources() {
-    final List<String> results = new ArrayList<>();
-
-    final String sql = String.format("""
-        SELECT DISTINCT eventSource FROM `%s` ORDER BY eventSource ASC;
-      """, TABLE_NAME);
-
-    try (final Connection conn = dbConnectionPool.getConnection();
-         final Statement statement = conn.createStatement();
-         final ResultSet rs = statement.executeQuery(sql)) {
-      while (rs.next()) {
-        results.add(rs.getString("eventSource"));
-      }
-    } catch (SQLException ex) {
-      LOG.error("Unable to get all event sources from table: {}. Cause: {}", TABLE_NAME,
-        ex.getMessage());
-      return List.of();
-    }
-    return results;
-  }
-
-  @Override
   public Page<MessageContent> getAllByEventSource(String eventSource, int limit, int offset) {
     final List<MessageContent> results = new ArrayList<>();
     long totalElements = 0;

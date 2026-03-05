@@ -6,14 +6,10 @@ import pl.miloszgilga.event.proxy.server.http.Page;
 import pl.miloszgilga.event.proxy.server.queue.EmailProperties;
 import pl.miloszgilga.event.proxy.server.registry.ContentInitializer;
 
-import java.util.List;
-
 public interface EventDao extends ContentInitializer {
   List<String> getEventSources();
 
-  Page<MessageContent> getAllByEventSource(String eventSource, int limit, int offset);
-
-  MessageContentWithBody getSingleById(long id);
+  EventContentWithBody getSingleById(long id);
 
   boolean eventSourceExists(String eventSource);
 

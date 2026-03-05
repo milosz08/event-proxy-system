@@ -1,6 +1,5 @@
 import { IpcRendererEvent, contextBridge, ipcRenderer } from 'electron';
 import {
-  ApiResult,
   LoginResult,
   ResponseResult,
   ServerConfigDTO,
@@ -74,9 +73,6 @@ const api = {
       ipcRenderer.removeListener('auth:active-sessions', listener);
     };
   },
-  // event source
-  getEventSources: (serverId: string): Promise<ApiResult<string[]>> => {
-    return ipcRenderer.invoke('event-source:all', serverId);
   },
 };
 

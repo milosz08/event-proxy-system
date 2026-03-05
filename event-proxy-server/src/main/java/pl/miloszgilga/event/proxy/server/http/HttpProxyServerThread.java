@@ -55,7 +55,6 @@ public class HttpProxyServerThread extends AbstractThread {
 
     // filters
     context.addFilter(new AuthFilter(appConfig, sessionDao), List.of(
-      "/api/event/source/all",
       "/api/logout",
       "/api/message/all",
       "/api/message/read",
@@ -73,7 +72,6 @@ public class HttpProxyServerThread extends AbstractThread {
     context.addFilter(new EventSourceCheckerFilter(eventDao), "/api/message/all");
 
     // servlets
-    context.addServlet(new EventSourceAllServlet(eventDao), "/api/event/source/all");
     context.addServlet(
       new LoginServlet(appConfig, instancePasswordManager, userDao, sessionDao),
       "/api/login"
