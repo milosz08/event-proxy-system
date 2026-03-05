@@ -24,7 +24,13 @@ public interface EventDao extends ContentInitializer {
   // executed with blocking mode, returns persisted id
   long persist(String eventSource, EmailProperties emailProperties);
 
-  boolean deleteAllByOptionalEventSource(String eventSource);
+  boolean archiveAllByOptionalEventSource(String eventSource);
+
+  boolean archiveMultipleByIds(long[] ids);
+
+  boolean unarchiveAllByOptionalEventSource(String eventSource);
+
+  boolean unarchiveMultipleByIds(long[] ids);
 
   boolean deleteAllByOptionalEventSource(EventTableSource tableSource, String eventSource);
 

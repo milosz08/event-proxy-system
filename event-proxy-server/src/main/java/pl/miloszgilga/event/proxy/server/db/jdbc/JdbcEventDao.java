@@ -228,6 +228,30 @@ public class JdbcEventDao implements EventDao {
   }
 
   @Override
+  public boolean archiveAllByOptionalEventSource(String eventSource) {
+    return moveAllBetweenTables(EventTableSource.EVENTS, EventTableSource.EVENTS_ARCHIVE,
+      eventSource);
+  }
+
+  @Override
+  public boolean archiveMultipleByIds(long[] ids) {
+    return moveMultipleByIdsBetweenTables(EventTableSource.EVENTS, EventTableSource.EVENTS_ARCHIVE,
+      ids);
+  }
+
+  @Override
+  public boolean unarchiveAllByOptionalEventSource(String eventSource) {
+    return moveAllBetweenTables(EventTableSource.EVENTS_ARCHIVE, EventTableSource.EVENTS,
+      eventSource);
+  }
+
+  @Override
+  public boolean unarchiveMultipleByIds(long[] ids) {
+    return moveMultipleByIdsBetweenTables(EventTableSource.EVENTS_ARCHIVE, EventTableSource.EVENTS,
+      ids);
+  }
+
+  @Override
   public boolean deleteMultipleByIds(EventTableSource tableSource, long[] ids) {
     final String tableName = tableSource.getTableName();
     if (ids == null || ids.length == 0) {
@@ -251,6 +275,90 @@ public class JdbcEventDao implements EventDao {
       return true;
     } catch (SQLException ex) {
       LOG.error("Unable to delete record by ids: {} ({}). Cause: {}", ids, tableName,
+        ex.getMessage());
+    }
+    return false;
+  }
+
+  private boolean moveAllBetweenTables(
+    EventTableSource source,
+    EventTableSource target,
+    String eventSource
+  ) {
+    final String sourceTable = source.getTableName();
+    final String targetTable = target.getTableName();
+    final String whereClause = eventSource != null ? "WHERE eventSource = ?" : "";
+
+    final String insertSql = String.format(
+      "INSERT INTO `%s` SELECT * FROM `%s` %s;",
+      targetTable, sourceTable, whereClause
+    );
+    final String deleteSql = String.format("DELETE FROM `%s` %s;", sourceTable, whereClause);
+
+    try (final Connection conn = dbConnectionPool.getConnection()) {
+      conn.setAutoCommit(false);
+      try (final PreparedStatement insertPs = conn.prepareStatement(insertSql);
+           final PreparedStatement deletePs = conn.prepareStatement(deleteSql)) {
+        if (eventSource != null) {
+          insertPs.setString(1, eventSource);
+          deletePs.setString(1, eventSource);
+        }
+        final int inserted = insertPs.executeUpdate();
+        deletePs.executeUpdate();
+        conn.commit();
+        LOG.info("Moved {} rows from {} to {} (eventSource: {})", inserted, sourceTable,
+          targetTable, eventSource);
+        return true;
+      } catch (SQLException ex) {
+        conn.rollback();
+        throw ex;
+      }
+    } catch (SQLException ex) {
+      LOG.error("Unable to move records from {} to {}. Cause: {}", sourceTable, targetTable,
+        ex.getMessage());
+    }
+    return false;
+  }
+
+  private boolean moveMultipleByIdsBetweenTables(
+    EventTableSource source,
+    EventTableSource target,
+    long[] ids
+  ) {
+    if (ids == null || ids.length == 0) {
+      return false;
+    }
+    final String sourceTable = source.getTableName();
+    final String targetTable = target.getTableName();
+
+    final String insertSql = String.format(
+      "INSERT INTO `%s` SELECT * FROM `%s` WHERE id = ?;",
+      targetTable, sourceTable
+    );
+    final String deleteSql = String.format("DELETE FROM `%s` WHERE id = ?;", sourceTable);
+
+    try (final Connection conn = dbConnectionPool.getConnection()) {
+      conn.setAutoCommit(false);
+      try (final PreparedStatement insertPs = conn.prepareStatement(insertSql);
+           final PreparedStatement deletePs = conn.prepareStatement(deleteSql)) {
+        for (long id : ids) {
+          insertPs.setLong(1, id);
+          insertPs.addBatch();
+          deletePs.setLong(1, id);
+          deletePs.addBatch();
+        }
+        final int[] inserted = insertPs.executeBatch();
+        deletePs.executeBatch();
+        conn.commit();
+        final int totalMoved = Arrays.stream(inserted).filter(i -> i > 0).sum();
+        LOG.info("Moved {} rows by ids from {} to {}", totalMoved, sourceTable, targetTable);
+        return true;
+      } catch (SQLException ex) {
+        conn.rollback();
+        throw ex;
+      }
+    } catch (SQLException ex) {
+      LOG.error("Unable to move records by ids from {} to {}. Cause: {}", sourceTable, targetTable,
         ex.getMessage());
     }
     return false;
