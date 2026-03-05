@@ -261,7 +261,7 @@ public class JdbcEventDao implements EventDao {
     try (final Connection conn = dbConnectionPool.getConnection();
          final PreparedStatement ps = conn.prepareStatement(sql)) {
       conn.setAutoCommit(false);
-      for (Long id : ids) {
+      for (long id : ids) {
         ps.setLong(1, id);
         ps.addBatch();
       }

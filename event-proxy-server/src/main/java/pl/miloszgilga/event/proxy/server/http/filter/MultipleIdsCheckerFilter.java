@@ -19,9 +19,9 @@ public class MultipleIdsCheckerFilter extends HttpFilter {
       return;
     }
     try {
-      final Long[] ids = Arrays.stream(idStrings)
-        .map(Long::valueOf)
-        .toArray(Long[]::new);
+      final long[] ids = Arrays.stream(idStrings)
+        .mapToLong(Long::parseLong)
+        .toArray();
 
       req.setAttribute("ids", ids);
       chain.doFilter(req, res);
