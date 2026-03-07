@@ -97,7 +97,7 @@ public class HttpProxyServerThread extends AbstractThread {
     context.addServlet(new AllEventArchiveServlet(eventDao), "/api/all/event/archive");
     context.addServlet(new AllEventUnarchiveServlet(eventDao), "/api/all/event/unarchive");
     context.addServlet(new EventServlet(eventDao), "/api/single/event");
-    context.addServlet(new MakeEventReadServlet(eventDao), "/api/single/event/read");
+    context.addServlet(new MarkEventReadServlet(eventDao), "/api/single/event/read");
     context.addServlet(new BulkEventServlet(eventDao), "/api/bulk/event");
     context.addServlet(new BulkEventArchiveServlet(eventDao), "/api/bulk/event/archive");
     context.addServlet(new BulkEventUnarchiveServlet(eventDao), "/api/bulk/event/unarchive");
