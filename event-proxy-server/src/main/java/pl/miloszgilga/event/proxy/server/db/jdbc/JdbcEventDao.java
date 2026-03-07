@@ -289,8 +289,10 @@ public class JdbcEventDao implements EventDao {
     final String targetTable = target.getTableName();
     final String whereClause = eventSource != null ? "WHERE eventSource = ?" : "";
 
-    final String insertSql = String.format(
-      "INSERT INTO `%s` SELECT * FROM `%s` %s;",
+    final String insertSql = String.format("""
+        INSERT INTO `%s` (eventSource, subject, rawBody, eventTime, isUnread)
+        SELECT eventSource, subject, rawBody, eventTime, isUnread FROM `%s` %s;
+        """,
       targetTable, sourceTable, whereClause
     );
     final String deleteSql = String.format("DELETE FROM `%s` %s;", sourceTable, whereClause);
@@ -331,8 +333,10 @@ public class JdbcEventDao implements EventDao {
     final String sourceTable = source.getTableName();
     final String targetTable = target.getTableName();
 
-    final String insertSql = String.format(
-      "INSERT INTO `%s` SELECT * FROM `%s` WHERE id = ?;",
+    final String insertSql = String.format("""
+        INSERT INTO `%s` (eventSource, subject, rawBody, eventTime, isUnread)
+        SELECT eventSource, subject, rawBody, eventTime, isUnread FROM `%s` WHERE id = ?;
+        """,
       targetTable, sourceTable
     );
     final String deleteSql = String.format("DELETE FROM `%s` WHERE id = ?;", sourceTable);
