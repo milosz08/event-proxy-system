@@ -1,5 +1,6 @@
 export type UiConfig = {
   sideBySideLook: boolean;
+  panelSizes: number[];
 };
 
 export type ServerInput = {

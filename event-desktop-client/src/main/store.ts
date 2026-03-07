@@ -29,6 +29,7 @@ const store = new Store<AppSchema>({
     servers: [],
     uiConfig: {
       sideBySideLook: false,
+      panelSizes: [50, 50],
     },
   },
 });

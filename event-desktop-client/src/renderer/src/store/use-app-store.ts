@@ -37,6 +37,7 @@ export const useAppStore = create<AppState>(set => ({
   servers: new Map(),
   uiConfig: {
     sideBySideLook: false,
+    panelSizes: [50, 50],
   },
   activeSessions: new Set(),
   selectedServerId: null,

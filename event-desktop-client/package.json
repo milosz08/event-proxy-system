@@ -37,6 +37,7 @@
     "classnames": "^2.5.1",
     "electron-store": "^8.1.0",
     "react-hook-form": "^7.71.1",
+    "react-resizable-panels": "^4.7.1",
     "styled-components": "^6.3.8",
     "tough-cookie": "^6.0.0",
     "winston": "^3.18.3",
