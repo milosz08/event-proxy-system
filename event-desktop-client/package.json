@@ -31,7 +31,7 @@
     "@blueprintjs/icons": "^6.5.1",
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
-    "axios": "^1.13.4",
+    "axios": "^1.13.6",
     "axios-cookiejar-support": "^6.0.5",
     "canvas": "^3.2.0",
     "classnames": "^2.5.1",
