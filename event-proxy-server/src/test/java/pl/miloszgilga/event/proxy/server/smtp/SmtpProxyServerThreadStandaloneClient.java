@@ -6,6 +6,8 @@ import jakarta.mail.Session;
 import jakarta.mail.Transport;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+import pl.miloszgilga.event.proxy.server.TestData;
+import pl.miloszgilga.event.proxy.server.TestDataPayload;
 
 import java.util.Properties;
 
@@ -16,35 +18,11 @@ class SmtpProxyServerThreadStandaloneClient {
   public static void main(String[] args) throws MessagingException {
     final SmtpProxyServerThreadStandaloneClient main = new SmtpProxyServerThreadStandaloneClient();
 
-    main.sendEmail(
-      "dlink-02C972_E-Mail_Alert",
-      """
-        A SMART Test Was Performed On The Following Hard Drive At 03:2:10 On 27-July-2025.
+    final TestDataPayload nas = TestData.NAS.apply(null);
+    main.sendEmail(nas.subject(), nas.rawBody(), nas.from());
 
-        Device Model:  WDC WD20EFZX-68AWUN0
-        Serial Number:  RESTRICTED
-        Size: 2,000G
-
-        The Result Of The Test Is: Pass
-
-        Sincerely,
-        Your dlink-02C972
-        """,
-      "DLINK"
-    );
-    main.sendEmail(
-      "Embedded Net DVR: Motion Detected On Channel A2",
-      """
-        This is an automatically generated e-mail from your DVR.
-
-        EVENT TYPE:    Motion Detected
-        EVENT TIME:    2025-07-26,16:53:09
-        DVR NAME:      Embedded Net DVR
-        DVR S/N:       RESTRICTED
-        CAMERA NAME(NUM):   CAM 2 Garage(A2)
-        """,
-      "DVR"
-    );
+    final TestDataPayload dvr = TestData.DVR.apply("2", null);
+    main.sendEmail(dvr.subject(), dvr.rawBody(), dvr.from());
   }
 
   private void sendEmail(String subject, String body, String from)
