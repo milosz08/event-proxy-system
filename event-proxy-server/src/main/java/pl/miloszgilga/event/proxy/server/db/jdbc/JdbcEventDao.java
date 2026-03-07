@@ -54,6 +54,8 @@ public class JdbcEventDao implements EventDao {
   public Page<EventContent> getAllByOptionalEventSource(
     EventTableSource tableSource,
     String eventSource,
+    String subjectSearch,
+    boolean isAscending,
     int limit,
     int offset
   ) {
@@ -61,37 +63,55 @@ public class JdbcEventDao implements EventDao {
     final List<EventContent> results = new ArrayList<>();
     long totalElements = 0;
 
-    final String countSql = String.format("SELECT COUNT(*) FROM `%s`;", tableName);
+    final StringBuilder whereClause = new StringBuilder();
+    final List<Object> params = new ArrayList<>();
+
+    if (eventSource != null) {
+      whereClause.append(" WHERE eventSource = ?");
+      params.add(eventSource);
+    }
+    if (subjectSearch != null && !subjectSearch.isBlank()) {
+      whereClause.append(whereClause.isEmpty() ? " WHERE " : " AND ");
+      whereClause.append("subject LIKE ?");
+      params.add("%" + subjectSearch + "%");
+    }
+    final String sortDirection = isAscending ? "ASC" : "DESC";
+
+    final String countSql = String.format("SELECT COUNT(*) FROM `%s` %s;", tableName, whereClause);
     final String sql = String.format("""
         SELECT id, subject, eventTime, eventSource, isUnread FROM `%s` %s
-        ORDER BY id DESC LIMIT ? OFFSET ?;
-      """, tableName, eventSource != null ? "WHERE eventSource = ?" : "");
+        ORDER BY eventTime %s, id %s LIMIT ? OFFSET ?;
+      """, tableName, whereClause, sortDirection, sortDirection);
 
     try (final Connection conn = dbConnectionPool.getConnection()) {
       try (final PreparedStatement ps = conn.prepareStatement(sql)) {
         int columnIndex = 1;
-        if (eventSource != null) {
-          ps.setString(columnIndex++, eventSource);
+        for (final Object param : params) {
+          ps.setObject(columnIndex++, param);
         }
         ps.setInt(columnIndex++, limit);
         ps.setInt(columnIndex, offset);
         try (final ResultSet rs = ps.executeQuery()) {
           while (rs.next()) {
-            final EventContent eventContent = new EventContent(
+            results.add(new EventContent(
               rs.getLong("id"),
               rs.getString("subject"),
               rs.getTimestamp("eventTime").toLocalDateTime(),
               rs.getString("eventSource"),
               rs.getBoolean("isUnread")
-            );
-            results.add(eventContent);
+            ));
           }
         }
       }
-      try (final Statement st = conn.createStatement();
-           final ResultSet rs = st.executeQuery(countSql)) {
-        if (rs.next()) {
-          totalElements = rs.getLong(1);
+      try (final PreparedStatement psCount = conn.prepareStatement(countSql)) {
+        int columnIndex = 1;
+        for (final Object param : params) {
+          psCount.setObject(columnIndex++, param);
+        }
+        try (final ResultSet rs = psCount.executeQuery()) {
+          if (rs.next()) {
+            totalElements = rs.getLong(1);
+          }
         }
       }
     } catch (SQLException ex) {

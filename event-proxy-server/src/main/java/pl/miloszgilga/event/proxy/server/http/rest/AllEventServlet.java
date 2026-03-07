@@ -11,6 +11,8 @@ import pl.miloszgilga.event.proxy.server.http.EventTableSource;
 import pl.miloszgilga.event.proxy.server.http.HttpJsonServlet;
 import pl.miloszgilga.event.proxy.server.http.Page;
 
+import java.util.Objects;
+
 public class AllEventServlet extends HttpJsonServlet {
   private final EventDao eventDao;
 
@@ -23,11 +25,13 @@ public class AllEventServlet extends HttpJsonServlet {
     final String eventSource = (String) req.getAttribute("eventSource");
     final EventTableSource tableSource = (EventTableSource) req.getAttribute("eventTable");
 
+    final String subjectSearch = Objects.requireNonNullElse(req.getParameter("subjectSearch"), "");
+    final boolean isAscending = Boolean.parseBoolean(req.getParameter("isAscending"));
     final int limit = Utils.safetyParseInt(req.getParameter("limit"), 0);
     final int offset = Utils.safetyParseInt(req.getParameter("offset"), 0);
 
     final Page<EventContent> all = eventDao.getAllByOptionalEventSource(
-      tableSource, eventSource, limit, offset
+      tableSource, eventSource, subjectSearch, isAscending, limit, offset
     );
 
     final JSONObject root = new JSONObject();

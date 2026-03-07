@@ -11,6 +11,8 @@ public interface EventDao extends ContentInitializer {
   Page<EventContent> getAllByOptionalEventSource(
     EventTableSource tableSource,
     String eventSource,
+    String subjectSearch,
+    boolean isAscending,
     int limit,
     int offset
   );
