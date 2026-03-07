@@ -68,7 +68,7 @@ const ServerEventsContent: React.FC = (): React.ReactElement | null => {
         title={`Not connected to server ${selectedServerName}`}
         description="You cannot connected to followed proxy server."
         loadingConnect={loadingConnect}
-        actionDescription={`Connect to server ${selectedServerName}`}
+        actionDescription="Connect to server"
         onAction={connectToServer}
       />
     );
