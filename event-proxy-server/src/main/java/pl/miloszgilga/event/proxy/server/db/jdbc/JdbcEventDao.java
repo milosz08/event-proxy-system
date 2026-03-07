@@ -20,6 +20,11 @@ import java.util.stream.Collectors;
 public class JdbcEventDao implements EventDao {
   private static final Logger LOG = LoggerFactory.getLogger(JdbcEventDao.class);
 
+  private static final List<String> INDEXES = List.of(
+    "eventSource",
+    "subject"
+  );
+
   private final DbConnectionPool dbConnectionPool;
 
   public JdbcEventDao(DbConnectionPool dbConnectionPool) {
@@ -40,9 +45,19 @@ public class JdbcEventDao implements EventDao {
             isUnread INTEGER DEFAULT 0 CHECK (isUnread IN (0, 1))
           );
         """, tableName);
+
+      final List<String> indexQueries = INDEXES.stream()
+        .map(indexColumn -> String.format(
+          "CREATE INDEX IF NOT EXISTS `idx_%s_%s` ON `%s` (%s);",
+          tableName, indexColumn, table, indexColumn)
+        ).toList();
+
       try (final Connection conn = dbConnectionPool.getConnection();
            final Statement statement = conn.createStatement()) {
         statement.execute(sql);
+        for (final String indexQuery : indexQueries) {
+          statement.execute(indexQuery);
+        }
         LOG.info("Init table (or skip): {}", tableName);
       } catch (SQLException ex) {
         LOG.error("Unable to create table: {}. Cause: {}", tableName, ex.getMessage());
