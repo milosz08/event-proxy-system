@@ -44,11 +44,9 @@ const SplitPanelsLayout: React.FC<Props> = ({
         <Panel id="panel-1" defaultSize={`${initSizes[0]}%`} minSize="20%">
           <ContentWrapper>{firstPanelContent}</ContentWrapper>
         </Panel>
-
         <StyledResizeHandle $isSideBySide={uiConfig.sideBySideLook}>
-          <Divider compact style={{ margin: 0 }} />
+          <StyledDivider compact />
         </StyledResizeHandle>
-
         <Panel id="panel-2" defaultSize={`${initSizes[1]}%`} minSize="20%">
           <ContentWrapper>{secondPanelContent}</ContentWrapper>
         </Panel>
@@ -68,6 +66,11 @@ const StyledResizeHandle = styled(Separator)<{ $isSideBySide: boolean }>`
   width: ${({ $isSideBySide }) => ($isSideBySide ? '1px' : '100%')};
   height: ${({ $isSideBySide }) => ($isSideBySide ? '100%' : '1px')};
   cursor: ${({ $isSideBySide }) => ($isSideBySide ? 'col-resize' : 'row-resize')};
+`;
+
+const StyledDivider = styled(Divider)`
+  width: 100%;
+  height: 100%;
 `;
 
 const ContentWrapper = styled.div`
