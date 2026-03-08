@@ -27,8 +27,8 @@
     "build:linux": "electron-vite build && electron-builder --linux"
   },
   "dependencies": {
-    "@blueprintjs/core": "^6.7.0",
-    "@blueprintjs/icons": "^6.5.1",
+    "@blueprintjs/core": "^6.9.1",
+    "@blueprintjs/icons": "^6.6.0",
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
     "axios": "^1.13.6",
