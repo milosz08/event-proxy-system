@@ -12,6 +12,8 @@ import java.util.List;
 public interface EventDao extends ContentInitializer {
   List<String> getEventSources(EventTableSource tableSource);
 
+  long getUnreadEventsCount(EventTableSource tableSource, String eventSource);
+
   Page<EventContent> getAllByOptionalEventSource(
     EventTableSource tableSource,
     String eventSource,

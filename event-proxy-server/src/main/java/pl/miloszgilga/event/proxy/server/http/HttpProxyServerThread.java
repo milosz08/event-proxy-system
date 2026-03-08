@@ -61,6 +61,7 @@ public class HttpProxyServerThread extends AbstractThread {
       "/api/all/event/source",
       "/api/all/event/archive",
       "/api/all/event/unarchive",
+      "/api/all/event/unread/count",
       // single
       "/api/single/event",
       "/api/single/event/read",
@@ -79,7 +80,8 @@ public class HttpProxyServerThread extends AbstractThread {
     context.addFilter(new EventSourceCheckerFilter(eventDao), List.of(
       "/api/all/event",
       "/api/all/event/archive",
-      "/api/all/event/unarchive"
+      "/api/all/event/unarchive",
+      "/api/all/event/unread/count"
     ));
     context.addFilter(new EventTableSourceCheckerFilter(), List.of(
       "/api/all/event",
@@ -87,6 +89,7 @@ public class HttpProxyServerThread extends AbstractThread {
       "/api/single/event",
       "/api/single/event/read",
       "/api/single/event/unread",
+      "/api/all/event/unread/count",
       "/api/bulk/event"
     ));
 
@@ -105,6 +108,7 @@ public class HttpProxyServerThread extends AbstractThread {
     context.addServlet(new AllEventServlet(eventDao), "/api/all/event");
     context.addServlet(new AllEventArchiveServlet(eventDao), "/api/all/event/archive");
     context.addServlet(new AllEventUnarchiveServlet(eventDao), "/api/all/event/unarchive");
+    context.addServlet(new AllEventUnreadCountServlet(eventDao), "/api/all/event/unread/count");
     context.addServlet(new EventServlet(eventDao), "/api/single/event");
     context.addServlet(new MarkEventReadServlet(eventDao), "/api/single/event/read");
     context.addServlet(new MarkEventUnreadServlet(eventDao), "/api/single/event/unread");

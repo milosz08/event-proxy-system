@@ -88,6 +88,32 @@ public class JdbcEventDao implements EventDao {
   }
 
   @Override
+  public long getUnreadEventsCount(EventTableSource tableSource, String eventSource) {
+    final String tableName = tableSource.getTableName();
+    final StringBuilder sql = new StringBuilder(
+      String.format("SELECT COUNT(*) FROM `%s` WHERE isUnread = 1", tableName)
+    );
+    if (eventSource != null) {
+      sql.append(" AND eventSource = ?");
+    }
+    try (final Connection conn = dbConnectionPool.getConnection();
+         final PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+      if (eventSource != null) {
+        ps.setString(1, eventSource);
+      }
+      try (final ResultSet rs = ps.executeQuery()) {
+        if (rs.next()) {
+          return rs.getLong(1);
+        }
+      }
+    } catch (SQLException ex) {
+      LOG.error("Unable to count unread events from table: {} (eventSource: {}). Cause: {}",
+        tableName, eventSource, ex.getMessage());
+    }
+    return 0;
+  }
+
+  @Override
   public Page<EventContent> getAllByOptionalEventSource(
     EventTableSource tableSource,
     String eventSource,
