@@ -85,4 +85,4 @@ const MainContent = styled.div`
   overflow-y: hidden;
 `;
 
-export default ServerMessagesContent;
+export default ServerEventsContent;

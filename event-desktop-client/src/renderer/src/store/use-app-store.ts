@@ -27,8 +27,7 @@ type AppState = {
   closeServersDrawer: () => void;
   openAddServerDrawer: () => void;
   closeAddServerDrawer: () => void;
-  addSelectedEvents: (ids: number[]) => void;
-  removeSelectedEvents: (ids: number[]) => void;
+  setSelectedEvents: (ids: number[]) => void;
   updateHeartbeat: (serverId: string, status: boolean, resTimeMillis?: number) => void;
 };
 
@@ -89,15 +88,10 @@ export const useAppStore = create<AppState>(set => ({
   closeServersDrawer: () => set({ serversDrawerActive: false }),
   openAddServerDrawer: () => set({ addServerDrawerActive: true }),
   closeAddServerDrawer: () => set({ addServerDrawerActive: false }),
-  addSelectedEvents: ids =>
+  setSelectedEvents: ids =>
     set(prevState => ({
       ...prevState,
-      selectedEvents: [...ids, ...prevState.selectedEvents],
-    })),
-  removeSelectedEvents: ids =>
-    set(prevState => ({
-      ...prevState,
-      selectedEvents: prevState.selectedEvents.filter(eventId => ids.includes(eventId)),
+      selectedEvents: ids,
     })),
   updateHeartbeat: (serverId, status, resTimeMillis) =>
     set(prevState => {
