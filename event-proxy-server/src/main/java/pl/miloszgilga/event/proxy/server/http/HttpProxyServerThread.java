@@ -58,6 +58,7 @@ public class HttpProxyServerThread extends AbstractThread {
       "/api/update/default/password",
       // all
       "/api/all/event",
+      "/api/all/event/source",
       "/api/all/event/archive",
       "/api/all/event/unarchive",
       // single
@@ -74,9 +75,14 @@ public class HttpProxyServerThread extends AbstractThread {
     context.addFilter(new CharacterEncodingFilter(), "/*");
     context.addFilter(new IdCheckerFilter(), "/api/single/*");
     context.addFilter(new MultipleIdsCheckerFilter(), "/api/bulk/*");
-    context.addFilter(new EventSourceCheckerFilter(eventDao), "/api/all/*");
+    context.addFilter(new EventSourceCheckerFilter(eventDao), List.of(
+      "/api/all/event",
+      "/api/all/event/archive",
+      "/api/all/event/unarchive"
+    ));
     context.addFilter(new EventTableSourceCheckerFilter(), List.of(
       "/api/all/event",
+      "/api/all/event/source",
       "/api/single/event",
       "/api/single/event/read",
       "/api/bulk/event"
@@ -93,6 +99,7 @@ public class HttpProxyServerThread extends AbstractThread {
       new UpdateDefaultPasswordServlet(userDao, instancePasswordManager),
       "/api/update/default/password"
     );
+    context.addServlet(new AllEventSourceServlet(eventDao), "/api/all/event/source");
     context.addServlet(new AllEventServlet(eventDao), "/api/all/event");
     context.addServlet(new AllEventArchiveServlet(eventDao), "/api/all/event/archive");
     context.addServlet(new AllEventUnarchiveServlet(eventDao), "/api/all/event/unarchive");
