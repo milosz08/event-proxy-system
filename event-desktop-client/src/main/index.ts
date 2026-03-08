@@ -14,12 +14,15 @@ import { EventService } from './service/event-service';
 const electronRendererUrl = process.env['ELECTRON_RENDERER_URL'];
 const appId = 'pl.miloszgilga.event-proxy-client';
 
+const MIN_WIDTH = 1280;
+const MIN_HEIGHT = 720;
+
 const createWindow = async (): Promise<BrowserWindow> => {
   const mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 720,
-    minWidth: 1280,
-    minHeight: 720,
+    width: MIN_WIDTH,
+    height: MIN_HEIGHT,
+    minWidth: MIN_WIDTH,
+    minHeight: MIN_HEIGHT,
     show: false,
     title: 'Event desktop client',
     autoHideMenuBar: true,
@@ -104,11 +107,11 @@ const onReady = async (): Promise<void> => {
   ipcMain.handle('auth:disconnect', async (_, serverId: string) => {
     return await authService.disconnect(serverId);
   });
-  ipcMain.handle('auth:update-password', async (_, args) => {
-    return await authService.updateDefaultPassword(args.serverId, args.newPassword);
+  ipcMain.handle('auth:update-password', async (_, { serverId, newPassword }) => {
+    return await authService.updateDefaultPassword(serverId, newPassword);
   });
 
-  // ui config
+  // ipc ui config
   ipcMain.handle('ui-config:get', () => {
     return configService.getUiConfig();
   });
