@@ -1,5 +1,5 @@
 // "Feb 7, 2026, 23:35:36"
-export const formatTimestamp = (timestamp?: number): string => {
+export const formatTimestamp = (timestamp?: number | string): string => {
   if (!timestamp) {
     return '?';
   }
