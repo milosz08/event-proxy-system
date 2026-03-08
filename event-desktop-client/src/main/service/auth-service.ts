@@ -91,13 +91,14 @@ export class AuthService {
     const client = this.networkManager.getAxiosForServer(server);
     this.heartbeatService.stop(server);
 
+    const url = '/api/login';
     const result = await safeRequest<LoginResponseData>(
       () =>
-        client.post<LoginResponseData>('/api/login', params, {
+        client.post<LoginResponseData>(url, params, {
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         }),
       server.name,
-      'login'
+      url
     );
     if (!result.success) {
       return result;
@@ -126,11 +127,8 @@ export class AuthService {
     this.heartbeatService.stop(server);
     await this.handlers.onDisconnect(server);
     const client = this.networkManager.getAxiosForServer(server);
-    const result = await safeRequest<void>(
-      () => client.delete('/api/logout'),
-      server.name,
-      'logout'
-    );
+    const url = '/api/logout';
+    const result = await safeRequest<void>(() => client.delete(url), server.name, url);
 
     if (result.success) {
       this.logger.info(server.name, 'remote logout successful');
@@ -150,10 +148,11 @@ export class AuthService {
       return { success: false };
     }
     const client = this.networkManager.getAxiosForServer(server);
+    const url = '/api/session/refresh';
     const { success, resTimeMillis } = await safeRequest<void>(
-      () => client.post('/api/session/refresh'),
+      () => client.post(url),
       server.name,
-      'refresh'
+      url
     );
     if (success) {
       this.logger.info(server.name, 'session refreshed successfully');
@@ -185,13 +184,14 @@ export class AuthService {
     params.append('password', newPassword);
 
     const client = this.networkManager.getAxiosForServer(server);
+    const url = '/api/update/default/password';
     const result = await safeRequest<void>(
       () =>
-        client.post('/api/update/default/password', params, {
+        client.post(url, params, {
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         }),
       server.name,
-      'updateDefaultPassword'
+      url
     );
     if (result.success) {
       this.logger.info(server.name, 'successfully updated password');
