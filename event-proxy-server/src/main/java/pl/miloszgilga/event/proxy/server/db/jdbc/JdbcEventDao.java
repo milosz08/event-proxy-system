@@ -208,9 +208,12 @@ public class JdbcEventDao implements EventDao {
   }
 
   @Override
-  public boolean makeEventRead(EventTableSource tableSource, long id) {
+  public boolean updateEventReadStatus(EventTableSource tableSource, long id, boolean isUnread) {
     final String tableName = tableSource.getTableName();
-    final String sql = String.format("UPDATE `%s` SET isUnread = 0 WHERE id = ?", tableName);
+    final String sql = String.format(
+      "UPDATE `%s` SET isUnread = %s WHERE id = ?",
+      tableName, isUnread ? 1 : 0
+    );
     try (final Connection conn = dbConnectionPool.getConnection();
          final PreparedStatement ps = conn.prepareStatement(sql)) {
       ps.setLong(1, id);
