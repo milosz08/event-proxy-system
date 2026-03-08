@@ -1,4 +1,9 @@
+import { Divider } from '@blueprintjs/core';
+import EventDetails from '@renderer/components/event-details';
+import EventsTable from '@renderer/components/events-table';
 import ProxyServerWaitingScreen from '@renderer/components/proxy-server-waiting-screen';
+import SplitPanelsLayout from '@renderer/components/split-panels-layout';
+import Toolbar from '@renderer/components/toolbar';
 import useSpinner from '@renderer/hooks/use-spinner';
 import { useAppStore } from '@renderer/store/use-app-store';
 import { AppToaster } from '@renderer/utils/app-toaster';
@@ -10,6 +15,7 @@ const ServerEventsContent: React.FC = (): React.ReactElement | null => {
     servers,
     selectedServerId,
     activeSessions,
+    uiConfig: { showDetails },
     selectServer,
     openDefaultPasswordDialog,
     addActiveSession,
@@ -74,15 +80,22 @@ const ServerEventsContent: React.FC = (): React.ReactElement | null => {
     );
   }
 
-  return <MainContent>SERVER: {selectedServerName} MESSAGES CONTENT</MainContent>;
+  return (
+    <MainContent>
+      <Toolbar />
+      <Divider compact />
+      <SplitPanelsLayout
+        firstPanelContent={<EventsTable />}
+        secondPanelContent={showDetails ? <EventDetails /> : null}
+      />
+    </MainContent>
+  );
 };
 
 const MainContent = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 20px;
-  overflow-y: hidden;
 `;
 
 export default ServerEventsContent;

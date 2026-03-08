@@ -29,7 +29,11 @@ const store = new Store<AppSchema>({
     servers: [],
     uiConfig: {
       sideBySideLook: false,
+      showDetails: true,
       panelSizes: [50, 50],
+      sortByAscending: false,
+      eventTable: 'EVENTS',
+      eventSourceFilter: null,
     },
   },
 });

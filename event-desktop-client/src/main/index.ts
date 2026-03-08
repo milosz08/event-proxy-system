@@ -3,10 +3,10 @@ import { BrowserWindow, app, ipcMain, shell } from 'electron';
 import { join } from 'path';
 import icon from '../../resources/icon.png?asset';
 import { UiConfig } from '../@types/shared';
-import { Badge } from './badge';
 import { NetworkSessionManager } from './network/network-session-manager';
 import { SessionHeartbeatService } from './network/session-heartbeat-service';
 import { AuthService } from './service/auth-service';
+import { BadgeService } from './service/badge-service';
 import { ConfigService } from './service/config-service';
 import { CryptoService } from './service/crypto-service';
 import { EventService } from './service/event-service';
@@ -14,6 +14,7 @@ import { EventService } from './service/event-service';
 const electronRendererUrl = process.env['ELECTRON_RENDERER_URL'];
 const appId = 'pl.miloszgilga.event-proxy-client';
 
+export const DEFAULT_TITLE = 'Event desktop client';
 const MIN_WIDTH = 1280;
 const MIN_HEIGHT = 720;
 
@@ -24,7 +25,7 @@ const createWindow = async (): Promise<BrowserWindow> => {
     minWidth: MIN_WIDTH,
     minHeight: MIN_HEIGHT,
     show: false,
-    title: 'Event desktop client',
+    title: DEFAULT_TITLE,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' || !app.isPackaged ? { icon } : {}),
     webPreferences: {
@@ -58,12 +59,13 @@ const onReady = async (): Promise<void> => {
   });
 
   const mainWindow = await createWindow();
+  mainWindow.on('page-title-updated', evt => {
+    evt.preventDefault();
+  });
 
   // badge
-  const badge = new Badge();
-  if (process.platform !== 'darwin' && process.platform !== 'linux') {
-    badge.preloadBadges();
-  }
+  const badgeService = new BadgeService();
+  badgeService.setMainWindow(mainWindow);
 
   const cryptoService = new CryptoService();
   const configService = new ConfigService();
@@ -71,21 +73,27 @@ const onReady = async (): Promise<void> => {
   const heartbeatService = new SessionHeartbeatService();
   const eventService = new EventService(configService, networkManager, cryptoService, {
     onEvent: (serverId, payload) => {
+      badgeService.incrementServerCount(serverId);
       mainWindow.webContents.send('sse:event', serverId, payload);
     },
   });
+  badgeService.setEventService(eventService);
   const authService = new AuthService(configService, networkManager, heartbeatService, {
     onHeartbeat: (serverId, status, resTimeMillis) => {
       mainWindow.webContents.send('server:heartbeat', serverId, status, resTimeMillis);
     },
     onSessionExpired: serverId => {
+      badgeService.removeServer(serverId);
       mainWindow.webContents.send('auth:session-expired', serverId);
     },
     onConnect: async server => {
+      badgeService.initServer(server.id);
+      await badgeService.syncServerBadgeCount(server.id);
       await eventService.startEventsStream(server.id);
     },
     onDisconnect: async server => {
       eventService.stopEventsStream(server.id);
+      badgeService.removeServer(server.id);
     },
   });
 
@@ -117,6 +125,70 @@ const onReady = async (): Promise<void> => {
   });
   ipcMain.handle('ui-config:set', (_, uiConfig: Partial<UiConfig>) => {
     return configService.updateUiConfig(uiConfig);
+  });
+
+  // ipc event source
+  ipcMain.handle('event-source:all', async (_, { serverId, eventTable }) => {
+    return await eventService.getEventSources(serverId, eventTable);
+  });
+
+  // ipc events
+  ipcMain.handle(
+    'events:pageable-all',
+    (_, { serverId, eventTable, subjectSearch, isAscending, offset, limit, eventSource }) => {
+      return eventService.getPageableEvents(
+        serverId,
+        eventTable,
+        subjectSearch,
+        isAscending,
+        offset,
+        limit,
+        eventSource
+      );
+    }
+  );
+  ipcMain.handle('events:details-single', (_, { serverId, eventTable, eventId }) => {
+    return eventService.getEventDetails(serverId, eventTable, eventId);
+  });
+  ipcMain.handle('events:mark-as-read-single', async (_, { serverId, eventTable, eventId }) => {
+    return await badgeService.withBadgeSync(serverId, () =>
+      eventService.markEventAsRead(serverId, eventTable, eventId)
+    );
+  });
+  ipcMain.handle('events:mark-as-unread-single', async (_, { serverId, eventTable, eventId }) => {
+    return await badgeService.withBadgeSync(serverId, () =>
+      eventService.markEventAsUnread(serverId, eventTable, eventId)
+    );
+  });
+  ipcMain.handle('events:archive-bulk', async (_, { serverId, eventIds }) => {
+    return await badgeService.withBadgeSync(serverId, () =>
+      eventService.bulkArchiveEvents(serverId, eventIds)
+    );
+  });
+  ipcMain.handle('events:unarchive-bulk', async (_, { serverId, eventIds }) => {
+    return await badgeService.withBadgeSync(serverId, () =>
+      eventService.bulkUnarchiveEvents(serverId, eventIds)
+    );
+  });
+  ipcMain.handle('events:delete-bulk', async (_, { serverId, eventTable, eventIds }) => {
+    return await badgeService.withBadgeSync(serverId, () =>
+      eventService.bulkDeleteEvents(serverId, eventTable, eventIds)
+    );
+  });
+  ipcMain.handle('events:archive-all', async (_, { serverId, eventSource }) => {
+    return await badgeService.withBadgeSync(serverId, () =>
+      eventService.allArchiveEvents(serverId, eventSource)
+    );
+  });
+  ipcMain.handle('events:unarchive-all', async (_, { serverId, eventSource }) => {
+    return await badgeService.withBadgeSync(serverId, () =>
+      eventService.allUnarchiveEvents(serverId, eventSource)
+    );
+  });
+  ipcMain.handle('events:delete-all', async (_, { serverId, eventTable, eventSource }) => {
+    return await badgeService.withBadgeSync(serverId, () =>
+      eventService.allDeleteEvents(serverId, eventTable, eventSource)
+    );
   });
 
   await authService.autoLogin();

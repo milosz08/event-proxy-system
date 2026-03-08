@@ -1,4 +1,4 @@
-import { ServerConfigDTO, UiConfig } from '@shared-types/shared';
+import { EventPayload, ServerConfigDTO, SseEventPayload, UiConfig } from '@shared-types/shared';
 import { create } from 'zustand';
 
 export type ServerConfig = Omit<ServerConfigDTO, 'hasDefaultPassword'>;
@@ -7,15 +7,20 @@ type AppState = {
   // state
   servers: Map<string, Omit<ServerConfig, 'id'>>;
   uiConfig: UiConfig;
+  searchValue: string;
   activeSessions: Set<string>;
   selectedServerId: string | null;
   updateDefaultPasswordServerId: string | null;
   serversDrawerActive: boolean;
   addServerDrawerActive: boolean;
   selectedEvents: number[];
+  events: EventPayload[];
+  hasMoreEvents: boolean;
+  loadedHistoricalRecords: number;
   // actions
   setServers: (servers: ServerConfig[]) => void;
   setUiConfig: (uiConfig: UiConfig) => void;
+  setSearchValue: (searchValue: string) => void;
   selectServer: (id: string) => void;
   removeServer: (id: string) => void;
   setActiveSessions: (ids: string[]) => void;
@@ -28,7 +33,14 @@ type AppState = {
   openAddServerDrawer: () => void;
   closeAddServerDrawer: () => void;
   setSelectedEvents: (ids: number[]) => void;
+  removeSelectedEvents: (ids: number[]) => void;
   updateHeartbeat: (serverId: string, status: boolean, resTimeMillis?: number) => void;
+  setEvents: (events: EventPayload[]) => void;
+  appendEvents: (newEvents: EventPayload[]) => void;
+  removeEvents: (ids: number[]) => void;
+  setHasMoreEvents: (hasMore: boolean) => void;
+  updateEvent: (eventId: number, changes: Partial<EventPayload>) => void;
+  insertLiveEvent: (newEvent: SseEventPayload) => void;
 };
 
 export const useAppStore = create<AppState>(set => ({
@@ -36,50 +48,56 @@ export const useAppStore = create<AppState>(set => ({
   servers: new Map(),
   uiConfig: {
     sideBySideLook: false,
+    showDetails: true,
     panelSizes: [50, 50],
+    sortByAscending: false,
+    eventTable: 'EVENTS',
+    eventSourceFilter: null,
   },
+  searchValue: '',
   activeSessions: new Set(),
   selectedServerId: null,
   updateDefaultPasswordServerId: null,
   serversDrawerActive: false,
   addServerDrawerActive: false,
   selectedEvents: [],
+  events: [],
+  hasMoreEvents: true,
+  loadedHistoricalRecords: 0,
   // actions
   setServers: servers =>
-    set(prevState => ({
-      ...prevState,
+    set(state => ({
+      ...state,
       servers: new Map(servers.map(server => [server.id, server])),
     })),
-  setUiConfig: uiConfig => set(prevState => ({ ...prevState, uiConfig })),
+  setUiConfig: uiConfig => set(state => ({ ...state, uiConfig })),
+  setSearchValue: searchValue => set(state => ({ ...state, searchValue })),
   selectServer: id => set({ selectedServerId: id }),
   removeServer: id =>
-    set(prevState => {
-      const newServers = new Map(prevState.servers);
+    set(state => {
+      const newServers = new Map(state.servers);
       newServers.delete(id);
       return {
-        ...prevState,
+        ...state,
         servers: newServers,
-        activeSessions: new Set(
-          [...prevState.activeSessions].filter(sessionId => sessionId !== id)
-        ),
-        selectedServerId: prevState.selectedServerId === id ? null : prevState.selectedServerId,
+        activeSessions: new Set([...state.activeSessions].filter(sessionId => sessionId !== id)),
+        selectedServerId: state.selectedServerId === id ? null : state.selectedServerId,
       };
     }),
   setActiveSessions: ids => set({ activeSessions: new Set(ids) }),
   addActiveSession: id =>
-    set(prevState => {
-      const newSet = new Set(prevState.activeSessions);
+    set(state => {
+      const newSet = new Set(state.activeSessions);
       newSet.add(id);
-      return { ...prevState, activeSessions: newSet };
+      return { ...state, activeSessions: newSet };
     }),
   removeActiveSession: id =>
-    set(prevState => {
-      const newSet = new Set(prevState.activeSessions);
+    set(state => {
+      const newSet = new Set(state.activeSessions);
       newSet.delete(id);
       return {
-        ...prevState,
+        ...state,
         activeSessions: newSet,
-        ...(prevState.selectedServerId === id ? { selectedServerId: null } : {}),
       };
     }),
   openDefaultPasswordDialog: serverId => set({ updateDefaultPasswordServerId: serverId }),
@@ -89,19 +107,24 @@ export const useAppStore = create<AppState>(set => ({
   openAddServerDrawer: () => set({ addServerDrawerActive: true }),
   closeAddServerDrawer: () => set({ addServerDrawerActive: false }),
   setSelectedEvents: ids =>
-    set(prevState => ({
-      ...prevState,
+    set(state => ({
+      ...state,
       selectedEvents: ids,
     })),
+  removeSelectedEvents: ids =>
+    set(state => ({
+      ...state,
+      selectedEvents: state.selectedEvents.filter(id => !ids.includes(id)),
+    })),
   updateHeartbeat: (serverId, status, resTimeMillis) =>
-    set(prevState => {
-      if (!prevState.servers.has(serverId)) {
-        return prevState;
+    set(state => {
+      if (!state.servers.has(serverId)) {
+        return state;
       }
-      const newServers = new Map(prevState.servers);
+      const newServers = new Map(state.servers);
       const existingServer = newServers.get(serverId);
       if (!existingServer) {
-        return prevState;
+        return state;
       }
       newServers.set(serverId, {
         ...existingServer,
@@ -110,8 +133,55 @@ export const useAppStore = create<AppState>(set => ({
         lastHeartbeatResTimeMillis: resTimeMillis,
       });
       return {
-        ...prevState,
+        ...state,
         servers: newServers,
       };
+    }),
+  setEvents: events =>
+    set(state => ({
+      ...state,
+      events,
+      loadedHistoricalRecords: events.length,
+    })),
+  appendEvents: newEvents =>
+    set(state => ({
+      ...state,
+      events: [...state.events, ...newEvents],
+      loadedHistoricalRecords: state.loadedHistoricalRecords + newEvents.length,
+    })),
+  removeEvents: ids =>
+    set(state => ({
+      ...state,
+      events: state.events.filter(({ id }) => !ids.includes(id)),
+    })),
+  setHasMoreEvents: hasMoreEvents => set(state => ({ ...state, hasMoreEvents })),
+  updateEvent: (eventId, changes) =>
+    set(state => ({
+      events: state.events.map(event => (event.id === eventId ? { ...event, ...changes } : event)),
+    })),
+  insertLiveEvent: (newEvent: SseEventPayload) =>
+    set(state => {
+      const {
+        uiConfig: { eventSourceFilter, eventTable, sortByAscending },
+        hasMoreEvents,
+      } = state;
+
+      if (eventTable !== 'EVENTS') {
+        return state;
+      }
+      if (eventSourceFilter && eventSourceFilter !== newEvent.eventSource) {
+        return state;
+      }
+      if (state.events.some(e => e.id === newEvent.id)) {
+        return state;
+      }
+      const event = { ...newEvent, isUnread: true };
+      if (sortByAscending) {
+        if (hasMoreEvents) {
+          return state;
+        }
+        return { ...state, events: [...state.events, event] };
+      }
+      return { ...state, events: [event, ...state.events] };
     }),
 }));

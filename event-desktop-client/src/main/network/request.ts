@@ -9,6 +9,7 @@ import { extractErrorMessage } from '../utils';
 export type StreamHandlers<T> = {
   onData: (encryptedData: T) => void;
   onError: (error: string) => void;
+  onClose: () => void;
 };
 
 const logger = createScopedLogger('request');
@@ -70,10 +71,27 @@ export async function safeStreamRequest<T>(
   urlPath: string,
   handlers: StreamHandlers<T>,
   serverName: string = 'localhost',
-  contextName: string = 'STREAM_API'
+  contextName: string = 'STREAM_API',
+  heartbeatTimeoutMs: number = 10000
 ): Promise<() => void> {
   const controller = new AbortController();
   const start = performance.now();
+  let heartbeatTimer: NodeJS.Timeout | null = null;
+
+  const clearHeartbeat = (): void => {
+    if (heartbeatTimer) {
+      clearTimeout(heartbeatTimer);
+    }
+  };
+  const resetHeartbeat = (): void => {
+    clearHeartbeat();
+    heartbeatTimer = setTimeout(() => {
+      const msg = `heartbeat timeout: no data from backend for ${heartbeatTimeoutMs}ms`;
+      logger.error(serverName, `${contextName} connection stalled`, msg);
+      handlers.onError(msg);
+      controller.abort();
+    }, heartbeatTimeoutMs);
+  };
   try {
     const response = await axiosInstance.get(urlPath, {
       responseType: 'stream',
@@ -81,13 +99,17 @@ export async function safeStreamRequest<T>(
     });
     const stream = response.data;
     let buffer = '';
+
+    resetHeartbeat();
     stream.on('data', (chunk: Buffer) => {
+      resetHeartbeat();
       buffer += chunk.toString();
       const parts = buffer.split('\n\n');
       buffer = parts.pop() || '';
       parts.forEach(part => parseSSEMessage<T>(part, handlers.onData, contextName, serverName));
     });
     stream.on('error', (err: unknown) => {
+      clearHeartbeat();
       if (axios.isCancel(err)) {
         return;
       }
@@ -96,15 +118,19 @@ export async function safeStreamRequest<T>(
       handlers.onError(msg);
     });
     stream.on('end', () => {
+      clearHeartbeat();
       const elapsed = (performance.now() - start).toFixed(0);
       logger.info(serverName, `${contextName} stream ended after ${elapsed}ms`);
+      handlers.onClose();
     });
   } catch (err) {
+    clearHeartbeat();
     const errorMsg = extractErrorMessage(err);
     logger.error(serverName, `${contextName} connection failed`, errorMsg);
     handlers.onError(errorMsg);
   }
   return () => {
+    clearHeartbeat();
     logger.info(serverName, `${contextName} aborting connection`);
     controller.abort();
   };

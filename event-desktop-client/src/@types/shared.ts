@@ -1,6 +1,10 @@
 export type UiConfig = {
   sideBySideLook: boolean;
+  showDetails: boolean;
   panelSizes: number[];
+  sortByAscending: boolean;
+  eventTable: EventTable;
+  eventSourceFilter: string | null;
 };
 
 export type ServerInput = {
@@ -29,6 +33,12 @@ export type ServerConfigDTO = {
   lastHeartbeatResTimeMillis?: number;
 } & Omit<ServerInput, 'password'>;
 
+export type PageableApiResults<T> = {
+  totalElements: number;
+  hasNext: boolean;
+  elements: T[];
+};
+
 export type ApiResult<T> = {
   data?: T;
 } & ResponseResult;
@@ -38,4 +48,18 @@ export type SseEventPayload = {
   subject: string;
   eventSource: string;
   eventTime: string;
+};
+
+export type EventPayload = {
+  isUnread: boolean;
+} & SseEventPayload;
+
+export type EventTable = 'EVENTS' | 'EVENTS_ARCHIVE';
+
+export type EventDetails = {
+  rawBody: string;
+} & EventPayload;
+
+export type UnreadEventsCount = {
+  count: number;
 };
