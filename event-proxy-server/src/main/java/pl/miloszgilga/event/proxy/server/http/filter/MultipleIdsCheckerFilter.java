@@ -25,7 +25,7 @@ public class MultipleIdsCheckerFilter extends HttpFilter {
 
       req.setAttribute("ids", ids);
       chain.doFilter(req, res);
-    } catch (NumberFormatException e) {
+    } catch (NumberFormatException ignored) {
       res.setStatus(HttpServletResponse.SC_BAD_REQUEST);
     }
   }
