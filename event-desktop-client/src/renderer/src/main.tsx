@@ -1,4 +1,4 @@
-import { Divider, FocusStyleManager } from '@blueprintjs/core';
+import { Divider, FocusStyleManager, HotkeysProvider } from '@blueprintjs/core';
 import AddServerDrawer from '@renderer/components/add-server-drawer';
 import AppFooter from '@renderer/components/app-footer';
 import AppNavbar from '@renderer/components/app-navbar';
@@ -25,14 +25,16 @@ const AppContainer = styled.div`
 createRoot(appMount).render(
   <StrictMode>
     <IpcRootBridge />
-    <AppContainer>
-      <AppNavbar />
-      <ServerEventsContent />
-      <Divider compact />
-      <AppFooter />
-      <ServersDrawer />
-      <AddServerDrawer />
-      <ChangeDefaultPasswordPopup />
-    </AppContainer>
+    <HotkeysProvider>
+      <AppContainer>
+        <AppNavbar />
+        <ServerEventsContent />
+        <Divider compact />
+        <AppFooter />
+        <ServersDrawer />
+        <AddServerDrawer />
+        <ChangeDefaultPasswordPopup />
+      </AppContainer>
+    </HotkeysProvider>
   </StrictMode>
 );
