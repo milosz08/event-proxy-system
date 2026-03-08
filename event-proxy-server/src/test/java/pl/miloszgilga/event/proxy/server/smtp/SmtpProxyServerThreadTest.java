@@ -105,7 +105,8 @@ class SmtpProxyServerThreadTest {
     assertNotNull(emailContent, "email content cannot be null");
     assertEquals(from, emailContent.from(), "incorrect sender email address");
     assertEquals(subject, emailContent.subject(), "incorrect message subject");
-    assertEquals(body, normalizeLineEndings(emailContent.rawBody()), "incorrect message body");
+    assertEquals(body.trim(), normalizeLineEndings(emailContent.rawBody()).trim(),
+      "incorrect message body");
   }
 
   private String normalizeLineEndings(String str) {

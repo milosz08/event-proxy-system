@@ -16,7 +16,8 @@ public class TestData {
       The Result Of The Test Is: Pass
 
       Sincerely,
-      Your dlink-02C972""",
+      Your dlink-02C972
+      """,
     generateMockSuffix("NAS", mockSuffix)
   );
 
@@ -30,7 +31,8 @@ public class TestData {
           EVENT TIME:    2025-07-26,16:53:09
           DVR NAME:      Embedded Net DVR
           DVR S/N:       RESTRICTED
-          CAMERA NAME(NUM):   CAM %s Garage(A%s)""",
+          CAMERA NAME(NUM):   CAM %s Garage(A%s)
+          """,
         camNumber, camNumber),
       generateMockSuffix("DVR", mockSuffix)
     );
