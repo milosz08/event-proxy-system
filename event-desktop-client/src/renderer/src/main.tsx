@@ -6,7 +6,6 @@ import ChangeDefaultPasswordPopup from '@renderer/components/change-default-pass
 import ServerEventsContent from '@renderer/components/server-events-content';
 import ServersDrawer from '@renderer/components/servers-drawer';
 import IpcRootBridge from '@renderer/ipc-root-bridge';
-import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import styled from 'styled-components';
 import './main.css';
@@ -23,18 +22,16 @@ const AppContainer = styled.div`
 `;
 
 createRoot(appMount).render(
-  <StrictMode>
+  <HotkeysProvider>
     <IpcRootBridge />
-    <HotkeysProvider>
-      <AppContainer>
-        <AppNavbar />
-        <ServerEventsContent />
-        <Divider compact />
-        <AppFooter />
-        <ServersDrawer />
-        <AddServerDrawer />
-        <ChangeDefaultPasswordPopup />
-      </AppContainer>
-    </HotkeysProvider>
-  </StrictMode>
+    <AppContainer>
+      <AppNavbar />
+      <ServerEventsContent />
+      <Divider compact />
+      <AppFooter />
+      <ServersDrawer />
+      <AddServerDrawer />
+      <ChangeDefaultPasswordPopup />
+    </AppContainer>
+  </HotkeysProvider>
 );
