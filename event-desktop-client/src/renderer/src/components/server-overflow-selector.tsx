@@ -6,8 +6,7 @@ import {
   Menu,
   MenuItem,
   OverflowList,
-  Popover,
-  Position,
+  PopoverNext,
   Tag,
 } from '@blueprintjs/core';
 import PulsingIcon from '@renderer/components/pulsing-icon';
@@ -49,7 +48,7 @@ const ServerOverflowSelector: React.FC = (): React.ReactElement => {
         />
       )}
       overflowRenderer={overflowItems => (
-        <Popover
+        <PopoverNext
           content={
             <Menu>
               {overflowItems.map(server => (
@@ -72,9 +71,9 @@ const ServerOverflowSelector: React.FC = (): React.ReactElement => {
               ))}
             </Menu>
           }
-          position={Position.BOTTOM_LEFT}>
+          placement="bottom-start">
           <Button icon="more" />
-        </Popover>
+        </PopoverNext>
       )}
       collapseFrom="end"
       minVisibleItems={0}
