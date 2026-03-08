@@ -7,7 +7,7 @@ import styled from 'styled-components';
 
 type Props = {
   firstPanelContent: React.ReactNode;
-  secondPanelContent: React.ReactNode;
+  secondPanelContent: React.ReactNode | null;
   defaultSizes?: number[];
 };
 
@@ -41,15 +41,17 @@ const SplitPanelsLayout: React.FC<Props> = ({
       <Group
         orientation={uiConfig.sideBySideLook ? 'horizontal' : 'vertical'}
         onLayoutChanged={handleLayoutChanged}>
-        <Panel id="panel-1" defaultSize={`${initSizes[0]}%`} minSize="20%">
+        <Panel id="panel-1" defaultSize={initSizes[0]} minSize={20}>
           <ContentWrapper>{firstPanelContent}</ContentWrapper>
         </Panel>
         <StyledResizeHandle $isSideBySide={uiConfig.sideBySideLook}>
           <StyledDivider compact />
         </StyledResizeHandle>
-        <Panel id="panel-2" defaultSize={`${initSizes[1]}%`} minSize="20%">
-          <ContentWrapper>{secondPanelContent}</ContentWrapper>
-        </Panel>
+        {secondPanelContent && (
+          <Panel id="panel-2" defaultSize={initSizes[1]} minSize={20}>
+            <ContentWrapper>{secondPanelContent}</ContentWrapper>
+          </Panel>
+        )}
       </Group>
     </LayoutContainer>
   );
