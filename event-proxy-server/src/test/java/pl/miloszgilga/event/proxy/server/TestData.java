@@ -16,8 +16,7 @@ public class TestData {
       The Result Of The Test Is: Pass
 
       Sincerely,
-      Your dlink-02C972
-      """,
+      Your dlink-02C972""",
     generateMockSuffix("NAS", mockSuffix)
   );
 
@@ -25,14 +24,14 @@ public class TestData {
     new TestDataPayload(
       String.format("Embedded Net DVR: Motion Detected On Channel A%s", camNumber),
       String.format("""
-        This is an automatically generated e-mail from your DVR.
+          This is an automatically generated e-mail from your DVR.
 
-        EVENT TYPE:    Motion Detected
-        EVENT TIME:    2025-07-26,16:53:09
-        DVR NAME:      Embedded Net DVR
-        DVR S/N:       RESTRICTED
-        CAMERA NAME(NUM):   CAM %s Garage(A%s)
-        """, camNumber, camNumber),
+          EVENT TYPE:    Motion Detected
+          EVENT TIME:    2025-07-26,16:53:09
+          DVR NAME:      Embedded Net DVR
+          DVR S/N:       RESTRICTED
+          CAMERA NAME(NUM):   CAM %s Garage(A%s)""",
+        camNumber, camNumber),
       generateMockSuffix("DVR", mockSuffix)
     );
 
