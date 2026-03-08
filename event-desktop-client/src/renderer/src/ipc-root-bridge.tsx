@@ -37,6 +37,7 @@ const IpcRootBridge: React.FC = (): null => {
     });
     return () => onSseEvent();
   }, [
+    audio,
     eventSourceFilter,
     eventTable,
     insertLiveEvent,
