@@ -73,3 +73,4 @@ jobs:
           file: ./Dockerfile.pipeline
           push: true
           tags: milosz08/event-proxy-server:latest
+          platforms: linux/amd64,linux/arm64
