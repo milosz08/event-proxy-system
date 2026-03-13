@@ -159,7 +159,7 @@ public class JdbcEventDao implements EventDao {
             results.add(new EventContent(
               rs.getLong("id"),
               rs.getString("subject"),
-              rs.getTimestamp("eventTime").toLocalDateTime(),
+              rs.getLong("eventTime"),
               rs.getString("eventSource"),
               rs.getBoolean("isUnread")
             ));
@@ -199,7 +199,7 @@ public class JdbcEventDao implements EventDao {
             rs.getLong("id"),
             rs.getString("subject"),
             rs.getString("rawBody"),
-            rs.getTimestamp("eventTime").toLocalDateTime(),
+            rs.getLong("eventTime"),
             rs.getString("eventSource"),
             rs.getBoolean("isUnread")
           );
@@ -266,7 +266,7 @@ public class JdbcEventDao implements EventDao {
       ps.setString(1, eventSource);
       ps.setString(2, emailProperties.subject());
       ps.setString(3, emailProperties.rawBody());
-      ps.setTimestamp(4, Timestamp.valueOf(emailProperties.eventTime()));
+      ps.setLong(4, emailProperties.eventTime().toEpochMilli());
       ps.setBoolean(5, true);
       final int rowsAffected = ps.executeUpdate();
       if (rowsAffected == 0) {

@@ -1,6 +1,6 @@
 package pl.miloszgilga.event.proxy.server.queue;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
-public record EmailProperties(String subject, String rawBody, LocalDateTime eventTime) {
+public record EmailProperties(String subject, String rawBody, Instant eventTime) {
 }

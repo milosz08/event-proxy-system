@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 
@@ -86,7 +86,7 @@ public class SmtpMessageReceiver implements Runnable {
     final String subject = message.getSubject();
     final String body = getTextFromMessage(message);
 
-    final LocalDateTime now = LocalDateTime.now();
+    final Instant now = Instant.now();
     return new EmailContent(from, subject, body, now);
   }
 

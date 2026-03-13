@@ -6,7 +6,8 @@ import pl.miloszgilga.event.proxy.server.TestData;
 import pl.miloszgilga.event.proxy.server.TestDataPayload;
 import pl.miloszgilga.event.proxy.server.queue.EmailProperties;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -26,7 +27,7 @@ public class MockDataGenerator extends MockData {
   private void generate() {
     LOG.info("Starting mock data generation with {} suffix...", MOCK_DATA_SUFFIX);
 
-    final LocalDateTime now = LocalDateTime.now();
+    final Instant now = Instant.now();
     final List<Long> idsToArchive = new ArrayList<>();
 
     for (int i = 0; i < RECORDS_TO_GENERATE; i++) {
@@ -52,7 +53,9 @@ public class MockDataGenerator extends MockData {
             "All services operational.";
         }
       }
-      final LocalDateTime eventTime = now.minusMinutes(i).minusSeconds(random.nextInt(60));
+      final Instant eventTime = now
+        .minus(i, ChronoUnit.MINUTES)
+        .minusSeconds(random.nextInt(60));
       final EmailProperties properties = new EmailProperties(subject, body, eventTime);
 
       final long generatedId = eventDao.persist(source, properties);
