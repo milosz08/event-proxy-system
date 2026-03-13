@@ -5,6 +5,7 @@ export type UiConfig = {
   sortByAscending: boolean;
   eventTable: EventTable;
   eventSourceFilter: string | null;
+  selectedServerId: string | null;
 };
 
 export type ServerInput = {

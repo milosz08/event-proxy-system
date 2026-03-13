@@ -6,13 +6,11 @@ import notificationSound from '../assets/notification.mp3';
 
 const IpcRootBridge: React.FC = (): null => {
   const {
-    selectedServerId,
-    uiConfig: { eventTable, eventSourceFilter },
+    uiConfig: { eventTable, eventSourceFilter, selectedServerId },
     setServers,
     setUiConfig,
     setActiveSessions,
     removeActiveSession,
-    selectServer,
     updateHeartbeat,
     insertLiveEvent,
   } = useAppStore();
@@ -42,20 +40,15 @@ const IpcRootBridge: React.FC = (): null => {
     eventTable,
     insertLiveEvent,
     removeActiveSession,
-    selectServer,
     selectedServerId,
   ]);
 
   useEffect(() => {
     const onActiveSessions = window.api.onActiveSessions(ids => {
       setActiveSessions(ids);
-      // select first active server at startup, may be changed to remembered before closed up app
-      if (ids.length > 0) {
-        selectServer(ids[0]);
-      }
       return () => onActiveSessions();
     });
-  }, [selectServer, setActiveSessions]);
+  }, [setActiveSessions]);
 
   useEffect(() => {
     const onHeartbeat = window.api.onHeartbeat(updateHeartbeat);

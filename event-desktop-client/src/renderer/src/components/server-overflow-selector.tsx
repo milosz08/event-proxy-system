@@ -15,7 +15,13 @@ import React, { useMemo } from 'react';
 import styled from 'styled-components';
 
 const ServerOverflowSelector: React.FC = (): React.ReactElement => {
-  const { servers, activeSessions, selectedServerId, selectServer } = useAppStore();
+  const { servers, uiConfig, activeSessions, setUiConfig } = useAppStore();
+  const { selectedServerId } = uiConfig;
+
+  const onSelectServer = async (serverId: string): Promise<void> => {
+    setUiConfig({ ...uiConfig, selectedServerId: serverId });
+    setUiConfig(await window.api.updateUiConfig({ selectedServerId: serverId }));
+  };
 
   const ServerTag = (server: ServerConfig): React.ReactElement | null =>
     selectedServerId && activeSessions.has(selectedServerId) && server.unreadNotifications > 0 ? (
@@ -40,7 +46,7 @@ const ServerOverflowSelector: React.FC = (): React.ReactElement => {
         <Button
           key={server.id}
           active={selectedServerId === server.id}
-          onClick={() => selectServer(server.id)}
+          onClick={() => onSelectServer(server.id)}
           text={server.name}
           title={server.url}
           icon={<PulsingIcon isConnected={activeSessions.has(server.id)} />}
@@ -65,7 +71,7 @@ const ServerOverflowSelector: React.FC = (): React.ReactElement => {
                     </MenuItemTextContainer>
                   }
                   icon={selectedServerId === server.id ? 'tick' : 'blank'}
-                  onClick={() => selectServer(server.id)}
+                  onClick={() => onSelectServer(server.id)}
                   labelElement={<ServerTag {...server} />}
                 />
               ))}

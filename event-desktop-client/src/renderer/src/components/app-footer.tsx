@@ -6,7 +6,11 @@ import React, { useMemo } from 'react';
 import styled from 'styled-components';
 
 const AppFooter: React.FC = (): React.ReactElement => {
-  const { servers, activeSessions, selectedServerId } = useAppStore();
+  const {
+    servers,
+    uiConfig: { selectedServerId },
+    activeSessions,
+  } = useAppStore();
 
   const selectedServer = useMemo(
     () => servers.get(selectedServerId as string),

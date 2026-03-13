@@ -9,7 +9,6 @@ type AppState = {
   uiConfig: UiConfig;
   searchValue: string;
   activeSessions: Set<string>;
-  selectedServerId: string | null;
   updateDefaultPasswordServerId: string | null;
   serversDrawerActive: boolean;
   addServerDrawerActive: boolean;
@@ -21,7 +20,6 @@ type AppState = {
   setServers: (servers: ServerConfig[]) => void;
   setUiConfig: (uiConfig: UiConfig) => void;
   setSearchValue: (searchValue: string) => void;
-  selectServer: (id: string) => void;
   removeServer: (id: string) => void;
   setActiveSessions: (ids: string[]) => void;
   addActiveSession: (id: string) => void;
@@ -53,10 +51,10 @@ export const useAppStore = create<AppState>(set => ({
     sortByAscending: false,
     eventTable: 'EVENTS',
     eventSourceFilter: null,
+    selectedServerId: null,
   },
   searchValue: '',
   activeSessions: new Set(),
-  selectedServerId: null,
   updateDefaultPasswordServerId: null,
   serversDrawerActive: false,
   addServerDrawerActive: false,
@@ -72,7 +70,6 @@ export const useAppStore = create<AppState>(set => ({
     })),
   setUiConfig: uiConfig => set(state => ({ ...state, uiConfig })),
   setSearchValue: searchValue => set(state => ({ ...state, searchValue })),
-  selectServer: id => set({ selectedServerId: id }),
   removeServer: id =>
     set(state => {
       const newServers = new Map(state.servers);
@@ -81,7 +78,11 @@ export const useAppStore = create<AppState>(set => ({
         ...state,
         servers: newServers,
         activeSessions: new Set([...state.activeSessions].filter(sessionId => sessionId !== id)),
-        selectedServerId: state.selectedServerId === id ? null : state.selectedServerId,
+        uiConfig: {
+          ...state.uiConfig,
+          selectedServerId:
+            state.uiConfig.selectedServerId === id ? null : state.uiConfig.selectedServerId,
+        },
       };
     }),
   setActiveSessions: ids => set({ activeSessions: new Set(ids) }),

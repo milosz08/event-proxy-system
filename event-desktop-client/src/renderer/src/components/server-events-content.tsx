@@ -13,13 +13,13 @@ import styled from 'styled-components';
 const ServerEventsContent: React.FC = (): React.ReactElement | null => {
   const {
     servers,
-    selectedServerId,
     activeSessions,
-    uiConfig: { showDetails },
-    selectServer,
+    uiConfig,
     openDefaultPasswordDialog,
     addActiveSession,
+    setUiConfig,
   } = useAppStore();
+  const { showDetails, selectedServerId } = uiConfig;
 
   const [loadingConnect, runConnect] = useSpinner();
 
@@ -34,7 +34,8 @@ const ServerEventsContent: React.FC = (): React.ReactElement | null => {
       return;
     }
     const [firstActiveSession] = activeSessions;
-    selectServer(firstActiveSession);
+    setUiConfig({ ...uiConfig, selectedServerId: firstActiveSession });
+    setUiConfig(await window.api.updateUiConfig({ selectedServerId: firstActiveSession }));
   };
 
   if (!selectedServerId || !selectedServerName) {

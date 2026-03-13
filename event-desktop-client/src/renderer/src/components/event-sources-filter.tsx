@@ -7,8 +7,8 @@ import React, { useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 const EventSourceFilter: React.FC = () => {
-  const { events, selectedServerId, uiConfig, setUiConfig } = useAppStore();
-  const { eventTable, eventSourceFilter } = uiConfig;
+  const { events, uiConfig, setUiConfig } = useAppStore();
+  const { eventTable, selectedServerId, eventSourceFilter } = uiConfig;
 
   const [sourcesFetching, fetchSources] = useSpinner();
   const [apiSources, setApiSources] = useState<string[]>([]);

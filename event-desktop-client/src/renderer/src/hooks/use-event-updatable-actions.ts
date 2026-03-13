@@ -18,13 +18,12 @@ type ReturnProps = {
 const useEventUpdatableActions = (): ReturnProps => {
   const {
     events,
-    selectedServerId,
     selectedEvents,
     setEvents,
     setSelectedEvents,
     removeSelectedEvents,
     removeEvents,
-    uiConfig: { eventSourceFilter, eventTable },
+    uiConfig: { eventSourceFilter, eventTable, selectedServerId },
   } = useAppStore();
 
   const singleRequest = useCallback(

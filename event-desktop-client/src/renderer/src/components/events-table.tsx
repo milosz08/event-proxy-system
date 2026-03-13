@@ -27,8 +27,7 @@ type Props = {
 
 const EventsTable: React.FC<Props> = ({ rowHeight = 30, batchSize = 50 }): React.ReactElement => {
   const {
-    selectedServerId,
-    uiConfig: { sortByAscending, eventTable, eventSourceFilter },
+    uiConfig: { sortByAscending, eventTable, eventSourceFilter, selectedServerId },
     searchValue,
     events,
     hasMoreEvents,

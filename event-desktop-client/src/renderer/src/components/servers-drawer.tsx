@@ -87,6 +87,7 @@ const ServersDrawer: React.FC = (): React.ReactElement => {
         if (success) {
           removeServer(serverId as string);
           setServerId(null);
+          await window.api.updateUiConfig({ selectedServerId: null });
           await AppToaster.success('Deleted server');
         }
         if (error) {

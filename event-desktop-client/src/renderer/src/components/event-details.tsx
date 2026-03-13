@@ -11,9 +11,8 @@ import styled from 'styled-components';
 
 const EventDetails: React.FC = (): React.ReactElement | null => {
   const {
-    selectedServerId,
     selectedEvents,
-    uiConfig: { eventTable },
+    uiConfig: { eventTable, selectedServerId },
     updateEvent,
     setSelectedEvents,
   } = useAppStore();
