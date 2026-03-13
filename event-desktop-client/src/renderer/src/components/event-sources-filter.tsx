@@ -3,20 +3,26 @@ import { useAsyncEffect } from '@reactuses/core';
 import useSpinner from '@renderer/hooks/use-spinner';
 import { useAppStore } from '@renderer/store/use-app-store';
 import { AppToaster } from '@renderer/utils/app-toaster';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 const EventSourceFilter: React.FC = () => {
-  const { selectedServerId, uiConfig, setUiConfig } = useAppStore();
+  const { events, selectedServerId, uiConfig, setUiConfig } = useAppStore();
   const { eventTable, eventSourceFilter } = uiConfig;
 
   const [sourcesFetching, fetchSources] = useSpinner();
-  const [eventSources, setEventSources] = useState<string[]>([]);
+  const [apiSources, setApiSources] = useState<string[]>([]);
 
   const setEventSourceFilter = async (source: string | null): Promise<void> => {
     setUiConfig({ ...uiConfig, eventSourceFilter: source });
     setUiConfig(await window.api.updateUiConfig({ eventSourceFilter: source }));
   };
+
+  const eventSources = useMemo(() => {
+    const activeSources = events.map(e => e.eventSource);
+    const combinedSources = new Set([...apiSources, ...activeSources]);
+    return Array.from(combinedSources).sort();
+  }, [events, apiSources]);
 
   useAsyncEffect(
     async () => {
@@ -28,10 +34,7 @@ const EventSourceFilter: React.FC = () => {
             eventTable
           );
           if (success && data) {
-            setEventSources(data);
-            if (eventSourceFilter && !data.includes(eventSourceFilter)) {
-              await setEventSourceFilter(null);
-            }
+            setApiSources(data);
           }
           if (error) {
             await AppToaster.error(error);
@@ -41,6 +44,20 @@ const EventSourceFilter: React.FC = () => {
     },
     () => {},
     [selectedServerId, eventTable, fetchSources]
+  );
+
+  useAsyncEffect(
+    async () => {
+      if (
+        eventSourceFilter &&
+        eventSources.length > 0 &&
+        !eventSources.includes(eventSourceFilter)
+      ) {
+        await setEventSourceFilter(null);
+      }
+    },
+    () => {},
+    [eventSources, eventSourceFilter]
   );
 
   return (
