@@ -29,14 +29,18 @@ FROM eclipse-temurin:17-jre-alpine
 ENV BUILD_DIR=/build/event-proxy-system/event-proxy-server
 ENV ENTRY_DIR=/app/event-proxy-server
 ENV JAR_NAME=event-proxy-server.jar
+ENV DB_DATA_DIR=db-data
 
 WORKDIR $ENTRY_DIR
 
 RUN addgroup -S epgroup && \
     adduser -S epuser -G epgroup
 
+RUN mkdir -p $ENTRY_DIR/$DB_DATA_DIR
+
 # for read/write SQLite database
-RUN chown -R epuser:epgroup $ENTRY_DIR
+RUN chown -R epuser:epgroup $ENTRY_DIR \
+    chmod -R 775 $ENTRY_DIR/$DB_DATA_DIR
 
 COPY --chown=epuser:epgroup --from=build $BUILD_DIR/.bin/$JAR_NAME $ENTRY_DIR/$JAR_NAME
 COPY --from=build $BUILD_DIR/docker/entrypoint $ENTRY_DIR/entrypoint

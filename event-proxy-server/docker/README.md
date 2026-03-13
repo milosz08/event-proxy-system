@@ -31,7 +31,7 @@ docker run -d \
   -e SMTP_THREAD_POOL_SIZE=10 \
   -e SMTP_QUEUE_CAPACITY=10 \
   -e SMTP_SENDER_SUFFIX=event-proxy-system \
-  -e DB_PATH=events.db \
+  -e DB_PATH=db-data/events.db \
   -e DB_POOL_SIZE=5 \
   -e SESSION_TTL_SEC=7200 \
   -e SESSION_CLEAR_INTERVAL_SEC=3600 \
@@ -44,6 +44,11 @@ docker run -d \
 * Using `docker-compose.yml` file:
 
 ```yaml
+volumes:
+  event-proxy-server-db-data:
+    name: event-proxy-server-db-data
+    driver: local
+
 services:
   event-proxy-server:
     container_name: event-proxy-server
@@ -63,7 +68,7 @@ services:
       SMTP_QUEUE_CAPACITY: 10
       SMTP_SENDER_SUFFIX: event-proxy-system
       # database
-      DB_PATH: events.db
+      DB_PATH: db-data/events.db
       DB_POOL_SIZE: 5
       # session
       SESSION_TTL_SEC: 7200
@@ -72,6 +77,8 @@ services:
       ACCOUNT_USERNAME: admin
       ACCOUNT_PASSWORD_LENGTH: 20
       ACCOUNT_PASSWORD_HASH_STRENGTH: 10
+    volumes:
+      - event-proxy-server-db-data:/app/event-proxy-server/db-data
     networks:
       - event-proxy-server-network
 
