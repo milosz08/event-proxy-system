@@ -69,8 +69,12 @@ export class BadgeService {
 
   private refreshGlobalBadge(): void {
     let total = 0;
+    let serversWithUnread = 0;
     for (const count of this.unreadCounts.values()) {
       total += count;
+      if (count > 0) {
+        serversWithUnread++;
+      }
     }
     if (process.platform === 'darwin' || process.platform === 'linux') {
       app.badgeCount = total;
@@ -83,7 +87,7 @@ export class BadgeService {
     }
     this.mainWindow.setTitle(
       total > 0
-        ? `${DEFAULT_TITLE} (${total} unread events from ${this.unreadCounts.size} server/s)`
+        ? `${DEFAULT_TITLE} (${total} unread events from ${serversWithUnread} server/s)`
         : DEFAULT_TITLE
     );
   }
