@@ -65,7 +65,7 @@ encrypted with an asymmetric key (RSA).
 
 The following comparison was conducted with both applications in an idle state, without any active
 SSE connections or incoming requests. The benchmark baseline is a standard Spring Boot installation
-including the spring-boot-starter-web dependency.
+including the spring-boot-starter-web and spring-boot-starter-jdbc dependency.
 
 Heap size: 256MB
 
