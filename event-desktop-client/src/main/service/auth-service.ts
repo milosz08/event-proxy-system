@@ -1,5 +1,5 @@
 import type { Cookie } from 'tough-cookie';
-import type { LoginResult, ResponseResult } from '../../@types/shared';
+import type { ApiResult, LoginData, ResponseResult } from '../../@types/shared';
 import { createScopedLogger } from '../logger';
 import type { NetworkSessionManager } from '../network/network-session-manager';
 import { safeRequest } from '../network/request';
@@ -67,7 +67,7 @@ export class AuthService {
     }
   }
 
-  public async connect(serverId: string): Promise<LoginResult> {
+  public async connect(serverId: string): Promise<ApiResult<LoginData>> {
     const server = this.configService.getServerById(serverId);
     if (!server) {
       return { success: false, error: 'Server not found' };
@@ -104,7 +104,7 @@ export class AuthService {
       return result;
     }
     const data = result.data!;
-    const hasDefaultPassword = data.hasDefaultPassword;
+    const { hasDefaultPassword, ...rest } = data;
 
     const sessionCookieFound = await this.safeUpdateSessionCookie(server, hasDefaultPassword);
     if (sessionCookieFound) {
@@ -114,7 +114,12 @@ export class AuthService {
     }
     return {
       success: sessionCookieFound,
-      hasDefaultPassword,
+      data: sessionCookieFound
+        ? {
+            hasDefaultPassword,
+            ...rest,
+          }
+        : undefined,
       error: !sessionCookieFound ? 'Login error' : undefined,
     };
   }

@@ -3,7 +3,7 @@ import {
   EventDetails,
   EventPayload,
   EventTable,
-  LoginResult,
+  LoginData,
   PageableApiResults,
   ResponseResult,
   ServerConfigDTO,
@@ -31,7 +31,7 @@ declare global {
         ) => void
       ) => () => void;
       // auth
-      connect: (serverId: string) => Promise<LoginResult>;
+      connect: (serverId: string) => Promise<ApiResult<LoginData>>;
       disconnect: (serverId: string) => Promise<boolean>;
       updateDefaultPassword: (serverId: string, newPassword: string) => Promise<ResponseResult>;
       onSessionExpired: (callback: (serverId: string) => void) => () => void;

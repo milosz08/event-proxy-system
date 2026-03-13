@@ -54,9 +54,9 @@ const ServerEventsContent: React.FC = (): React.ReactElement | null => {
     await runConnect(
       () => true,
       async () => {
-        const { success, error, hasDefaultPassword } = await window.api.connect(selectedServerId);
-        if (success) {
-          if (hasDefaultPassword) {
+        const { success, error, data } = await window.api.connect(selectedServerId);
+        if (success && data) {
+          if (data.hasDefaultPassword) {
             openDefaultPasswordDialog(selectedServerId);
           }
           addActiveSession(selectedServerId);

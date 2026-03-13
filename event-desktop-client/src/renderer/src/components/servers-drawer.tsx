@@ -51,9 +51,9 @@ const ServersDrawer: React.FC = (): React.ReactElement => {
     await runConnect(
       () => true,
       async () => {
-        const { success, error, hasDefaultPassword } = await window.api.connect(id);
-        if (success) {
-          if (hasDefaultPassword) {
+        const { success, error, data } = await window.api.connect(id);
+        if (success && data) {
+          if (data.hasDefaultPassword) {
             openDefaultPasswordDialog(id);
           }
           addActiveSession(id);

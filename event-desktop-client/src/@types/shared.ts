@@ -21,9 +21,9 @@ export type ResponseResult = {
   resTimeMillis?: number;
 };
 
-export type LoginResult = {
+export type LoginData = {
   hasDefaultPassword?: boolean;
-} & ResponseResult;
+};
 
 export type ServerConfigDTO = {
   id: string;

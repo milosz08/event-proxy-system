@@ -4,7 +4,7 @@ import {
   EventDetails,
   EventPayload,
   EventTable,
-  LoginResult,
+  LoginData,
   PageableApiResults,
   ResponseResult,
   ServerConfigDTO,
@@ -56,7 +56,7 @@ const api = {
     };
   },
   // auth
-  connect: (serverId: string): Promise<LoginResult> => {
+  connect: (serverId: string): Promise<ApiResult<LoginData>> => {
     return ipcRenderer.invoke('auth:connect', serverId);
   },
   disconnect: (serverId: string): Promise<boolean> => {
