@@ -34,6 +34,7 @@ const store = new Store<AppSchema>({
       sortByAscending: false,
       eventTable: 'EVENTS',
       eventSourceFilter: null,
+      selectedServerId: null,
     },
   },
 });
