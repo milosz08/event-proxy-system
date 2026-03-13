@@ -49,6 +49,10 @@ export class BadgeService {
     if (!this.unreadCounts.has(serverId)) {
       return;
     }
+    const currentCount = this.unreadCounts.get(serverId);
+    if (currentCount === count) {
+      return;
+    }
     this.unreadCounts.set(serverId, count);
     this.refreshGlobalBadge();
   }
