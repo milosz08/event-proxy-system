@@ -28,7 +28,6 @@ export type LoginData = {
 export type ServerConfigDTO = {
   id: string;
   hasDefaultPassword?: boolean;
-  unreadNotifications: number;
   lastHeartbeatTimestamp?: number; // as timestamp
   lastHeartbeatStatus?: boolean;
   lastHeartbeatResTimeMillis?: number;

@@ -24,7 +24,6 @@ export class ConfigService {
       url: url.replace(/\/$/, ''),
       username,
       encryptedPassword,
-      unreadNotifications: 0,
     };
 
     const currentServers = this.getServers();
