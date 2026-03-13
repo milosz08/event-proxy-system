@@ -12,7 +12,7 @@ RUN addgroup -S epgroup && \
 RUN mkdir -p $ENTRY_DIR/$DB_DATA_DIR
 
 # for read/write SQLite database
-RUN chown -R epuser:epgroup $ENTRY_DIR \
+RUN chown -R epuser:epgroup $ENTRY_DIR && \
     chmod -R 775 $ENTRY_DIR/$DB_DATA_DIR
 
 # copy pre-build jar file from CI/CD build task
