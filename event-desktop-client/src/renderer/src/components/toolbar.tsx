@@ -47,7 +47,7 @@ const Toolbar: React.FC = (): React.ReactElement => {
       />
       <Button
         icon={sortByAscending ? 'sort-asc' : 'sort-desc'}
-        text="Sort by: date"
+        text="Sort by: time"
         onClick={() => toggleUiProperty('sortByAscending')}
       />
       <EventSourceFilter />
