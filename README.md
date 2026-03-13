@@ -15,6 +15,7 @@ Build with Lightweight embed Jetty servlet container, Java raw TCP sockets and E
 * [Basic concept](#basic-concept)
 * [Demo (desktop app)](#demo-desktop-app)
 * [In-transit envelope encryption](#in-transit-envelope-encryption)
+* [JVM memory footprint](#jvm-memory-footprint)
 * [Clone, and run server](#clone-and-run-server)
 * [Run client in development environment](#run-client-in-development-environment)
 * [Package client (create executables)](#package-client-create-executables)
@@ -59,6 +60,17 @@ encrypted with an asymmetric key (RSA).
 5. Finally, the plaintext (decrypted) data is sent to the Renderer via the IPC tunnel.
 
 ![](.github/secure-communication.svg)
+
+## JVM memory footprint
+
+The following comparison was conducted with both applications in an idle state, without any active
+SSE connections or incoming requests. The benchmark baseline is a standard Spring Boot installation
+including the spring-boot-starter-web dependency.
+
+| Event proxy server                     | Blank Spring Boot application             |
+|----------------------------------------|-------------------------------------------|
+| Peak: ~60MB (heap size: 256MB)         | Peak: ~140MB (heap size: 256MB)           |
+| ![](./.github/jvm-mem/jvm-mem-app.png) | ![](./.github/jvm-mem/jvm-mem-spring.png) |
 
 ## Clone, and run server
 
