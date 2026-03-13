@@ -67,9 +67,11 @@ The following comparison was conducted with both applications in an idle state, 
 SSE connections or incoming requests. The benchmark baseline is a standard Spring Boot installation
 including the spring-boot-starter-web dependency.
 
+Heap size: 256MB
+
 | Event proxy server                     | Blank Spring Boot application             |
 |----------------------------------------|-------------------------------------------|
-| Peak: ~60MB (heap size: 256MB)         | Peak: ~140MB (heap size: 256MB)           |
+| Peak (min): ~8MB, (max): ~60MB         | Peak (min): ~16MB, (max): ~140MB          |
 | ![](./.github/jvm-mem/jvm-mem-app.png) | ![](./.github/jvm-mem/jvm-mem-spring.png) |
 
 ## Clone, and run server
