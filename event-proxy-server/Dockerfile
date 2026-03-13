@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jdk-alpine AS build
+FROM eclipse-temurin:21-jdk-alpine AS build
 
 ENV BUILD_DIR=/build/event-proxy-system
 
@@ -24,7 +24,7 @@ COPY event-proxy-server/docker $BUILD_DIR/event-proxy-server/docker
 
 RUN ./mvnw clean package -pl event-proxy-server
 
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:21-jre-alpine
 
 ENV BUILD_DIR=/build/event-proxy-system/event-proxy-server
 ENV ENTRY_DIR=/app/event-proxy-server

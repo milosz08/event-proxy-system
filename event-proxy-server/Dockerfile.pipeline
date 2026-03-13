@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:21-jre-alpine
 
 ENV ENTRY_DIR=/app/event-proxy-server
 ENV JAR_NAME=event-proxy-server.jar
