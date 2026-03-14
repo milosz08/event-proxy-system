@@ -5,6 +5,7 @@ export type ServerConfig = Omit<ServerConfigDTO, 'hasDefaultPassword'>;
 
 type AppState = {
   // state
+  uiIsLoading: boolean;
   servers: Map<string, Omit<ServerConfig, 'id'>>;
   uiConfig: UiConfig;
   searchValue: string;
@@ -45,6 +46,7 @@ type AppState = {
 
 export const useAppStore = create<AppState>(set => ({
   // state
+  uiIsLoading: true,
   servers: new Map(),
   uiConfig: {
     sideBySideLook: false,
@@ -88,7 +90,12 @@ export const useAppStore = create<AppState>(set => ({
         },
       };
     }),
-  setActiveSessions: ids => set({ activeSessions: new Set(ids) }),
+  setActiveSessions: ids =>
+    set(state => ({
+      ...state,
+      uiIsLoading: false,
+      activeSessions: new Set(ids),
+    })),
   addActiveSession: id =>
     set(state => {
       const newSet = new Set(state.activeSessions);
@@ -169,7 +176,6 @@ export const useAppStore = create<AppState>(set => ({
         uiConfig: { eventSourceFilter, eventTable, sortByAscending },
         hasMoreEvents,
       } = state;
-
       if (eventTable !== 'EVENTS') {
         return state;
       }
