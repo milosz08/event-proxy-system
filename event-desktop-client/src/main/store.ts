@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import Store from 'electron-store';
 import { ServerConfigDTO, UiConfig } from '../@types/shared';
+import { defaultUiConfig } from '../data/shared';
 
 export type ServerConfig = {
   encryptedPassword: string;
@@ -27,15 +28,7 @@ const store = new Store<AppSchema>({
       privateKey: '',
     },
     servers: [],
-    uiConfig: {
-      sideBySideLook: false,
-      showDetails: true,
-      panelSizes: [50, 50],
-      sortByAscending: false,
-      eventTable: 'EVENTS',
-      eventSourceFilter: null,
-      selectedServerId: null,
-    },
+    uiConfig: defaultUiConfig,
   },
 });
 

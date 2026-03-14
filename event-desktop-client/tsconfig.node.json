@@ -3,6 +3,7 @@
   "include": [
     "electron.vite.config.*",
     "src/@types/**/*",
+    "src/data/**/*",
     "src/main/**/*",
     "src/preload/**/*"
   ],

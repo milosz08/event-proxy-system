@@ -1,3 +1,4 @@
+import { defaultUiConfig } from '@shared-data/shared';
 import { EventPayload, ServerConfigDTO, SseEventPayload, UiConfig } from '@shared-types/shared';
 import { create } from 'zustand';
 
@@ -48,15 +49,7 @@ export const useAppStore = create<AppState>(set => ({
   // state
   uiIsLoading: true,
   servers: new Map(),
-  uiConfig: {
-    sideBySideLook: false,
-    showDetails: true,
-    panelSizes: [50, 50],
-    sortByAscending: false,
-    eventTable: 'EVENTS',
-    eventSourceFilter: null,
-    selectedServerId: null,
-  },
+  uiConfig: defaultUiConfig,
   searchValue: '',
   activeSessions: new Set(),
   updateDefaultPasswordServerId: null,

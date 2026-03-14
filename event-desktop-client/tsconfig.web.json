@@ -2,6 +2,7 @@
   "extends": "@electron-toolkit/tsconfig/tsconfig.web.json",
   "include": [
     "src/@types/**/*",
+    "src/data/**/*",
     "src/preload/*.d.ts",
     "src/renderer/src/env.d.ts",
     "src/renderer/src/**/*",
@@ -17,6 +18,9 @@
       ],
       "@shared-types/*": [
         "src/@types/*"
+      ],
+      "@shared-data/*": [
+        "src/data/*"
       ]
     }
   }
