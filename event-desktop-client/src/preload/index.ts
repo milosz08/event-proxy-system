@@ -18,7 +18,7 @@ const api = {
   getAllBadgeCounts: (): Promise<Record<string, number>> => {
     return ipcRenderer.invoke('badge:get-all-counts');
   },
-  onBadgeSyncAll: (callback: (counts: Record<string, number>) => void) => {
+  onBadgeSyncAll: (callback: (counts: Record<string, number>) => void): (() => void) => {
     const listener = (_: IpcRendererEvent, counts: Record<string, number>): void =>
       callback(counts);
     ipcRenderer.on('badge:sync-all', (_, counts) => callback(counts));
@@ -45,7 +45,9 @@ const api = {
   removeServer: (serverId: string): Promise<ResponseResult> => {
     return ipcRenderer.invoke('server:remove', serverId);
   },
-  onHeartbeat: (callback: (serverId: string, status: boolean, resTimeMillis?: number) => void) => {
+  onHeartbeat: (
+    callback: (serverId: string, status: boolean, resTimeMillis?: number) => void
+  ): (() => void) => {
     const listener = (
       _: IpcRendererEvent,
       serverId: string,
@@ -64,7 +66,7 @@ const api = {
       payload: SseEventPayload | undefined,
       error: string | undefined
     ) => void
-  ) => {
+  ): (() => void) => {
     const listener = (
       _: IpcRendererEvent,
       serverId: string,
