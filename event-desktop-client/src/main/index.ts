@@ -64,7 +64,9 @@ const onReady = async (): Promise<void> => {
   });
 
   // badge
-  const badgeService = new BadgeService();
+  const badgeService = new BadgeService(counts => {
+    mainWindow.webContents.send('badge:sync-all', counts);
+  });
   badgeService.setMainWindow(mainWindow);
 
   const cryptoService = new CryptoService();

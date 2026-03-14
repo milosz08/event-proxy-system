@@ -13,6 +13,7 @@ const IpcRootBridge: React.FC = (): null => {
     removeActiveSession,
     updateHeartbeat,
     insertLiveEvent,
+    setUnreadNotifications,
   } = useAppStore();
 
   const audio = useMemo(() => new Audio(notificationSound), []);
@@ -59,6 +60,11 @@ const IpcRootBridge: React.FC = (): null => {
     const onSessionExpired = window.api.onSessionExpired(removeActiveSession);
     return () => onSessionExpired();
   }, [removeActiveSession]);
+
+  useEffect(() => {
+    const onBadgeSyncAll = window.api.onBadgeSyncAll(setUnreadNotifications);
+    return () => onBadgeSyncAll();
+  }, [setUnreadNotifications]);
 
   useAsyncEffect(
     async () => {

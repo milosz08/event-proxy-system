@@ -15,7 +15,7 @@ import React, { useMemo } from 'react';
 import styled from 'styled-components';
 
 const ServerOverflowSelector: React.FC = (): React.ReactElement => {
-  const { servers, uiConfig, activeSessions, setUiConfig } = useAppStore();
+  const { servers, uiConfig, activeSessions, unreadNotifications, setUiConfig } = useAppStore();
   const { selectedServerId } = uiConfig;
 
   const onSelectServer = async (serverId: string): Promise<void> => {
@@ -23,12 +23,14 @@ const ServerOverflowSelector: React.FC = (): React.ReactElement => {
     setUiConfig(await window.api.updateUiConfig({ selectedServerId: serverId }));
   };
 
-  const ServerTag = (server: ServerConfig): React.ReactElement | null =>
-    selectedServerId && activeSessions.has(selectedServerId) && server.unreadNotifications > 0 ? (
+  const ServerTag = (server: ServerConfig): React.ReactElement | null => {
+    const unreadCount = unreadNotifications[server.id] ?? 0;
+    return selectedServerId && activeSessions.has(selectedServerId) && unreadCount > 0 ? (
       <Tag round intent="danger" minimal>
-        {server.unreadNotifications > 9 ? '9+' : server.unreadNotifications}
+        {unreadCount > 9 ? '9+' : unreadCount}
       </Tag>
     ) : null;
+  };
 
   const serversList = useMemo(
     () =>

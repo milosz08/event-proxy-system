@@ -10,7 +10,7 @@ export class BadgeService {
   private mainWindow: BrowserWindow | null = null;
   private eventService: EventService | null = null;
 
-  constructor() {
+  constructor(private readonly onBadgeChange?: (counts: Record<string, number>) => void) {
     this.badgeGenerator = new Badge();
     if (process.platform !== 'darwin' && process.platform !== 'linux') {
       this.badgeGenerator.preloadBadges();
@@ -94,5 +94,8 @@ export class BadgeService {
         ? `${DEFAULT_TITLE} (${total} unread events from ${serversWithUnread} server/s)`
         : DEFAULT_TITLE
     );
+    if (this.onBadgeChange) {
+      this.onBadgeChange(Object.fromEntries(this.unreadCounts));
+    }
   }
 }

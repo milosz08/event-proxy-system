@@ -14,6 +14,15 @@ import {
 } from '../@types/shared';
 
 const api = {
+  // badge
+  onBadgeSyncAll: (callback: (counts: Record<string, number>) => void) => {
+    const listener = (_: IpcRendererEvent, counts: Record<string, number>): void =>
+      callback(counts);
+    ipcRenderer.on('badge:sync-all', (_, counts) => callback(counts));
+    return () => {
+      ipcRenderer.removeListener('badge:sync-all', listener);
+    };
+  },
   // servers
   addServer: (data: ServerInput): Promise<string> => {
     return ipcRenderer.invoke('server:add', data);

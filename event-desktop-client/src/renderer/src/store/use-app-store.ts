@@ -16,6 +16,7 @@ type AppState = {
   events: EventPayload[];
   hasMoreEvents: boolean;
   loadedHistoricalRecords: number;
+  unreadNotifications: Record<string, number>;
   // actions
   setServers: (servers: ServerConfig[]) => void;
   setUiConfig: (uiConfig: UiConfig) => void;
@@ -39,6 +40,7 @@ type AppState = {
   setHasMoreEvents: (hasMore: boolean) => void;
   updateEvent: (eventId: number, changes: Partial<EventPayload>) => void;
   insertLiveEvent: (newEvent: SseEventPayload) => void;
+  setUnreadNotifications: (counts: Record<string, number>) => void;
 };
 
 export const useAppStore = create<AppState>(set => ({
@@ -62,6 +64,7 @@ export const useAppStore = create<AppState>(set => ({
   events: [],
   hasMoreEvents: true,
   loadedHistoricalRecords: 0,
+  unreadNotifications: {},
   // actions
   setServers: servers =>
     set(state => ({
@@ -185,4 +188,5 @@ export const useAppStore = create<AppState>(set => ({
       }
       return { ...state, events: [event, ...state.events] };
     }),
+  setUnreadNotifications: counts => set(state => ({ ...state, unreadNotifications: counts })),
 }));
