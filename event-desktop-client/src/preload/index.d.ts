@@ -18,6 +18,8 @@ declare global {
       // badge
       getAllBadgeCounts: () => Promise<Record<string, number>>;
       onBadgeSyncAll: (callback: (counts: Record<string, number>) => void) => () => void;
+      // setup point
+      onSetupPoint: (callback: (serverName: string | undefined, msg: string) => void) => () => void;
       // servers
       addServer: (data: ServerInput) => Promise<string>;
       getServers: () => Promise<ServerConfigDTO[]>;

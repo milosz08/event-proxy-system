@@ -26,6 +26,15 @@ const api = {
       ipcRenderer.removeListener('badge:sync-all', listener);
     };
   },
+  // setup point
+  onSetupPoint: (callback: (serverName: string | undefined, msg: string) => void): (() => void) => {
+    const listener = (_: IpcRendererEvent, serverName: string | undefined, msg: string): void =>
+      callback(serverName, msg);
+    ipcRenderer.on('status:setup-point', listener);
+    return () => {
+      ipcRenderer.removeListener('status:setup-point', listener);
+    };
+  },
   // servers
   addServer: (data: ServerInput): Promise<string> => {
     return ipcRenderer.invoke('server:add', data);

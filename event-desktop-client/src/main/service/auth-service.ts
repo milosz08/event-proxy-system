@@ -17,6 +17,7 @@ type Handlers = {
   onSessionExpired: (serverId: string) => void;
   onConnect: (server: ServerConfig) => Promise<void>;
   onDisconnect: (server: ServerConfig) => Promise<void>;
+  onSetupPoint: (serverName: string | undefined, msg: string) => Promise<void>;
 };
 
 const DEFAULT_REFRESH_MS = 15 * 60 * 1000;
@@ -38,6 +39,7 @@ export class AuthService {
       return;
     }
     this.logger.info('?', `checking sessions for ${servers.length} servers...`);
+    await this.handlers.onSetupPoint(undefined, 'checking saved sessions');
     await Promise.allSettled(
       servers.map(async server => {
         const isValid = await this.initializeSession(server.id);
@@ -45,6 +47,7 @@ export class AuthService {
           ? 'session active, heartbeat started'
           : 'session expired or invalid';
         this.logger.info(server.name, message);
+        await this.handlers.onSetupPoint(server.name, message);
       })
     );
   }
@@ -55,10 +58,12 @@ export class AuthService {
       return false;
     }
     this.logger.info(server.name, 'verifying existing session on startup...');
+    await this.handlers.onSetupPoint(server.name, 'verifying existing session');
     const { success } = await this.refreshSession(serverId);
     if (success) {
       await this.startHeartbeatForServer(server);
       await this.handlers.onConnect(server);
+      await this.handlers.onSetupPoint(server.name, 'connected');
       return true;
     } else {
       this.logger.warn(server.name, 'session expired or invalid on startup');

@@ -104,6 +104,9 @@ const onReady = async (): Promise<void> => {
       eventService.stopEventsStream(server.id);
       badgeService.removeServer(server.id);
     },
+    onSetupPoint: async (serverName, msg) => {
+      mainWindow.webContents.send('status:setup-point', serverName, msg);
+    },
   });
 
   // ipc badge
