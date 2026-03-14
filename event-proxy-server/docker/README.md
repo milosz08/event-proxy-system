@@ -38,6 +38,8 @@ docker run -d \
   -e ACCOUNT_USERNAME=admin \
   -e ACCOUNT_PASSWORD_LENGTH=20 \
   -e ACCOUNT_PASSWORD_HASH_STRENGTH=10 \
+  -e ARCHIVE_CLEAR_INTERVAL_SEC=3600 \
+  -e ARCHIVE_RETENTION_DAYS=30 \
   milosz08/event-proxy-server:latest
 ```
 
@@ -77,6 +79,9 @@ services:
       ACCOUNT_USERNAME: admin
       ACCOUNT_PASSWORD_LENGTH: 20
       ACCOUNT_PASSWORD_HASH_STRENGTH: 10
+      # archive
+      ARCHIVE_CLEAR_INTERVAL_SEC: 7200
+      ARCHIVE_RETENTION_DAYS: 30
     volumes:
       - event-proxy-server-db-data:/app/event-proxy-server/db-data
     networks:

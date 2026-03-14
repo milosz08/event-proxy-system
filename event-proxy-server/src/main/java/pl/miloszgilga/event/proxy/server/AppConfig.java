@@ -70,6 +70,8 @@ public class AppConfig {
     ACCOUNT_USERNAME("account-username"),
     ACCOUNT_PASSWORD_LENGTH("account-password-length"),
     ACCOUNT_PASSWORD_HASH_STRENGTH("account-password-hash-strength"),
+    ARCHIVE_CLEAR_INTERVAL_SEC("archive-clear-interval-sec"),
+    ARCHIVE_RETENTION_DAYS("archive-retention-days"),
     ;
 
     private final String key;

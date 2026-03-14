@@ -366,6 +366,26 @@ public class JdbcEventDao implements EventDao {
     return false;
   }
 
+  @Override
+  public int deleteRecordsOlderThan(EventTableSource tableSource, long thresholdMillis) {
+    final String tableName = tableSource.getTableName();
+    final String sql = String.format("DELETE FROM `%s` WHERE eventTime < ?;", tableName);
+    try (final Connection conn = dbConnectionPool.getConnection();
+         final PreparedStatement ps = conn.prepareStatement(sql)) {
+      ps.setLong(1, thresholdMillis);
+      final int affectedRows = ps.executeUpdate();
+      if (affectedRows > 0) {
+        LOG.info("Successfully deleted {} old records from {} (older than threshold: {})",
+          affectedRows, tableName, thresholdMillis);
+      }
+      return affectedRows;
+    } catch (SQLException ex) {
+      LOG.error("Unable to delete old records from table: {}. Cause: {}",
+        tableName, ex.getMessage());
+      return -1;
+    }
+  }
+
   private boolean moveAllBetweenTables(
     EventTableSource source,
     EventTableSource target,

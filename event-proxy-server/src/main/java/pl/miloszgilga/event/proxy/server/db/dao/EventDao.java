@@ -43,4 +43,6 @@ public interface EventDao extends ContentInitializer {
   boolean deleteAllByOptionalEventSource(EventTableSource tableSource, String eventSource);
 
   boolean deleteMultipleByIds(EventTableSource tableSource, long[] ids);
+
+  int deleteRecordsOlderThan(EventTableSource tableSource, long thresholdMillis);
 }

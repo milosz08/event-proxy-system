@@ -1,5 +1,6 @@
 package pl.miloszgilga.event.proxy.server;
 
+import pl.miloszgilga.event.proxy.server.db.ArchiveCleanupService;
 import pl.miloszgilga.event.proxy.server.db.DbConnectionPool;
 import pl.miloszgilga.event.proxy.server.db.InstancePasswordManager;
 import pl.miloszgilga.event.proxy.server.db.dao.EventDao;
@@ -26,6 +27,7 @@ class EventProxyServerMain implements Runnable {
 
   private final EmailConsumer emailConsumer;
   private final ExpiredSessionRemoval expiredSessionRemoval;
+  private final ArchiveCleanupService archiveCleanupService;
 
   EventProxyServerMain() {
     final AppConfig appConfig = new AppConfig();
@@ -54,12 +56,14 @@ class EventProxyServerMain implements Runnable {
       sessionDao,
       appConfig.getAsInt(AppConfig.Prop.SESSION_CLEAR_INTERVAL_SEC)
     );
+    archiveCleanupService = new ArchiveCleanupService(appConfig, eventDao);
 
     initializerRegistry.register(eventDao);
     initializerRegistry.register(userDao);
     initializerRegistry.register(sessionDao);
     initializerRegistry.register(instancePasswordManager);
     initializerRegistry.register(expiredSessionRemoval);
+    initializerRegistry.register(archiveCleanupService);
 
     eventBroadcaster = new EventBroadcaster(
       appConfig.getAsLong(AppConfig.Prop.SSE_HEARTBEAT_INTERVAL_SEC),
@@ -103,5 +107,6 @@ class EventProxyServerMain implements Runnable {
     smtpProxyServerThread.stop();
     emailConsumer.stop();
     expiredSessionRemoval.close();
+    archiveCleanupService.close();
   }
 }
