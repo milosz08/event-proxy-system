@@ -1,4 +1,4 @@
-import { Alignment, Button, Classes, Navbar, NavbarDivider, NavbarGroup } from '@blueprintjs/core';
+import { Button, Classes, Navbar, NavbarDivider, NavbarGroup } from '@blueprintjs/core';
 import ServerOverflowSelector from '@renderer/components/server-overflow-selector';
 import { useAppStore } from '@renderer/store/use-app-store';
 import React, { useMemo } from 'react';
@@ -13,7 +13,7 @@ const AppNavbar: React.FC = (): React.ReactElement => {
 
   return (
     <StyledNavbar>
-      <StaticSection align={Alignment.START}>
+      <StaticSection align="start">
         <Button
           className={Classes.MINIMAL}
           icon="cube"
@@ -23,7 +23,7 @@ const AppNavbar: React.FC = (): React.ReactElement => {
         <NavbarDivider />
       </StaticSection>
       <DynamicSection>{servers.size > 0 && <ServerOverflowSelector />}</DynamicSection>
-      <StaticSection align={Alignment.END}>
+      <StaticSection align="end">
         <Button icon="add" text="Add proxy server" onClick={openAddServerDrawer} />
       </StaticSection>
     </StyledNavbar>
