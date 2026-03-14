@@ -25,7 +25,7 @@ const ServerOverflowSelector: React.FC = (): React.ReactElement => {
 
   const ServerTag = (server: ServerConfig): React.ReactElement | null => {
     const unreadCount = unreadNotifications[server.id] ?? 0;
-    return selectedServerId && activeSessions.has(selectedServerId) && unreadCount > 0 ? (
+    return activeSessions.has(server.id) && unreadCount > 0 ? (
       <Tag round intent="danger" minimal>
         {unreadCount > 9 ? '9+' : unreadCount}
       </Tag>
