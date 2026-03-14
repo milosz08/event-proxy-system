@@ -2,9 +2,20 @@ import { createScopedLogger } from '../logger';
 import type { ServerConfig } from '../store';
 import { extractErrorMessage } from '../utils';
 
+export type HeartbeatStatus = {
+  status: boolean;
+  resTimeMillis?: number;
+  timestamp: number;
+};
+
 export class SessionHeartbeatService {
   private logger = createScopedLogger(this.constructor.name);
   private timers: Map<string, NodeJS.Timeout> = new Map();
+  private lastStatuses: Map<string, HeartbeatStatus> = new Map();
+
+  public getLastStatus(serverId: string): HeartbeatStatus | undefined {
+    return this.lastStatuses.get(serverId);
+  }
 
   public start(
     server: ServerConfig,
@@ -40,6 +51,14 @@ export class SessionHeartbeatService {
     const placeholderTimer = setTimeout(() => {}, 0);
     this.timers.set(server.id, placeholderTimer);
     executeCycle().then(r => r);
+  }
+
+  public updateLastStatus(serverId: string, status: boolean, resTimeMillis?: number): void {
+    this.lastStatuses.set(serverId, {
+      status,
+      resTimeMillis,
+      timestamp: Date.now(),
+    });
   }
 
   public stop(server: ServerConfig): void {
