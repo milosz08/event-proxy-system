@@ -46,6 +46,7 @@ const IpcRootBridge: React.FC = () => {
       const state = useAppStore.getState();
       state.setServers(await window.api.getServers());
       state.setUiConfig(await window.api.getUiConfig());
+      state.setUnreadNotifications(await window.api.getAllBadgeCounts());
       state.setActiveSessions(await window.api.getInitialSessions());
     },
     () => {},

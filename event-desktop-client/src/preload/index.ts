@@ -15,6 +15,9 @@ import {
 
 const api = {
   // badge
+  getAllBadgeCounts: (): Promise<Record<string, number>> => {
+    return ipcRenderer.invoke('badge:get-all-counts');
+  },
   onBadgeSyncAll: (callback: (counts: Record<string, number>) => void) => {
     const listener = (_: IpcRendererEvent, counts: Record<string, number>): void =>
       callback(counts);

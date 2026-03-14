@@ -88,6 +88,7 @@ const onReady = async (): Promise<void> => {
   badgeService.setEventService(eventService);
   const authService = new AuthService(configService, networkManager, heartbeatService, {
     onHeartbeat: (serverId, status, resTimeMillis) => {
+      heartbeatService.updateLastStatus(serverId, status, resTimeMillis);
       mainWindow.webContents.send('server:heartbeat', serverId, status, resTimeMillis);
     },
     onSessionExpired: serverId => {
@@ -105,12 +106,25 @@ const onReady = async (): Promise<void> => {
     },
   });
 
+  // ipc badge
+  ipcMain.handle('badge:get-all-counts', () => {
+    return Object.fromEntries(badgeService.getUnreadCounts());
+  });
+
   // ipc servers
   ipcMain.handle('server:add', async (_, data) => {
     return configService.addServer(data.name, data.url, data.username, data.password);
   });
   ipcMain.handle('server:get-all', () => {
-    return configService.getServers();
+    return configService.getServers().map(server => {
+      const lastHeartbeat = heartbeatService.getLastStatus(server.id);
+      return {
+        ...server,
+        lastHeartbeatStatus: lastHeartbeat?.status ?? false,
+        lastHeartbeatResTimeMillis: lastHeartbeat?.resTimeMillis,
+        lastHeartbeatTimestamp: lastHeartbeat?.timestamp,
+      };
+    });
   });
   ipcMain.handle('server:remove', async (_, serverId: string) => {
     return await authService.removeServer(serverId);

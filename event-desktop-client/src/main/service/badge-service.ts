@@ -31,6 +31,10 @@ export class BadgeService {
     this.eventService = eventService;
   }
 
+  public getUnreadCounts(): Map<string, number> {
+    return this.unreadCounts;
+  }
+
   public async syncServerBadgeCount(serverId: string): Promise<void> {
     if (!this.eventService) {
       return;

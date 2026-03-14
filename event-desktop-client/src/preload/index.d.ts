@@ -16,6 +16,7 @@ declare global {
   interface Window {
     api: {
       // badge
+      getAllBadgeCounts: () => Promise<Record<string, number>>;
       onBadgeSyncAll: (callback: (counts: Record<string, number>) => void) => () => void;
       // servers
       addServer: (data: ServerInput) => Promise<string>;
