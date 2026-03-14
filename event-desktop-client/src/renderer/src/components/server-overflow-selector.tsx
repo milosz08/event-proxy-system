@@ -15,10 +15,12 @@ import React, { useMemo } from 'react';
 import styled from 'styled-components';
 
 const ServerOverflowSelector: React.FC = (): React.ReactElement => {
-  const { servers, uiConfig, activeSessions, unreadNotifications, setUiConfig } = useAppStore();
+  const { servers, uiConfig, activeSessions, unreadNotifications, setUiConfig, setSelectedEvents } =
+    useAppStore();
   const { selectedServerId } = uiConfig;
 
   const onSelectServer = async (serverId: string): Promise<void> => {
+    setSelectedEvents([]);
     setUiConfig({ ...uiConfig, selectedServerId: serverId });
     setUiConfig(await window.api.updateUiConfig({ selectedServerId: serverId }));
   };

@@ -18,6 +18,7 @@ const ServerEventsContent: React.FC = (): React.ReactElement | null => {
     openDefaultPasswordDialog,
     addActiveSession,
     setUiConfig,
+    setSelectedEvents,
   } = useAppStore();
   const { showDetails, selectedServerId } = uiConfig;
 
@@ -34,6 +35,7 @@ const ServerEventsContent: React.FC = (): React.ReactElement | null => {
       return;
     }
     const [firstActiveSession] = activeSessions;
+    setSelectedEvents([]);
     setUiConfig({ ...uiConfig, selectedServerId: firstActiveSession });
     setUiConfig(await window.api.updateUiConfig({ selectedServerId: firstActiveSession }));
   };
