@@ -20,11 +20,12 @@ type Handlers = {
   onSetupPoint: (serverName: string | undefined, msg: string) => Promise<void>;
 };
 
-const DEFAULT_REFRESH_MS = 15 * 60 * 1000;
-const SAFETY_BUFFER_MS = 60 * 1000;
-
 export class AuthService {
   private logger = createScopedLogger(this.constructor.name);
+
+  private readonly DEFAULT_REFRESH_MS = 15 * 60 * 1000;
+  private readonly SAFETY_BUFFER_MS = 60 * 1000;
+  private readonly MAX_REFRESH_MS = 6 * 60 * 60 * 1000;
 
   constructor(
     private configService: ConfigService,
@@ -260,11 +261,11 @@ export class AuthService {
   ): Promise<number> {
     const sessionCookie = await this.getSessionCookie(server);
     if (!sessionCookie) {
-      return DEFAULT_REFRESH_MS;
+      return this.DEFAULT_REFRESH_MS;
     }
     const expires = sessionCookie.expires;
     if (!expires || expires === 'Infinity') {
-      return DEFAULT_REFRESH_MS;
+      return this.DEFAULT_REFRESH_MS;
     }
     const now = Date.now();
     const expiresMs = new Date(expires).getTime();
@@ -272,11 +273,11 @@ export class AuthService {
     if (timeToLive <= 0) {
       return 1000;
     }
-    let refreshInterval = timeToLive - SAFETY_BUFFER_MS;
+    let refreshInterval = timeToLive - this.SAFETY_BUFFER_MS;
     if (refreshInterval <= 0) {
       refreshInterval = timeToLive * 0.8;
     }
     const finalInterval = refreshInterval * multiplier;
-    return Math.max(2000, Math.floor(finalInterval));
+    return Math.max(2000, Math.min(Math.floor(finalInterval), this.MAX_REFRESH_MS));
   }
 }
