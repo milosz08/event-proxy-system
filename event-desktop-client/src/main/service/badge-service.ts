@@ -6,6 +6,7 @@ import { EventService } from './event-service';
 export class BadgeService {
   private unreadCounts = new Map<string, number>();
   private badgeGenerator: Badge;
+  private isReady = false;
 
   private mainWindow: BrowserWindow | null = null;
   private eventService: EventService | null = null;
@@ -15,6 +16,11 @@ export class BadgeService {
     if (process.platform !== 'darwin' && process.platform !== 'linux') {
       this.badgeGenerator.preloadBadges();
     }
+  }
+
+  public setReady(): void {
+    this.isReady = true;
+    this.refreshGlobalBadge();
   }
 
   public setMainWindow(window: BrowserWindow): void {
@@ -79,6 +85,9 @@ export class BadgeService {
       if (count > 0) {
         serversWithUnread++;
       }
+    }
+    if (!this.isReady) {
+      return;
     }
     if (process.platform === 'darwin' || process.platform === 'linux') {
       app.badgeCount = total;

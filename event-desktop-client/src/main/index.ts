@@ -194,6 +194,7 @@ const onReady = async (): Promise<void> => {
   });
 
   await authService.autoLogin();
+  badgeService.setReady();
   mainWindow.webContents.send('auth:active-sessions', authService.getActiveSessionIds());
 
   app.on('activate', () => {
