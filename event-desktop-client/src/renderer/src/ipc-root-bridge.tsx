@@ -4,75 +4,54 @@ import { AppToaster } from '@renderer/utils/app-toaster';
 import React, { useEffect, useMemo } from 'react';
 import notificationSound from '../assets/notification.mp3';
 
-const IpcRootBridge: React.FC = (): null => {
-  const {
-    uiConfig: { eventTable, eventSourceFilter, selectedServerId },
-    setServers,
-    setUiConfig,
-    setActiveSessions,
-    removeActiveSession,
-    updateHeartbeat,
-    insertLiveEvent,
-    setUnreadNotifications,
-  } = useAppStore();
-
+const IpcRootBridge: React.FC = () => {
   const audio = useMemo(() => new Audio(notificationSound), []);
 
   useEffect(() => {
-    const onSseEvent = window.api.onSseEvent(async (serverId, payload, error) => {
+    const unsubSse = window.api.onSseEvent(async (serverId, payload, error) => {
       if (error) {
         await AppToaster.error(error);
         return;
       }
+      const state = useAppStore.getState();
       if (!payload) {
-        removeActiveSession(serverId);
+        state.removeActiveSession(serverId);
         return;
       }
-      if (serverId === selectedServerId) {
+      if (serverId === state.uiConfig.selectedServerId) {
         audio.currentTime = 0;
         await audio.play();
-        insertLiveEvent(payload);
+        state.insertLiveEvent(payload);
       }
     });
-    return () => onSseEvent();
-  }, [
-    audio,
-    eventSourceFilter,
-    eventTable,
-    insertLiveEvent,
-    removeActiveSession,
-    selectedServerId,
-  ]);
-
-  useEffect(() => {
-    const onActiveSessions = window.api.onActiveSessions(ids => {
-      setActiveSessions(ids);
-      return () => onActiveSessions();
+    const unsubSessions = window.api.onActiveSessions(ids => {
+      useAppStore.getState().setActiveSessions(ids);
     });
-  }, [setActiveSessions]);
-
-  useEffect(() => {
-    const onHeartbeat = window.api.onHeartbeat(updateHeartbeat);
-    return () => onHeartbeat();
-  }, [updateHeartbeat]);
-
-  useEffect(() => {
-    const onSessionExpired = window.api.onSessionExpired(removeActiveSession);
-    return () => onSessionExpired();
-  }, [removeActiveSession]);
-
-  useEffect(() => {
-    const onBadgeSyncAll = window.api.onBadgeSyncAll(setUnreadNotifications);
-    return () => onBadgeSyncAll();
-  }, [setUnreadNotifications]);
+    const unsubHeartbeat = window.api.onHeartbeat((serverId, status, resTime) => {
+      useAppStore.getState().updateHeartbeat(serverId, status, resTime);
+    });
+    const unsubExpired = window.api.onSessionExpired(serverId => {
+      useAppStore.getState().removeActiveSession(serverId);
+    });
+    const unsubBadge = window.api.onBadgeSyncAll(counts => {
+      useAppStore.getState().setUnreadNotifications(counts);
+    });
+    return () => {
+      unsubSse();
+      unsubSessions();
+      unsubHeartbeat();
+      unsubExpired();
+      unsubBadge();
+    };
+  }, [audio]);
 
   useAsyncEffect(
     async () => {
-      setServers(await window.api.getServers());
-      setUiConfig(await window.api.getUiConfig());
+      useAppStore.getState().setServers(await window.api.getServers());
+      useAppStore.getState().setUiConfig(await window.api.getUiConfig());
     },
     () => {},
-    [setServers, setUiConfig]
+    []
   );
 
   return null;
