@@ -32,10 +32,13 @@ export class EventService {
   private logger = createScopedLogger(this.constructor.name);
   private activeStreams = new Map<string, () => void>();
 
-  private readonly MAX_RETRIES = 3;
+  private readonly MAX_RETRIES = 5;
+  private readonly RETRY_INTERVAL_MS = 2000;
+
   private reconnectTimers = new Map<string, NodeJS.Timeout>();
   private intentionalDisconnects = new Set<string>();
   private lastSeenEventIds = new Map<string, number>();
+  private reconnectAttempts = new Map<string, number>();
 
   constructor(
     private configService: ConfigService,
@@ -46,14 +49,16 @@ export class EventService {
 
   public async startEventsStream(serverId: string, lastEventId?: number): Promise<boolean> {
     this.intentionalDisconnects.delete(serverId);
+    this.reconnectAttempts.set(serverId, 0);
     if (lastEventId) {
       this.lastSeenEventIds.set(serverId, lastEventId);
     }
-    return this.connectStreamWithRetry(serverId, 0);
+    return this.connectStreamWithRetry(serverId);
   }
 
   public stopEventsStream(serverId: string): void {
     this.intentionalDisconnects.add(serverId);
+    this.reconnectAttempts.set(serverId, 0);
     const timer = this.reconnectTimers.get(serverId);
     if (timer) {
       clearTimeout(timer);
@@ -232,7 +237,7 @@ export class EventService {
     );
   }
 
-  private async connectStreamWithRetry(serverId: string, attempt: number): Promise<boolean> {
+  private async connectStreamWithRetry(serverId: string): Promise<boolean> {
     if (this.intentionalDisconnects.has(serverId)) {
       return false;
     }
@@ -248,14 +253,15 @@ export class EventService {
       url
     );
     if (!success || !handshakeData) {
-      return this.scheduleReconnect(serverId, attempt, 'Handshake failed');
+      return this.scheduleReconnect(serverId, 'Handshake failed');
     }
     const { sessionId, aes } = handshakeData;
     const { privateKey } = store.get('rsaKeys');
     const { data: sessionKey } = this.cryptoService.decryptSessionKey(server, aes, privateKey);
     if (!sessionKey) {
-      return this.scheduleReconnect(serverId, attempt, 'Session key decryption failed');
+      return this.scheduleReconnect(serverId, 'Session key decryption failed');
     }
+    this.reconnectAttempts.set(serverId, 0);
     this.logger.info(server.name, `sse handshake performed, session id: ${sessionId}`);
 
     const currentLastId = this.lastSeenEventIds.get(serverId);
@@ -269,7 +275,6 @@ export class EventService {
       streamUrl,
       {
         onData: encryptedData => {
-          attempt = 0;
           const { data, error } = this.cryptoService.decryptPayload<SseEventPayload>(
             server,
             encryptedData,
@@ -282,11 +287,11 @@ export class EventService {
         },
         onError: err => {
           this.cleanupActiveStream(serverId);
-          this.scheduleReconnect(serverId, attempt, err?.toString() || 'Stream error');
+          this.scheduleReconnect(serverId, err?.toString() || 'Stream error');
         },
         onClose: () => {
           this.cleanupActiveStream(serverId);
-          this.scheduleReconnect(serverId, attempt, 'Stream closed unexpectedly');
+          this.scheduleReconnect(serverId, 'Stream closed unexpectedly');
         },
       },
       server.name,
@@ -296,10 +301,11 @@ export class EventService {
     return true;
   }
 
-  private scheduleReconnect(serverId: string, currentAttempt: number, errorMsg: string): boolean {
+  private scheduleReconnect(serverId: string, errorMsg: string): boolean {
     if (this.intentionalDisconnects.has(serverId)) {
       return false;
     }
+    const currentAttempt = this.reconnectAttempts.get(serverId) || 0;
     if (currentAttempt >= this.MAX_RETRIES) {
       this.logger.error(
         serverId,
@@ -310,14 +316,15 @@ export class EventService {
       return false;
     }
     const nextAttempt = currentAttempt + 1;
-    const delayMs = nextAttempt * 2000;
+    this.reconnectAttempts.set(serverId, nextAttempt);
+    const delayMs = nextAttempt * this.RETRY_INTERVAL_MS;
     this.logger.warn(
       serverId,
       `sse disconnected, silent reconnect in ${delayMs} ms` +
         `(attempt ${nextAttempt}/${this.MAX_RETRIES}), reason: ${errorMsg}`
     );
     const timer = setTimeout(async () => {
-      await this.connectStreamWithRetry(serverId, nextAttempt);
+      await this.connectStreamWithRetry(serverId);
     }, delayMs);
     timer.unref();
     this.reconnectTimers.set(serverId, timer);
