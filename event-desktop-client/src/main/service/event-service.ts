@@ -32,6 +32,11 @@ export class EventService {
   private logger = createScopedLogger(this.constructor.name);
   private activeStreams = new Map<string, () => void>();
 
+  private readonly MAX_RETRIES = 3;
+  private reconnectTimers = new Map<string, NodeJS.Timeout>();
+  private intentionalDisconnects = new Set<string>();
+  private lastSeenEventIds = new Map<string, number>();
+
   constructor(
     private configService: ConfigService,
     private networkManager: NetworkSessionManager,
@@ -39,59 +44,21 @@ export class EventService {
     private handlers: Handlers
   ) {}
 
-  // lastEventId for prevent race conditions between REST and SSE in hybrid mode
   public async startEventsStream(serverId: string, lastEventId?: number): Promise<boolean> {
-    const server = this.configService.getServerById(serverId);
-    if (!server) {
-      return false;
-    }
-    const client = this.networkManager.getAxiosForServer(server);
-
-    const url = '/stream/handshake';
-    const { success, data } = await safeRequest<SseHandshakeRes>(
-      () => client.post(url),
-      server.name,
-      url
-    );
-    if (!success || !data) {
-      return false;
-    }
-    const { sessionId, aes } = data;
-    const { privateKey } = store.get('rsaKeys');
-    const { data: sessionKey } = this.cryptoService.decryptSessionKey(server, aes, privateKey);
-    if (!sessionKey) {
-      return false;
-    }
-    this.logger.info(server.name, `sse handshake performed, session id: ${sessionId}`);
-
-    let streamUrl = `/stream/events?sessionId=${sessionId}`;
+    this.intentionalDisconnects.delete(serverId);
     if (lastEventId) {
-      streamUrl += `&lastEventId=${lastEventId}`;
+      this.lastSeenEventIds.set(serverId, lastEventId);
     }
-    this.stopEventsStream(serverId);
-    const disconnectFn = await safeStreamRequest<EncryptedStreamMessage>(
-      client,
-      streamUrl,
-      {
-        onData: encryptedData => {
-          const { data, error } = this.cryptoService.decryptPayload<SseEventPayload>(
-            server,
-            encryptedData,
-            sessionKey
-          );
-          this.handlers.onEvent(serverId, data, error);
-        },
-        onError: err => this.handlers.onEvent(serverId, undefined, err),
-        onClose: () => this.handlers.onEvent(serverId, undefined, undefined),
-      },
-      server.name,
-      streamUrl
-    );
-    this.activeStreams.set(serverId, disconnectFn);
-    return true;
+    return this.connectStreamWithRetry(serverId, 0);
   }
 
   public stopEventsStream(serverId: string): void {
+    this.intentionalDisconnects.add(serverId);
+    const timer = this.reconnectTimers.get(serverId);
+    if (timer) {
+      clearTimeout(timer);
+      this.reconnectTimers.delete(serverId);
+    }
     const disconnect = this.activeStreams.get(serverId);
     if (disconnect) {
       disconnect();
@@ -263,6 +230,106 @@ export class EventService {
           paramsSerializer: { indexes: null },
         })
     );
+  }
+
+  private async connectStreamWithRetry(serverId: string, attempt: number): Promise<boolean> {
+    if (this.intentionalDisconnects.has(serverId)) {
+      return false;
+    }
+    const server = this.configService.getServerById(serverId);
+    if (!server) {
+      return false;
+    }
+    const client = this.networkManager.getAxiosForServer(server);
+    const url = '/stream/handshake';
+    const { success, data: handshakeData } = await safeRequest<SseHandshakeRes>(
+      () => client.post(url),
+      server.name,
+      url
+    );
+    if (!success || !handshakeData) {
+      return this.scheduleReconnect(serverId, attempt, 'Handshake failed');
+    }
+    const { sessionId, aes } = handshakeData;
+    const { privateKey } = store.get('rsaKeys');
+    const { data: sessionKey } = this.cryptoService.decryptSessionKey(server, aes, privateKey);
+    if (!sessionKey) {
+      return this.scheduleReconnect(serverId, attempt, 'Session key decryption failed');
+    }
+    this.logger.info(server.name, `sse handshake performed, session id: ${sessionId}`);
+
+    const currentLastId = this.lastSeenEventIds.get(serverId);
+    let streamUrl = `/stream/events?sessionId=${sessionId}`;
+    if (currentLastId) {
+      streamUrl += `&lastEventId=${currentLastId}`;
+    }
+    this.cleanupActiveStream(serverId);
+    const disconnectFn = await safeStreamRequest<EncryptedStreamMessage>(
+      client,
+      streamUrl,
+      {
+        onData: encryptedData => {
+          attempt = 0;
+          const { data, error } = this.cryptoService.decryptPayload<SseEventPayload>(
+            server,
+            encryptedData,
+            sessionKey
+          );
+          if (data && data.id) {
+            this.lastSeenEventIds.set(serverId, data.id);
+          }
+          this.handlers.onEvent(serverId, data, error);
+        },
+        onError: err => {
+          this.cleanupActiveStream(serverId);
+          this.scheduleReconnect(serverId, attempt, err?.toString() || 'Stream error');
+        },
+        onClose: () => {
+          this.cleanupActiveStream(serverId);
+          this.scheduleReconnect(serverId, attempt, 'Stream closed unexpectedly');
+        },
+      },
+      server.name,
+      streamUrl
+    );
+    this.activeStreams.set(serverId, disconnectFn);
+    return true;
+  }
+
+  private scheduleReconnect(serverId: string, currentAttempt: number, errorMsg: string): boolean {
+    if (this.intentionalDisconnects.has(serverId)) {
+      return false;
+    }
+    if (currentAttempt >= this.MAX_RETRIES) {
+      this.logger.error(
+        serverId,
+        `sse stream failed after ${this.MAX_RETRIES} attempts, giving up`,
+        errorMsg
+      );
+      this.handlers.onEvent(serverId, undefined, errorMsg);
+      return false;
+    }
+    const nextAttempt = currentAttempt + 1;
+    const delayMs = nextAttempt * 2000;
+    this.logger.warn(
+      serverId,
+      `sse disconnected, silent reconnect in ${delayMs} ms` +
+        `(attempt ${nextAttempt}/${this.MAX_RETRIES}), reason: ${errorMsg}`
+    );
+    const timer = setTimeout(async () => {
+      await this.connectStreamWithRetry(serverId, nextAttempt);
+    }, delayMs);
+    timer.unref();
+    this.reconnectTimers.set(serverId, timer);
+    return true;
+  }
+
+  private cleanupActiveStream(serverId: string): void {
+    const disconnect = this.activeStreams.get(serverId);
+    if (disconnect) {
+      disconnect();
+      this.activeStreams.delete(serverId);
+    }
   }
 
   private async fetchEncrypted<T>(
