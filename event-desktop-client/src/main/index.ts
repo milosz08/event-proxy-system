@@ -27,6 +27,7 @@ const createWindow = async (): Promise<BrowserWindow> => {
     show: false,
     title: DEFAULT_TITLE,
     autoHideMenuBar: true,
+    backgroundColor: '#2f343c',
     ...(process.platform === 'linux' || !app.isPackaged ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
