@@ -24,9 +24,6 @@ const IpcRootBridge: React.FC = () => {
         state.insertLiveEvent(payload);
       }
     });
-    const unsubSessions = window.api.onActiveSessions(ids => {
-      useAppStore.getState().setActiveSessions(ids);
-    });
     const unsubHeartbeat = window.api.onHeartbeat((serverId, status, resTime) => {
       useAppStore.getState().updateHeartbeat(serverId, status, resTime);
     });
@@ -38,7 +35,6 @@ const IpcRootBridge: React.FC = () => {
     });
     return () => {
       unsubSse();
-      unsubSessions();
       unsubHeartbeat();
       unsubExpired();
       unsubBadge();
@@ -47,8 +43,10 @@ const IpcRootBridge: React.FC = () => {
 
   useAsyncEffect(
     async () => {
-      useAppStore.getState().setServers(await window.api.getServers());
-      useAppStore.getState().setUiConfig(await window.api.getUiConfig());
+      const state = useAppStore.getState();
+      state.setServers(await window.api.getServers());
+      state.setUiConfig(await window.api.getUiConfig());
+      state.setActiveSessions(await window.api.getInitialSessions());
     },
     () => {},
     []

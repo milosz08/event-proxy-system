@@ -55,6 +55,11 @@ const onReady = async (): Promise<void> => {
     electronApp.setAppUserModelId(appId);
   }
 
+  let resolveBoot: () => void;
+  const bootPromise = new Promise<void>(resolve => {
+    resolveBoot = resolve;
+  });
+
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window);
   });
@@ -120,6 +125,10 @@ const onReady = async (): Promise<void> => {
   });
   ipcMain.handle('auth:update-password', async (_, { serverId, newPassword }) => {
     return await authService.updateDefaultPassword(serverId, newPassword);
+  });
+  ipcMain.handle('auth:get-initial-sessions', async () => {
+    await bootPromise;
+    return authService.getActiveSessionIds();
   });
 
   // ipc ui config
@@ -196,7 +205,7 @@ const onReady = async (): Promise<void> => {
 
   await authService.autoLogin();
   badgeService.setReady();
-  mainWindow.webContents.send('auth:active-sessions', authService.getActiveSessionIds());
+  resolveBoot!();
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

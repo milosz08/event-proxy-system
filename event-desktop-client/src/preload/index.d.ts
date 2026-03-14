@@ -36,8 +36,8 @@ declare global {
       connect: (serverId: string) => Promise<ApiResult<LoginData>>;
       disconnect: (serverId: string) => Promise<boolean>;
       updateDefaultPassword: (serverId: string, newPassword: string) => Promise<ResponseResult>;
+      getInitialSessions: () => Promise<string[]>;
       onSessionExpired: (callback: (serverId: string) => void) => () => void;
-      onActiveSessions: (callback: (serverIds: string[]) => void) => () => void;
       // ui config
       getUiConfig: () => Promise<UiConfig>;
       updateUiConfig: (uiConfig: Partial<UiConfig>) => Promise<UiConfig>;
