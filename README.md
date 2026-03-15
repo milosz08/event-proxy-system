@@ -39,7 +39,10 @@ built on a pure Jetty server to achieve the smallest possible memory footprint.
 
 ## Demo (desktop app)
 
+<video src=".github/demo.mp4" width="100%" controls muted></video>
+
 Main features:
+
 * connecting to multiple event proxy servers simultaneously
 * real-time event streaming (SSE) from all servers at once
 * fetching historical data and managing event archives
