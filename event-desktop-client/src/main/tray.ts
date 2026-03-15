@@ -61,6 +61,7 @@ export class MenuTray {
         template.push({
           label: `(${unreadCount}) ${statusIcon} ${name}`,
           click: () => this.mainWindow.show(),
+          enabled: false,
         });
       });
     }
