@@ -39,7 +39,14 @@ built on a pure Jetty server to achieve the smallest possible memory footprint.
 
 ## Demo (desktop app)
 
-[TBD]
+Main features:
+* connecting to multiple event proxy servers simultaneously
+* real-time event streaming (SSE) from all servers at once
+* fetching historical data and managing event archives
+* advanced event management via an intuitive data table with full keyboard shortcut and arrow-key
+  support
+* automatic reconnection logic (optimized for Zero Trust tunnels and connection drops)
+* comprehensive notification system including system tray integration and audio alerts
 
 ## In-transit envelope encryption
 
