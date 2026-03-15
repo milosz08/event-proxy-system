@@ -21,17 +21,17 @@ type Handlers = {
 };
 
 export class AuthService {
-  private logger = createScopedLogger(this.constructor.name);
+  private readonly logger = createScopedLogger(this.constructor.name);
 
   private readonly DEFAULT_REFRESH_MS = 15 * 60 * 1000;
   private readonly SAFETY_BUFFER_MS = 60 * 1000;
   private readonly MAX_REFRESH_MS = 6 * 60 * 60 * 1000;
 
   constructor(
-    private configService: ConfigService,
-    private networkManager: NetworkSessionManager,
-    private heartbeatService: SessionHeartbeatService,
-    private handlers: Handlers
+    private readonly configService: ConfigService,
+    private readonly networkManager: NetworkSessionManager,
+    private readonly heartbeatService: SessionHeartbeatService,
+    private readonly handlers: Handlers
   ) {}
 
   public async autoLogin(): Promise<void> {

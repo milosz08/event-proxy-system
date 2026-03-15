@@ -29,22 +29,22 @@ type Handlers = {
 };
 
 export class EventService {
-  private logger = createScopedLogger(this.constructor.name);
-  private activeStreams = new Map<string, () => void>();
+  private readonly logger = createScopedLogger(this.constructor.name);
+  private readonly activeStreams = new Map<string, () => void>();
 
   private readonly MAX_RETRIES = 5;
   private readonly RETRY_INTERVAL_MS = 2000;
 
-  private reconnectTimers = new Map<string, NodeJS.Timeout>();
-  private intentionalDisconnects = new Set<string>();
-  private lastSeenEventIds = new Map<string, number>();
-  private reconnectAttempts = new Map<string, number>();
+  private readonly reconnectTimers = new Map<string, NodeJS.Timeout>();
+  private readonly intentionalDisconnects = new Set<string>();
+  private readonly lastSeenEventIds = new Map<string, number>();
+  private readonly reconnectAttempts = new Map<string, number>();
 
   constructor(
-    private configService: ConfigService,
-    private networkManager: NetworkSessionManager,
-    private cryptoService: CryptoService,
-    private handlers: Handlers
+    private readonly configService: ConfigService,
+    private readonly networkManager: NetworkSessionManager,
+    private readonly cryptoService: CryptoService,
+    private readonly handlers: Handlers
   ) {}
 
   public async startEventsStream(serverId: string, lastEventId?: number): Promise<boolean> {

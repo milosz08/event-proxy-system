@@ -19,7 +19,7 @@ type Result<T> = {
 };
 
 export class CryptoService {
-  private logger = createScopedLogger(this.constructor.name);
+  private readonly logger = createScopedLogger(this.constructor.name);
 
   public decryptSessionKey(
     server: ServerConfig,

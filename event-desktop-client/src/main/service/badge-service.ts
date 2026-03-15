@@ -4,10 +4,9 @@ import { DEFAULT_TITLE } from '../index';
 import { EventService } from './event-service';
 
 export class BadgeService {
-  private unreadCounts = new Map<string, number>();
-  private badgeGenerator: Badge;
-  private isReady = false;
+  private readonly unreadCounts = new Map<string, number>();
 
+  private isReady = false;
   private mainWindow: BrowserWindow | null = null;
   private eventService: EventService | null = null;
 
