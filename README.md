@@ -39,7 +39,7 @@ built on a pure Jetty server to achieve the smallest possible memory footprint.
 
 ## Demo (desktop app)
 
-<video src=".github/demo.mp4" width="100%" controls muted></video>
+https://github.com/user-attachments/assets/925b49a0-a1fd-498e-b33b-42fc068d7f14
 
 Main features:
 
