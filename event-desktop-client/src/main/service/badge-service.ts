@@ -10,10 +10,14 @@ export class BadgeService {
   private mainWindow: BrowserWindow | null = null;
   private eventService: EventService | null = null;
 
-  constructor(private readonly onBadgeChange?: (counts: Record<string, number>) => void) {
-    this.badgeGenerator = new Badge();
+  constructor(
+    private readonly badge: Badge,
+    private readonly onBadgeChange?: (counts: Record<string, number>) => void
+  ) {}
+
+  public async preloadBadges(iconPath: string): Promise<void> {
     if (process.platform !== 'darwin' && process.platform !== 'linux') {
-      this.badgeGenerator.preloadBadges();
+      this.badge.preloadBadges(iconPath).then(r => r);
     }
   }
 
@@ -80,6 +84,10 @@ export class BadgeService {
     this.refreshGlobalBadge();
   }
 
+  public refresh(): void {
+    this.refreshGlobalBadge();
+  }
+
   private refreshGlobalBadge(): void {
     let total = 0;
     let serversWithUnread = 0;
@@ -95,7 +103,7 @@ export class BadgeService {
     if (process.platform === 'darwin' || process.platform === 'linux') {
       app.badgeCount = total;
     } else if (this.mainWindow) {
-      const { nativeImage, description } = this.badgeGenerator.takeCachedBadge(total);
+      const { nativeImage, description } = this.badge.takeCachedBadge(total);
       this.mainWindow.setOverlayIcon(nativeImage, description);
     }
     if (!this.mainWindow) {

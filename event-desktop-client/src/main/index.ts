@@ -3,6 +3,7 @@ import { BrowserWindow, app, ipcMain, shell } from 'electron';
 import { join } from 'path';
 import icon from '../../resources/icon.png?asset';
 import { UiConfig } from '../@types/shared';
+import { Badge } from './badge';
 import { NetworkSessionManager } from './network/network-session-manager';
 import { SessionHeartbeatService } from './network/session-heartbeat-service';
 import { AuthService } from './service/auth-service';
@@ -10,6 +11,8 @@ import { BadgeService } from './service/badge-service';
 import { ConfigService } from './service/config-service';
 import { CryptoService } from './service/crypto-service';
 import { EventService } from './service/event-service';
+import store from './store';
+import { MenuTray } from './tray';
 
 const electronRendererUrl = process.env['ELECTRON_RENDERER_URL'];
 const appId = 'pl.miloszgilga.event-proxy-client';
@@ -17,6 +20,9 @@ const appId = 'pl.miloszgilga.event-proxy-client';
 export const DEFAULT_TITLE = 'Event desktop client';
 const MIN_WIDTH = 1280;
 const MIN_HEIGHT = 720;
+
+let isQuitting = false;
+let updateTrayMenu: () => void;
 
 const createWindow = async (): Promise<BrowserWindow> => {
   const mainWindow = new BrowserWindow({
@@ -40,6 +46,14 @@ const createWindow = async (): Promise<BrowserWindow> => {
   mainWindow.webContents.setWindowOpenHandler(details => {
     shell.openExternal(details.url).then(r => r);
     return { action: 'deny' };
+  });
+
+  mainWindow.on('close', event => {
+    const closeAppCompletely = store.get('closeAppCompletely');
+    if (!isQuitting && !closeAppCompletely) {
+      event.preventDefault();
+      mainWindow.hide();
+    }
   });
 
   if (is.dev && electronRendererUrl) {
@@ -70,10 +84,24 @@ const onReady = async (): Promise<void> => {
   });
 
   // badge
-  const badgeService = new BadgeService(counts => {
+  const badge = new Badge();
+  const badgeService = new BadgeService(badge, counts => {
     mainWindow.webContents.send('badge:sync-all', counts);
+    if (updateTrayMenu) {
+      updateTrayMenu();
+    }
   });
+  await badgeService.preloadBadges(icon);
   badgeService.setMainWindow(mainWindow);
+
+  mainWindow.on('show', () => badgeService.refresh());
+
+  // menu tray
+  const menuTray = new MenuTray(mainWindow, badge, () => {
+    isQuitting = true;
+    app.quit();
+  });
+  menuTray.createTray();
 
   const cryptoService = new CryptoService();
   const configService = new ConfigService();
@@ -86,6 +114,16 @@ const onReady = async (): Promise<void> => {
     },
   });
   badgeService.setEventService(eventService);
+  updateTrayMenu = () => {
+    menuTray.updateTray(
+      configService.getServers().map(server => ({
+        id: server.id,
+        name: server.name,
+        isConnected: authService.getActiveSessionIds().includes(server.id),
+        unreadCount: badgeService.getUnreadCounts().get(server.id) || 0,
+      }))
+    );
+  };
   const authService = new AuthService(configService, networkManager, heartbeatService, {
     onHeartbeat: (serverId, status, resTimeMillis) => {
       heartbeatService.updateLastStatus(serverId, status, resTimeMillis);
@@ -94,6 +132,7 @@ const onReady = async (): Promise<void> => {
     onSessionExpired: serverId => {
       badgeService.removeServer(serverId);
       mainWindow.webContents.send('auth:session-expired', serverId);
+      updateTrayMenu();
     },
     onConnect: async server => {
       badgeService.initServer(server.id);
@@ -103,6 +142,7 @@ const onReady = async (): Promise<void> => {
     onDisconnect: async server => {
       eventService.stopEventsStream(server.id);
       badgeService.removeServer(server.id);
+      updateTrayMenu();
     },
     onSetupPoint: async (serverName, msg) => {
       mainWindow.webContents.send('status:setup-point', serverName, msg);

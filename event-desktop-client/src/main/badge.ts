@@ -1,4 +1,4 @@
-import { createCanvas } from 'canvas';
+import { createCanvas, loadImage } from 'canvas';
 import type { NativeImage } from 'electron';
 import { nativeImage } from 'electron';
 
@@ -8,13 +8,17 @@ type BadgeDescriptor = {
 };
 
 class Badge {
-  private maxValue = 9;
-  private badgesCache = new Map<number, NativeImage>();
+  private readonly badgesCache = new Map<number, NativeImage>();
+  private readonly trayIconCache = new Map<boolean, NativeImage>();
 
-  preloadBadges(): void {
+  private maxValue = 9;
+
+  async preloadBadges(iconPath: string): Promise<void> {
     for (let i = 1; i < this.maxValue + 2; i++) {
       this.badgesCache.set(i, this.generateBadge(i));
     }
+    this.trayIconCache.set(false, nativeImage.createFromPath(iconPath));
+    this.trayIconCache.set(true, await this.generateTrayIconWithDot(iconPath));
   }
 
   takeCachedBadge(count: number): BadgeDescriptor {
@@ -23,6 +27,10 @@ class Badge {
       nativeImage: this.badgesCache.get(key) || null,
       description: `${Math.max(count, 0)} notifications`,
     };
+  }
+
+  getTrayIcon(hasUnread: boolean): NativeImage {
+    return this.trayIconCache.get(hasUnread) || this.trayIconCache.get(false)!;
   }
 
   private generateBadge(count: number): NativeImage {
@@ -48,6 +56,19 @@ class Badge {
 
     const buffer = canvas.toBuffer('image/png');
     return nativeImage.createFromBuffer(buffer);
+  }
+
+  private async generateTrayIconWithDot(iconPath: string): Promise<NativeImage> {
+    const size = 32;
+    const canvas = createCanvas(size, size);
+    const ctx = canvas.getContext('2d');
+    const img = await loadImage(iconPath);
+    ctx.drawImage(img, 0, 0, size, size);
+    ctx.beginPath();
+    ctx.arc(26, 6, 6, 0, Math.PI * 2);
+    ctx.fillStyle = '#e74c3c';
+    ctx.fill();
+    return nativeImage.createFromBuffer(canvas.toBuffer('image/png'));
   }
 }
 

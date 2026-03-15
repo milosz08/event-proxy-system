@@ -18,6 +18,7 @@ type AppSchema = {
   rsaKeys: RsaKeys;
   servers: ServerConfig[];
   uiConfig: UiConfig;
+  closeAppCompletely: boolean;
 };
 
 const store = new Store<AppSchema>({
@@ -29,6 +30,7 @@ const store = new Store<AppSchema>({
     },
     servers: [],
     uiConfig: defaultUiConfig,
+    closeAppCompletely: false,
   },
 });
 
