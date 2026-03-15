@@ -19,6 +19,7 @@ type AppSchema = {
   servers: ServerConfig[];
   uiConfig: UiConfig;
   closeAppCompletely: boolean;
+  openAtLogin: boolean;
 };
 
 const store = new Store<AppSchema>({
@@ -31,6 +32,7 @@ const store = new Store<AppSchema>({
     servers: [],
     uiConfig: defaultUiConfig,
     closeAppCompletely: false,
+    openAtLogin: false,
   },
 });
 

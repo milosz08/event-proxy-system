@@ -41,7 +41,11 @@ const createWindow = async (): Promise<BrowserWindow> => {
     },
   });
 
-  mainWindow.on('ready-to-show', () => mainWindow.show());
+  mainWindow.on('ready-to-show', () => {
+    if (!process.argv.includes('--hidden')) {
+      mainWindow.show();
+    }
+  });
 
   mainWindow.webContents.setWindowOpenHandler(details => {
     shell.openExternal(details.url).then(r => r);
@@ -68,6 +72,12 @@ const onReady = async (): Promise<void> => {
   if (process.platform === 'win32') {
     electronApp.setAppUserModelId(appId);
   }
+  const shouldOpenAtLogin = store.get('openAtLogin');
+  app.setLoginItemSettings({
+    openAtLogin: shouldOpenAtLogin,
+    path: app.getPath('exe'),
+    args: shouldOpenAtLogin ? ['--hidden'] : [],
+  });
 
   let resolveBoot: () => void;
   const bootPromise = new Promise<void>(resolve => {

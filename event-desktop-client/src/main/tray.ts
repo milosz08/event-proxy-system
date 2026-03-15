@@ -1,4 +1,4 @@
-import { BrowserWindow, Menu, Tray } from 'electron';
+import { BrowserWindow, Menu, Tray, app } from 'electron';
 import icon from '../../resources/icon.png?asset';
 import { Badge } from './badge';
 import { DEFAULT_TITLE } from './index';
@@ -76,6 +76,19 @@ export class MenuTray {
         checked: store.get('closeAppCompletely'),
         click: menuItem => {
           store.set('closeAppCompletely', menuItem.checked);
+        },
+      },
+      {
+        label: 'Run at startup',
+        type: 'checkbox',
+        checked: store.get('openAtLogin'),
+        click: ({ checked }) => {
+          store.set('openAtLogin', checked);
+          app.setLoginItemSettings({
+            openAtLogin: checked,
+            path: app.getPath('exe'),
+            args: checked ? ['--hidden'] : [],
+          });
         },
       },
       { type: 'separator' },
