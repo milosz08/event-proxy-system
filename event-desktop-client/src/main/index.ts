@@ -125,16 +125,6 @@ const onReady = async (): Promise<void> => {
     },
   });
   badgeService.setEventService(eventService);
-  updateTrayMenu = () => {
-    menuTray.updateTray(
-      configService.getServers().map(server => ({
-        id: server.id,
-        name: server.name,
-        isConnected: authService.getActiveSessionIds().includes(server.id),
-        unreadCount: badgeService.getUnreadCounts().get(server.id) || 0,
-      }))
-    );
-  };
   const authService = new AuthService(configService, networkManager, heartbeatService, {
     onHeartbeat: (serverId, status, resTimeMillis) => {
       heartbeatService.updateLastStatus(serverId, status, resTimeMillis);
@@ -159,6 +149,16 @@ const onReady = async (): Promise<void> => {
       mainWindow.webContents.send('status:setup-point', serverName, msg);
     },
   });
+  updateTrayMenu = () => {
+    menuTray.updateTray(
+      configService.getServers().map(server => ({
+        id: server.id,
+        name: server.name,
+        isConnected: authService.getActiveSessionIds().includes(server.id),
+        unreadCount: badgeService.getUnreadCounts().get(server.id) || 0,
+      }))
+    );
+  };
 
   // ipc badge
   ipcMain.handle('badge:get-all-counts', () => {
