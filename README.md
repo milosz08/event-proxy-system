@@ -98,7 +98,7 @@ $ git clone https://github.com/milosz08/event-proxy-system
 $ ./mvnw clean package -pl event-proxy-server
 ```
 
-3. Run server in your local network area (on Raspberry Pi or other device with JVM 17):
+3. Run server in your local network area (on Raspberry Pi or other device with JVM 21):
 
 ```bash
 $ java -Xms=128m -Xmx=128m -jar event-proxy-server.jar
