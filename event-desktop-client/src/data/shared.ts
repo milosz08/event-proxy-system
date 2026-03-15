@@ -8,4 +8,5 @@ export const defaultUiConfig: UiConfig = {
   eventTable: 'EVENTS',
   eventSourceFilter: null,
   selectedServerId: null,
+  enableSound: true,
 };

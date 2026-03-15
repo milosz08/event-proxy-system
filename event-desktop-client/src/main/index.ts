@@ -106,15 +106,16 @@ const onReady = async (): Promise<void> => {
 
   mainWindow.on('show', () => badgeService.refresh());
 
+  const cryptoService = new CryptoService();
+  const configService = new ConfigService();
+
   // menu tray
-  const menuTray = new MenuTray(mainWindow, badge, () => {
+  const menuTray = new MenuTray(mainWindow, badge, configService, () => {
     isQuitting = true;
     app.quit();
   });
   menuTray.createTray();
 
-  const cryptoService = new CryptoService();
-  const configService = new ConfigService();
   const networkManager = new NetworkSessionManager(configService);
   const heartbeatService = new SessionHeartbeatService();
   const eventService = new EventService(configService, networkManager, cryptoService, {

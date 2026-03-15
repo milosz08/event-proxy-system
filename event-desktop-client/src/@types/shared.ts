@@ -6,6 +6,7 @@ export type UiConfig = {
   eventTable: EventTable;
   eventSourceFilter: string | null;
   selectedServerId: string | null;
+  enableSound: boolean;
 };
 
 export type ServerInput = {

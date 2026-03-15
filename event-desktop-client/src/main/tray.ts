@@ -2,6 +2,7 @@ import { BrowserWindow, Menu, Tray, app } from 'electron';
 import icon from '../../resources/icon.png?asset';
 import { Badge } from './badge';
 import { DEFAULT_TITLE } from './index';
+import { ConfigService } from './service/config-service';
 import store from './store';
 
 export interface TrayServerData {
@@ -22,6 +23,7 @@ export class MenuTray {
   constructor(
     private readonly mainWindow: BrowserWindow,
     private readonly badge: Badge,
+    private readonly configService: ConfigService,
     private readonly onClose: () => void
   ) {}
 
@@ -91,6 +93,12 @@ export class MenuTray {
             args: checked ? ['--hidden'] : [],
           });
         },
+      },
+      {
+        label: 'With sound',
+        type: 'checkbox',
+        checked: this.configService.getUiConfig().enableSound,
+        click: ({ checked }) => this.configService.updateUiConfig({ enableSound: checked }),
       },
       { type: 'separator' },
       {

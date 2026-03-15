@@ -20,7 +20,9 @@ const IpcRootBridge: React.FC = () => {
       }
       if (serverId === state.uiConfig.selectedServerId) {
         audio.currentTime = 0;
-        await audio.play();
+        if (state.uiConfig.enableSound) {
+          await audio.play();
+        }
         state.insertLiveEvent(payload);
       }
     });
