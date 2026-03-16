@@ -17,8 +17,9 @@ class Badge {
     for (let i = 1; i < this.maxValue + 2; i++) {
       this.badgesCache.set(i, this.generateBadge(i));
     }
-    this.trayIconCache.set(false, nativeImage.createFromPath(iconPath));
-    this.trayIconCache.set(true, await this.generateTrayIconWithDot(iconPath));
+    const baseIcon = nativeImage.createFromPath(iconPath);
+    this.trayIconCache.set(false, baseIcon);
+    this.trayIconCache.set(true, await this.generateTrayIconWithDot(baseIcon.toPNG()));
   }
 
   takeCachedBadge(count: number): BadgeDescriptor {
@@ -58,11 +59,11 @@ class Badge {
     return nativeImage.createFromBuffer(buffer);
   }
 
-  private async generateTrayIconWithDot(iconPath: string): Promise<NativeImage> {
+  private async generateTrayIconWithDot(iconData: Buffer): Promise<NativeImage> {
     const size = 32;
     const canvas = createCanvas(size, size);
     const ctx = canvas.getContext('2d');
-    const img = await loadImage(iconPath);
+    const img = await loadImage(iconData);
     ctx.drawImage(img, 0, 0, size, size);
     ctx.beginPath();
     ctx.arc(26, 6, 6, 0, Math.PI * 2);
