@@ -12,6 +12,7 @@ asarUnpack:
   - resources/**
 win:
   executableName: event-desktop-client
+  icon: packaging/icon.ico
 nsis:
   artifactName: ${name}-${version}.${ext}
   shortcutName: ${productName}
@@ -25,6 +26,7 @@ mac:
     - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
   notarize: false
+  icon: packaging/icon.icns
 dmg:
   artifactName: ${name}-${version}.${ext}
 linux:
@@ -34,6 +36,7 @@ linux:
     - deb
   maintainer: miloszgilga.pl
   category: Utility
+  icon: packaging/icon.png
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
