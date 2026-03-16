@@ -22,10 +22,20 @@ const EventDetails: React.FC = (): React.ReactElement | null => {
   const [eventDetails, setEventDetails] = useState<EventDetailsType | null>(null);
 
   const handleMarkAsUnread = async (eventId: number): Promise<void> => {
-    if (selectedServerId) {
-      updateEvent(eventId, { isUnread: true });
+    if (!selectedServerId) {
+      return;
+    }
+    const { success, error } = await window.api.markEventAsUnread(
+      selectedServerId,
+      eventTable,
+      eventId
+    );
+    if (success) {
       setSelectedEvents([]);
-      await window.api.markEventAsUnread(selectedServerId, eventTable, eventId);
+      updateEvent(eventId, { isUnread: true });
+    }
+    if (error) {
+      await AppToaster.error(error);
     }
   };
 

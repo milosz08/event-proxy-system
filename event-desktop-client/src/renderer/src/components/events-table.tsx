@@ -93,8 +93,14 @@ const EventsTable: React.FC<Props> = ({ rowHeight = 30, batchSize = 50 }): React
       if (!row || !row.isUnread || !selectedServerId) {
         return;
       }
-      updateEvent(row.id, { isUnread: false });
-      const { error } = await window.api.markEventAsRead(selectedServerId, eventTable, row.id);
+      const { success, error } = await window.api.markEventAsRead(
+        selectedServerId,
+        eventTable,
+        row.id
+      );
+      if (success) {
+        updateEvent(row.id, { isUnread: false });
+      }
       if (error) {
         await AppToaster.error(error);
       }
