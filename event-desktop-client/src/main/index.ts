@@ -1,5 +1,5 @@
 import { electronApp, is, optimizer } from '@electron-toolkit/utils';
-import { BrowserWindow, app, ipcMain, shell } from 'electron';
+import { BrowserWindow, app, ipcMain, powerMonitor, shell } from 'electron';
 import { join } from 'path';
 import icon from '../../resources/icon.png?asset';
 import { UiConfig } from '../@types/shared';
@@ -159,6 +159,7 @@ const onReady = async (): Promise<void> => {
       }))
     );
   };
+  powerMonitor.on('resume', () => setTimeout(async () => await authService.autoLogin(), 5000));
 
   // ipc badge
   ipcMain.handle('badge:get-all-counts', () => {
