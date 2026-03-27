@@ -22,14 +22,11 @@ import java.util.concurrent.*;
 
 public class EventBroadcaster implements Closeable {
   private static final Logger LOG = LoggerFactory.getLogger(EventBroadcaster.class);
-  private static final int MAX_CACHE_SIZE = 1000;
 
   private final long handshakeDestroyTime;
   private final Map<String, SecretKey> sseAesKeys;
   private final Map<String, AsyncContext> broadcastClients;
   private final Map<String, ScheduledFuture<?>> sessionDestroyers;
-  private final ConcurrentSkipListMap<Long, String> recentEventsCache =
-    new ConcurrentSkipListMap<>();
 
   private final ScheduledExecutorService sessionDestroyScheduler;
   private final ScheduledExecutorService heartbeatScheduler;
@@ -60,16 +57,13 @@ public class EventBroadcaster implements Closeable {
     return sseAesKeys.containsKey(sessionId);
   }
 
-  void bindClient(String sessionId, AsyncContext asyncContext, HttpServletRequest req, Long lastEventId) {
+  void bindClient(String sessionId, AsyncContext asyncContext, HttpServletRequest req) {
     req.setAttribute(Constants.SSE_SESSION_ID_LABEL, sessionId);
     final ScheduledFuture<?> cleanupTask = sessionDestroyers.get(sessionId);
     if (cleanupTask != null) {
       cleanupTask.cancel(false);
     }
     broadcastClients.put(sessionId, asyncContext);
-    if (lastEventId != null) {
-      sendMissedEvents(sessionId, asyncContext, lastEventId);
-    }
   }
 
   void removeSession(String sessionId) {
@@ -89,31 +83,14 @@ public class EventBroadcaster implements Closeable {
     root.put("eventTime", emailProperties.eventTime());
 
     final String rawJsonData = root.toString();
-    recentEventsCache.put(eventId, rawJsonData);
-    if (recentEventsCache.size() > MAX_CACHE_SIZE) {
-      recentEventsCache.pollFirstEntry();
-    }
     final Set<String> clients = broadcastClients.keySet();
+
     // parallel stream for split jobs to many threads
     clients.parallelStream().forEach(clientId -> {
       final AsyncContext asyncContext = broadcastClients.get(clientId);
       final SecretKey aesKey = sseAesKeys.get(clientId);
       sendEncryptedPayload(asyncContext, aesKey, rawJsonData);
     });
-  }
-
-  private void sendMissedEvents(String sessionId, AsyncContext context, Long lastEventId) {
-    final SecretKey aesKey = sseAesKeys.get(sessionId);
-    if (aesKey == null) {
-      return;
-    }
-    final Collection<String> missedEvents = recentEventsCache.tailMap(lastEventId, false).values();
-    if (!missedEvents.isEmpty()) {
-      LOG.info("Sending {} missed events to client {}", missedEvents.size(), sessionId);
-      for (String rawJsonData : missedEvents) {
-        sendEncryptedPayload(context, aesKey, rawJsonData);
-      }
-    }
   }
 
   private void sendEncryptedPayload(AsyncContext context, SecretKey aesKey, String rawJsonData) {

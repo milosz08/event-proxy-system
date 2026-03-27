@@ -37,7 +37,6 @@ export class EventService {
 
   private readonly reconnectTimers = new Map<string, NodeJS.Timeout>();
   private readonly intentionalDisconnects = new Set<string>();
-  private readonly lastSeenEventIds = new Map<string, number>();
   private readonly reconnectAttempts = new Map<string, number>();
 
   constructor(
@@ -47,12 +46,9 @@ export class EventService {
     private readonly handlers: Handlers
   ) {}
 
-  public async startEventsStream(serverId: string, lastEventId?: number): Promise<boolean> {
+  public async startEventsStream(serverId: string): Promise<boolean> {
     this.intentionalDisconnects.delete(serverId);
     this.reconnectAttempts.set(serverId, 0);
-    if (lastEventId) {
-      this.lastSeenEventIds.set(serverId, lastEventId);
-    }
     return this.connectStreamWithRetry(serverId);
   }
 
@@ -264,11 +260,7 @@ export class EventService {
     this.reconnectAttempts.set(serverId, 0);
     this.logger.info(server.name, `sse handshake performed, session id: ${sessionId}`);
 
-    const currentLastId = this.lastSeenEventIds.get(serverId);
-    let streamUrl = `/stream/events?sessionId=${sessionId}`;
-    if (currentLastId) {
-      streamUrl += `&lastEventId=${currentLastId}`;
-    }
+    const streamUrl = `/stream/events?sessionId=${sessionId}`;
     this.cleanupActiveStream(serverId);
     const disconnectFn = await safeStreamRequest<EncryptedStreamMessage>(
       client,
@@ -280,9 +272,6 @@ export class EventService {
             encryptedData,
             sessionKey
           );
-          if (data && data.id) {
-            this.lastSeenEventIds.set(serverId, data.id);
-          }
           this.handlers.onEvent(serverId, data, error);
         },
         onError: err => {

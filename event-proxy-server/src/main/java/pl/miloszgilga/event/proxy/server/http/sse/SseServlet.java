@@ -21,16 +21,6 @@ public class SseServlet extends HttpServlet {
   protected void doGet(HttpServletRequest req, HttpServletResponse res) {
     final String sessionId = req.getParameter("sessionId");
 
-    final String lastEventIdParam = req.getParameter("lastEventId");
-    Long lastEventId = null;
-    try {
-      if (lastEventIdParam != null && !lastEventIdParam.isBlank()) {
-        lastEventId = Long.parseLong(lastEventIdParam);
-      }
-    } catch (NumberFormatException e) {
-      res.setStatus(HttpStatus.BAD_REQUEST_400);
-      return;
-    }
     if (!eventBroadcaster.checkClient(sessionId)) {
       res.setStatus(HttpStatus.UNAUTHORIZED_401);
       return;
@@ -42,7 +32,7 @@ public class SseServlet extends HttpServlet {
     final AsyncContext asyncContext = req.startAsync(req, res);
     asyncContext.setTimeout(0); // set no limit for SSE connections
 
-    eventBroadcaster.bindClient(sessionId, asyncContext, req, lastEventId);
+    eventBroadcaster.bindClient(sessionId, asyncContext, req);
 
     final CustomAsyncContextListener listener = new CustomAsyncContextListener(
       asyncContext,
