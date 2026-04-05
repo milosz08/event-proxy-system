@@ -35,7 +35,7 @@ even Cloudflare's edge servers, can decrypt the content.
 Server does not contain complex and heavyweight frameworks (like Spring, Spring Boot) and is
 built on a pure Jetty server to achieve the smallest possible memory footprint.
 
-![](.github/flow-diagram.svg)
+<img src=".github/flow-diagram.svg" width="100%">
 
 ## Demo (desktop app)
 
