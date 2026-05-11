@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { app } from 'electron';
 import Store from 'electron-store';
 import { ServerConfigDTO, UiConfig } from '../@types/shared';
 import { defaultUiConfig } from '../data/shared';
@@ -21,6 +22,12 @@ type AppSchema = {
   closeAppCompletely: boolean;
   openAtLogin: boolean;
 };
+
+if (!app.isPackaged) {
+  const defaultUserDataPath = app.getPath('userData');
+  app.setPath('userData', `${defaultUserDataPath}-dev`);
+  app.setName(`${app.getName()}-dev`);
+}
 
 const store = new Store<AppSchema>({
   defaults: {
