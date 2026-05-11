@@ -12,6 +12,11 @@ type LoginResponseData = {
   hasDefaultPassword: boolean;
 };
 
+type ExtendedResponseResult = ResponseResult & {
+  isNetworkError?: boolean;
+  statusCode?: number;
+};
+
 type Handlers = {
   onHeartbeat: (serverId: string, status: boolean, resTimeMillis?: number) => void;
   onSessionExpired: (serverId: string) => void;
@@ -26,6 +31,7 @@ export class AuthService {
   private readonly DEFAULT_REFRESH_MS = 15 * 60 * 1000;
   private readonly SAFETY_BUFFER_MS = 60 * 1000;
   private readonly MAX_REFRESH_MS = 6 * 60 * 60 * 1000;
+  private readonly NETWORK_ERROR_RETRYING = 10 * 1000;
 
   constructor(
     private readonly configService: ConfigService,
@@ -153,14 +159,14 @@ export class AuthService {
     return true;
   }
 
-  public async refreshSession(serverId: string): Promise<ResponseResult> {
+  public async refreshSession(serverId: string): Promise<ExtendedResponseResult> {
     const server = this.configService.getServerById(serverId);
     if (!server) {
       return { success: false };
     }
     const client = this.networkManager.getAxiosForServer(server);
     const url = '/api/session/refresh';
-    const { success, resTimeMillis } = await safeRequest<void>(
+    const { success, resTimeMillis, error, isNetworkError, statusCode } = await safeRequest<void>(
       () => client.post(url),
       server.name,
       url
@@ -169,7 +175,13 @@ export class AuthService {
       this.logger.info(server.name, 'session refreshed successfully');
       await this.safeUpdateSessionCookie(server);
     }
-    return { success, resTimeMillis };
+    return {
+      success,
+      resTimeMillis,
+      error,
+      isNetworkError,
+      statusCode,
+    };
   }
 
   public async removeServer(serverId: string): Promise<ResponseResult> {
@@ -240,9 +252,19 @@ export class AuthService {
     this.heartbeatService.start(
       server,
       async () => {
-        const { success, resTimeMillis } = await this.refreshSession(server.id);
+        const { success, resTimeMillis, isNetworkError, statusCode } = await this.refreshSession(
+          server.id
+        );
         this.handlers.onHeartbeat(server.id, success, resTimeMillis);
         if (!success) {
+          if (isNetworkError || (statusCode && statusCode >= 500)) {
+            this.logger.warn(
+              server.name,
+              'network/server error during heartbeat ' +
+                `scheduling retry in ${this.NETWORK_ERROR_RETRYING / 1000}s...`
+            );
+            return this.NETWORK_ERROR_RETRYING;
+          }
           return false;
         }
         return await this.calculateSmartRefreshInterval(server);

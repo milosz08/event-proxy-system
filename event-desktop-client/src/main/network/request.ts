@@ -6,6 +6,11 @@ import { CryptoService, EncryptedRestMessage } from '../service/crypto-service';
 import store, { ServerConfig } from '../store';
 import { extractErrorMessage } from '../utils';
 
+export type SafeApiResult<T> = ApiResult<T> & {
+  isNetworkError?: boolean;
+  statusCode?: number;
+};
+
 export type StreamHandlers<T> = {
   onData: (encryptedData: T) => void;
   onError: (error: string) => void;
@@ -18,7 +23,7 @@ export async function safeRequest<T>(
   requestFn: () => Promise<AxiosResponse<T>>,
   serverName: string = 'localhost',
   contextName: string = 'API'
-): Promise<ApiResult<T>> {
+): Promise<SafeApiResult<T>> {
   const start = performance.now();
   try {
     const response = await requestFn();
@@ -30,10 +35,23 @@ export async function safeRequest<T>(
   } catch (err) {
     const errorMsg = extractErrorMessage(err);
     logger.error(serverName, `${contextName} error`, errorMsg);
+    let isNetworkError: boolean;
+    let statusCode: number | undefined = undefined;
+    if (axios.isAxiosError(err)) {
+      isNetworkError = !err.response;
+      statusCode = err.response?.status;
+    } else {
+      isNetworkError =
+        errorMsg.includes('ENOTFOUND') ||
+        errorMsg.includes('ECONNREFUSED') ||
+        errorMsg.includes('network timeout');
+    }
     return {
       success: false,
       error: errorMsg,
       resTimeMillis: performance.now() - start,
+      isNetworkError,
+      statusCode,
     };
   }
 }
