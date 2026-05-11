@@ -23,9 +23,10 @@ const MIN_HEIGHT = 720;
 
 let isQuitting = false;
 let updateTrayMenu: () => void;
+let mainWindow: BrowserWindow | null = null;
 
 const createWindow = async (): Promise<BrowserWindow> => {
-  const mainWindow = new BrowserWindow({
+  const win = new BrowserWindow({
     width: MIN_WIDTH,
     height: MIN_HEIGHT,
     minWidth: MIN_WIDTH,
@@ -41,31 +42,31 @@ const createWindow = async (): Promise<BrowserWindow> => {
     },
   });
 
-  mainWindow.on('ready-to-show', () => {
+  win.on('ready-to-show', () => {
     if (!process.argv.includes('--hidden')) {
-      mainWindow.show();
+      win.show();
     }
   });
 
-  mainWindow.webContents.setWindowOpenHandler(details => {
+  win.webContents.setWindowOpenHandler(details => {
     shell.openExternal(details.url).then(r => r);
     return { action: 'deny' };
   });
 
-  mainWindow.on('close', event => {
+  win.on('close', event => {
     const closeAppCompletely = store.get('closeAppCompletely');
     if (!isQuitting && !closeAppCompletely) {
       event.preventDefault();
-      mainWindow.hide();
+      win.hide();
     }
   });
 
   if (is.dev && electronRendererUrl) {
-    await mainWindow.loadURL(electronRendererUrl);
+    await win.loadURL(electronRendererUrl);
   } else {
-    await mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
+    await win.loadFile(join(__dirname, '../renderer/index.html'));
   }
-  return mainWindow;
+  return win;
 };
 
 const onReady = async (): Promise<void> => {
@@ -88,29 +89,31 @@ const onReady = async (): Promise<void> => {
     optimizer.watchWindowShortcuts(window);
   });
 
-  const mainWindow = await createWindow();
-  mainWindow.on('page-title-updated', evt => {
+  const win = await createWindow();
+  mainWindow = win;
+
+  win.on('page-title-updated', evt => {
     evt.preventDefault();
   });
 
   // badge
   const badge = new Badge();
   const badgeService = new BadgeService(badge, counts => {
-    mainWindow.webContents.send('badge:sync-all', counts);
+    win.webContents.send('badge:sync-all', counts);
     if (updateTrayMenu) {
       updateTrayMenu();
     }
   });
   await badgeService.preloadBadges(icon);
-  badgeService.setMainWindow(mainWindow);
+  badgeService.setMainWindow(win);
 
-  mainWindow.on('show', () => badgeService.refresh());
+  win.on('show', () => badgeService.refresh());
 
   const cryptoService = new CryptoService();
   const configService = new ConfigService();
 
   // menu tray
-  const menuTray = new MenuTray(mainWindow, badge, configService, () => {
+  const menuTray = new MenuTray(win, badge, configService, () => {
     isQuitting = true;
     app.quit();
   });
@@ -121,7 +124,7 @@ const onReady = async (): Promise<void> => {
   const eventService = new EventService(configService, networkManager, cryptoService, {
     onEvent: (serverId, payload) => {
       badgeService.incrementServerCount(serverId);
-      mainWindow.webContents.send('sse:event', serverId, payload);
+      win.webContents.send('sse:event', serverId, payload);
     },
     onStreamStateChange: (serverId, isConnected) => {
       win.webContents.send('sse:status-change', serverId, isConnected);
@@ -131,11 +134,11 @@ const onReady = async (): Promise<void> => {
   const authService = new AuthService(configService, networkManager, heartbeatService, {
     onHeartbeat: (serverId, status, resTimeMillis) => {
       heartbeatService.updateLastStatus(serverId, status, resTimeMillis);
-      mainWindow.webContents.send('server:heartbeat', serverId, status, resTimeMillis);
+      win.webContents.send('server:heartbeat', serverId, status, resTimeMillis);
     },
     onSessionExpired: serverId => {
       badgeService.removeServer(serverId);
-      mainWindow.webContents.send('auth:session-expired', serverId);
+      win.webContents.send('auth:session-expired', serverId);
       updateTrayMenu();
     },
     onConnect: async server => {
@@ -149,7 +152,7 @@ const onReady = async (): Promise<void> => {
       updateTrayMenu();
     },
     onSetupPoint: async (serverName, msg) => {
-      mainWindow.webContents.send('status:setup-point', serverName, msg);
+      win.webContents.send('status:setup-point', serverName, msg);
     },
   });
   updateTrayMenu = () => {
@@ -290,5 +293,21 @@ const onClose = (): void => {
   app.quit();
 };
 
-app.whenReady().then(onReady);
-app.on('window-all-closed', onClose);
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) {
+        mainWindow.restore();
+      }
+      if (!mainWindow.isVisible()) {
+        mainWindow.show();
+      }
+      mainWindow.focus();
+    }
+  });
+  app.whenReady().then(onReady);
+  app.on('window-all-closed', onClose);
+}
