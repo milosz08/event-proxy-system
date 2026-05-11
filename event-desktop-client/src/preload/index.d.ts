@@ -35,6 +35,7 @@ declare global {
           error: string | undefined
         ) => void
       ) => () => void;
+      onSseStatusChange: (callback: (serverId: string, isConnected: boolean) => void) => () => void;
       // auth
       connect: (serverId: string) => Promise<ApiResult<LoginData>>;
       disconnect: (serverId: string) => Promise<boolean>;

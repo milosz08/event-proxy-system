@@ -1,28 +1,31 @@
-import { Colors, Icon, Intent } from '@blueprintjs/core';
+import { Icon, Intent } from '@blueprintjs/core';
+import { ConnectionStatus } from '@renderer/hooks/use-connection-status';
 import React from 'react';
 import styled, { css, keyframes } from 'styled-components';
 
 type Props = {
-  isConnected: boolean;
+  status: ConnectionStatus;
+  intent: Intent;
+  pulseColor: string;
   size?: number;
   noMarginRight?: boolean;
   noMarginLeft?: boolean;
 };
 
 const PulsingIcon: React.FC<Props> = ({
-  isConnected,
+  status,
+  intent,
+  pulseColor,
   size = 12,
   noMarginRight = false,
   noMarginLeft = false,
 }): React.ReactElement => {
   return (
     <PulsingContainer $noMarginRight={noMarginRight} $noMarginLeft={noMarginLeft}>
-      <PulsingWrapper $isConnected={isConnected}>
-        <ConnectionIcon
-          icon="symbol-circle"
-          intent={isConnected ? Intent.SUCCESS : Intent.NONE}
-          size={size}
-        />
+      <PulsingWrapper
+        $isPulsing={status === 'connected' || status === 'reconnecting'}
+        $pulseColor={pulseColor}>
+        <ConnectionIcon icon="symbol-circle" intent={intent} size={size} />
       </PulsingWrapper>
     </PulsingContainer>
   );
@@ -49,21 +52,21 @@ const PulsingContainer = styled.div<{ $noMarginRight: boolean; $noMarginLeft: bo
   align-items: center;
 `;
 
-const PulsingWrapper = styled.div<{ $isConnected: boolean }>`
+const PulsingWrapper = styled.div<{ $isPulsing: boolean; $pulseColor: string }>`
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   margin: 0 4px;
   ${props =>
-    props.$isConnected &&
+    props.$isPulsing &&
     css`
       &::after {
         content: '';
         position: absolute;
         width: 14px;
         height: 14px;
-        background-color: ${Colors.GREEN3};
+        background-color: ${props.$pulseColor};
         border-radius: 50%;
         z-index: 0;
         animation: ${pulseRippleAnimation} 2s ease-out infinite;

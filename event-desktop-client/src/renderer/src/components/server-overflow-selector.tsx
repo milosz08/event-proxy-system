@@ -2,7 +2,6 @@ import {
   Button,
   Classes,
   Icon,
-  Intent,
   Menu,
   MenuItem,
   OverflowList,
@@ -10,6 +9,7 @@ import {
   Tag,
 } from '@blueprintjs/core';
 import PulsingIcon from '@renderer/components/pulsing-icon';
+import useConnectionStatus from '@renderer/hooks/use-connection-status';
 import { ServerConfig, useAppStore } from '@renderer/store/use-app-store';
 import React, { useMemo } from 'react';
 import styled from 'styled-components';
@@ -24,6 +24,8 @@ const ServerOverflowSelector: React.FC = (): React.ReactElement => {
     setUiConfig({ ...uiConfig, selectedServerId: serverId });
     setUiConfig(await window.api.updateUiConfig({ selectedServerId: serverId }));
   };
+
+  const [getConnectionStatus, getConnectionIntent, getConnectionColor] = useConnectionStatus();
 
   const ServerTag = (server: ServerConfig): React.ReactElement | null => {
     const unreadCount = unreadNotifications[server.id] ?? 0;
@@ -53,7 +55,13 @@ const ServerOverflowSelector: React.FC = (): React.ReactElement => {
           onClick={() => onSelectServer(server.id)}
           text={server.name}
           title={server.url}
-          icon={<PulsingIcon isConnected={activeSessions.has(server.id)} />}
+          icon={
+            <PulsingIcon
+              status={getConnectionStatus(server.id)}
+              intent={getConnectionIntent(server.id)}
+              pulseColor={getConnectionColor(server.id)}
+            />
+          }
           endIcon={<ServerTag {...server} />}
         />
       )}
@@ -68,7 +76,7 @@ const ServerOverflowSelector: React.FC = (): React.ReactElement => {
                     <MenuItemTextContainer>
                       <SelectorIcon
                         icon="symbol-circle"
-                        intent={activeSessions.has(server.id) ? Intent.SUCCESS : Intent.NONE}
+                        intent={getConnectionIntent(server.id)}
                         size={12}
                       />
                       {server.name}

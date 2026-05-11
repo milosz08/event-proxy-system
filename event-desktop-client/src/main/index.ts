@@ -123,6 +123,9 @@ const onReady = async (): Promise<void> => {
       badgeService.incrementServerCount(serverId);
       mainWindow.webContents.send('sse:event', serverId, payload);
     },
+    onStreamStateChange: (serverId, isConnected) => {
+      win.webContents.send('sse:status-change', serverId, isConnected);
+    },
   });
   badgeService.setEventService(eventService);
   const authService = new AuthService(configService, networkManager, heartbeatService, {

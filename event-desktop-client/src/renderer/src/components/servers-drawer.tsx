@@ -12,6 +12,7 @@ import {
 import { IconNames } from '@blueprintjs/icons';
 import ConfirmAlert from '@renderer/components/confirm-alert';
 import PulsingIcon from '@renderer/components/pulsing-icon';
+import useConnectionStatus from '@renderer/hooks/use-connection-status';
 import useSpinner from '@renderer/hooks/use-spinner';
 import { useAppStore } from '@renderer/store/use-app-store';
 import { AppToaster } from '@renderer/utils/app-toaster';
@@ -46,6 +47,8 @@ const ServersDrawer: React.FC = (): React.ReactElement => {
   const { connected, all } = useMemo(() => {
     return { connected: activeSessions.size, all: servers.size };
   }, [activeSessions, servers]);
+
+  const [getConnectionStatus, getConnectionIntent, getConnectionColor] = useConnectionStatus();
 
   const handleServerConnect = async (id: string): Promise<void> => {
     await runConnect(
@@ -127,7 +130,12 @@ const ServersDrawer: React.FC = (): React.ReactElement => {
           {[...servers].map(([id, config]) => (
             <ServerCard key={id} compact elevation={Elevation.ZERO}>
               <CardHeader>
-                <PulsingIcon isConnected={activeSessions.has(id)} noMarginLeft />
+                <PulsingIcon
+                  status={getConnectionStatus(id)}
+                  intent={getConnectionIntent(id)}
+                  pulseColor={getConnectionColor(id)}
+                  noMarginLeft
+                />
                 <ServerName>{config.name}</ServerName>
               </CardHeader>
               <ServerInfo>

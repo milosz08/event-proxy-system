@@ -43,6 +43,7 @@ type AppState = {
   updateEvent: (eventId: number, changes: Partial<EventPayload>) => void;
   insertLiveEvent: (newEvent: SseEventPayload) => void;
   setUnreadNotifications: (counts: Record<string, number>) => void;
+  updateSseStatus: (serverId: string, isConnected: boolean) => void;
 };
 
 export const useAppStore = create<AppState>(set => ({
@@ -188,4 +189,16 @@ export const useAppStore = create<AppState>(set => ({
       return { ...state, events: [event, ...state.events] };
     }),
   setUnreadNotifications: counts => set(state => ({ ...state, unreadNotifications: counts })),
+  updateSseStatus: (serverId, isConnected) =>
+    set(state => {
+      const newServers = new Map(state.servers);
+      const server = newServers.get(serverId);
+      if (server) {
+        newServers.set(serverId, {
+          ...server,
+          sseConnected: isConnected,
+        });
+      }
+      return { ...state, servers: newServers };
+    }),
 }));

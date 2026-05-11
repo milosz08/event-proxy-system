@@ -26,6 +26,7 @@ type Handlers = {
     payload: SseEventPayload | undefined,
     error: string | undefined
   ) => void;
+  onStreamStateChange: (serverId: string, isConnected: boolean) => void;
 };
 
 export class EventService {
@@ -34,6 +35,7 @@ export class EventService {
 
   private readonly MAX_RETRY_DELAY_MS = 30000;
   private readonly RETRY_INTERVAL_MS = 2000;
+  private readonly MIN_RECONNECT_ATTEMPTS_TO_NOTIFY = 2;
 
   private readonly reconnectTimers = new Map<string, NodeJS.Timeout>();
   private readonly intentionalDisconnects = new Set<string>();
@@ -65,6 +67,7 @@ export class EventService {
       disconnect();
       this.activeStreams.delete(serverId);
     }
+    this.handlers.onStreamStateChange(serverId, false);
   }
 
   public async getPageableEvents(
@@ -259,6 +262,7 @@ export class EventService {
     }
     this.reconnectAttempts.set(serverId, 0);
     this.logger.info(server.name, `sse handshake performed, session id: ${sessionId}`);
+    this.handlers.onStreamStateChange(serverId, true);
 
     const streamUrl = `/stream/events?sessionId=${sessionId}`;
     this.cleanupActiveStream(serverId);
@@ -297,7 +301,9 @@ export class EventService {
     const currentAttempt = this.reconnectAttempts.get(serverId) || 0;
     const nextAttempt = currentAttempt + 1;
     this.reconnectAttempts.set(serverId, nextAttempt);
-
+    if (nextAttempt >= this.MIN_RECONNECT_ATTEMPTS_TO_NOTIFY) {
+      this.handlers.onStreamStateChange(serverId, false);
+    }
     const delayMs = Math.min(nextAttempt * this.RETRY_INTERVAL_MS, this.MAX_RETRY_DELAY_MS);
     this.logger.warn(
       serverId,

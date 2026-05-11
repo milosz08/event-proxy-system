@@ -4,6 +4,7 @@ import EventsTable from '@renderer/components/events-table';
 import ProxyServerWaitingScreen from '@renderer/components/proxy-server-waiting-screen';
 import SplitPanelsLayout from '@renderer/components/split-panels-layout';
 import Toolbar from '@renderer/components/toolbar';
+import useConnectionStatus from '@renderer/hooks/use-connection-status';
 import useSpinner from '@renderer/hooks/use-spinner';
 import { useAppStore } from '@renderer/store/use-app-store';
 import { AppToaster } from '@renderer/utils/app-toaster';
@@ -24,10 +25,14 @@ const ServerEventsContent: React.FC = (): React.ReactElement | null => {
 
   const [loadingConnect, runConnect] = useSpinner();
 
-  const selectedServerName = useMemo(
-    () => (selectedServerId ? servers.get(selectedServerId)?.name : undefined),
+  const server = useMemo(
+    () => (selectedServerId ? servers.get(selectedServerId) : undefined),
     [servers, selectedServerId]
   );
+  const selectedServerName = server?.name;
+
+  const [getConnectionStatus] = useConnectionStatus();
+  const connectionStatus = getConnectionStatus(selectedServerId);
 
   const onSelectFirstConnected = async (): Promise<void> => {
     if (activeSessions.size < 1) {
@@ -71,7 +76,7 @@ const ServerEventsContent: React.FC = (): React.ReactElement | null => {
     );
   };
 
-  if (!activeSessions.has(selectedServerId)) {
+  if (connectionStatus === 'disconnected') {
     return (
       <ProxyServerWaitingScreen
         title={`Not connected to server ${selectedServerName}`}
@@ -79,6 +84,18 @@ const ServerEventsContent: React.FC = (): React.ReactElement | null => {
         loadingConnect={loadingConnect}
         actionDescription="Connect to server"
         onAction={connectToServer}
+      />
+    );
+  }
+
+  if (connectionStatus === 'reconnecting') {
+    return (
+      <ProxyServerWaitingScreen
+        title={`Connecting to ${selectedServerName}...`}
+        description="This proxy server is temporarily unreachable, retrying in the background..."
+        loadingConnect={true}
+        actionDescription="Connecting..."
+        onAction={async () => {}}
       />
     );
   }

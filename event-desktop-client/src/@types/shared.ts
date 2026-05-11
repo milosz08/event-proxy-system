@@ -31,6 +31,7 @@ export type ServerConfigDTO = {
   hasDefaultPassword?: boolean;
   lastHeartbeatTimestamp?: number; // as timestamp
   lastHeartbeatStatus?: boolean;
+  sseConnected?: boolean;
   lastHeartbeatResTimeMillis?: number;
 } & Omit<ServerInput, 'password'>;
 

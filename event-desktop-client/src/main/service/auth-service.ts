@@ -66,17 +66,26 @@ export class AuthService {
     }
     this.logger.info(server.name, 'verifying existing session on startup...');
     await this.handlers.onSetupPoint(server.name, 'verifying existing session');
-    const { success } = await this.refreshSession(serverId);
+    const { success, isNetworkError, statusCode } = await this.refreshSession(serverId);
     if (success) {
       await this.startHeartbeatForServer(server);
       await this.handlers.onConnect(server);
       await this.handlers.onSetupPoint(server.name, 'connected');
       return true;
-    } else {
-      this.logger.warn(server.name, 'session expired or invalid on startup');
-      await this.disconnect(serverId);
-      return false;
     }
+    if (isNetworkError || (statusCode && statusCode >= 500)) {
+      this.logger.warn(
+        server.name,
+        'network/server error on startup, keeping session locally and waiting for connection...'
+      );
+      await this.handlers.onSetupPoint(server.name, 'waiting for network...');
+      await this.startHeartbeatForServer(server);
+      await this.handlers.onConnect(server);
+      return true;
+    }
+    this.logger.warn(server.name, 'session expired or invalid on startup');
+    await this.disconnect(serverId);
+    return false;
   }
 
   public async connect(serverId: string): Promise<ApiResult<LoginData>> {

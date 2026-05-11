@@ -1,5 +1,6 @@
 import { Colors } from '@blueprintjs/core';
 import PulsingIcon from '@renderer/components/pulsing-icon';
+import useConnectionStatus from '@renderer/hooks/use-connection-status';
 import { useAppStore } from '@renderer/store/use-app-store';
 import { formatTimestamp } from '@renderer/utils/utils';
 import React, { useMemo } from 'react';
@@ -9,38 +10,39 @@ const AppFooter: React.FC = (): React.ReactElement => {
   const {
     servers,
     uiConfig: { selectedServerId },
-    activeSessions,
   } = useAppStore();
 
   const selectedServer = useMemo(
     () => servers.get(selectedServerId as string),
     [servers, selectedServerId]
   );
-  const isConnected = useMemo(
-    () => !!(selectedServerId && selectedServer && activeSessions.has(selectedServerId)),
-    [activeSessions, selectedServer, selectedServerId]
-  );
-  const { statusText, statusColor } = useMemo(
-    () =>
-      selectedServer?.lastHeartbeatStatus === undefined || !isConnected
-        ? {
-            statusText: 'UNKNOWN',
-            statusColor: Colors.ORANGE5,
-          }
-        : selectedServer?.lastHeartbeatStatus
-          ? {
-              statusText: 'OK',
-              statusColor: Colors.GREEN5,
-            }
-          : { statusText: 'INVALID', statusColor: Colors.RED5 },
-    [isConnected, selectedServer?.lastHeartbeatStatus]
-  );
+
+  const [getConnectionStatus, getConnectionIntent, getConnectionColor] = useConnectionStatus();
+  const connectionStatus = getConnectionStatus(selectedServerId);
+  const isConnected = connectionStatus === 'connected';
+
+  const { statusText, statusColor } = useMemo(() => {
+    switch (connectionStatus) {
+      case 'connected':
+        return { statusText: 'OK', statusColor: Colors.GREEN5 };
+      case 'reconnecting':
+        return { statusText: 'RECONNECTING', statusColor: Colors.ORANGE5 };
+      case 'disconnected':
+      default:
+        return { statusText: 'DISCONNECTED', statusColor: Colors.GRAY4 };
+    }
+  }, [connectionStatus]);
 
   return (
     <FooterContainer>
       <LeftSection>
         <LineContent>
-          <PulsingIcon isConnected={isConnected} noMarginLeft />
+          <PulsingIcon
+            status={connectionStatus}
+            intent={getConnectionIntent(selectedServerId)}
+            pulseColor={getConnectionColor(selectedServerId)}
+            noMarginLeft
+          />
           {isConnected ? (
             <span>
               Server: <ContentText>{selectedServer?.url}</ContentText>

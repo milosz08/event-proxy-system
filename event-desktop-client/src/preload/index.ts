@@ -78,6 +78,14 @@ const api = {
       ipcRenderer.removeListener('sse:event', listener);
     };
   },
+  onSseStatusChange: (callback: (serverId: string, isConnected: boolean) => void): (() => void) => {
+    const listener = (_: IpcRendererEvent, serverId: string, isConnected: boolean): void =>
+      callback(serverId, isConnected);
+    ipcRenderer.on('sse:status-change', listener);
+    return () => {
+      ipcRenderer.removeListener('sse:status-change', listener);
+    };
+  },
   // auth
   connect: (serverId: string): Promise<ApiResult<LoginData>> => {
     return ipcRenderer.invoke('auth:connect', serverId);

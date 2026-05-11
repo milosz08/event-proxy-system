@@ -35,11 +35,15 @@ const IpcRootBridge: React.FC = () => {
     const unsubBadge = window.api.onBadgeSyncAll(counts => {
       useAppStore.getState().setUnreadNotifications(counts);
     });
+    const unsubSseStatus = window.api.onSseStatusChange((serverId, isConnected) => {
+      useAppStore.getState().updateSseStatus(serverId, isConnected);
+    });
     return () => {
       unsubSse();
       unsubHeartbeat();
       unsubExpired();
       unsubBadge();
+      unsubSseStatus();
     };
   }, [audio]);
 
