@@ -141,13 +141,13 @@ jobs:
           path: ${{ github.workspace }}/linux-binaries
 
       - name: Download generated windows binaries
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: windows-binaries
           path: ${{ github.workspace }}/windows-binaries
 
       - name: Download generated macos binaries
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: macos-binaries
           path: ${{ github.workspace }}/macos-binaries
@@ -168,7 +168,7 @@ jobs:
           gpg_passphrase: ${{ secrets.GPG_KEY_PASSPHRASE }}
 
       - name: Create GitHub Release (Draft)
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           draft: true
           tag_name: v${{ github.event.inputs.version }}
