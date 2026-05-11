@@ -35,7 +35,7 @@ even Cloudflare's edge servers, can decrypt the content.
 Server does not contain complex and heavyweight frameworks (like Spring, Spring Boot) and is
 built on a pure Jetty server to achieve the smallest possible memory footprint.
 
-![](.github/flow-diagram.svg)
+<img src=".github/flow-diagram.svg" width="100%">
 
 ## Demo (desktop app)
 
@@ -69,7 +69,7 @@ encrypted with an asymmetric key (RSA).
    then uses it to decrypt the data while simultaneously verifying its authenticity using the tag.
 5. Finally, the plaintext (decrypted) data is sent to the Renderer via the IPC tunnel.
 
-![](.github/secure-communication.svg)
+<img src=".github/secure-communication.svg" width="100%">
 
 ## JVM memory footprint
 
