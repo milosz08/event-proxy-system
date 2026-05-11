@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Run client (DEV)" type="js.build_tools.npm">
+  <configuration default="false" name="Run client (DEV)" type="js.build_tools.npm" singleton="false">
     <package-json value="$PROJECT_DIR$/event-desktop-client/package.json" />
     <command value="run" />
     <scripts>
