@@ -32,7 +32,7 @@ export class EventService {
   private readonly logger = createScopedLogger(this.constructor.name);
   private readonly activeStreams = new Map<string, () => void>();
 
-  private readonly MAX_RETRIES = 5;
+  private readonly MAX_RETRY_DELAY_MS = 30000;
   private readonly RETRY_INTERVAL_MS = 2000;
 
   private readonly reconnectTimers = new Map<string, NodeJS.Timeout>();
@@ -295,23 +295,16 @@ export class EventService {
       return false;
     }
     const currentAttempt = this.reconnectAttempts.get(serverId) || 0;
-    if (currentAttempt >= this.MAX_RETRIES) {
-      this.logger.error(
-        serverId,
-        `sse stream failed after ${this.MAX_RETRIES} attempts, giving up`,
-        errorMsg
-      );
-      this.handlers.onEvent(serverId, undefined, errorMsg);
-      return false;
-    }
     const nextAttempt = currentAttempt + 1;
     this.reconnectAttempts.set(serverId, nextAttempt);
-    const delayMs = nextAttempt * this.RETRY_INTERVAL_MS;
+
+    const delayMs = Math.min(nextAttempt * this.RETRY_INTERVAL_MS, this.MAX_RETRY_DELAY_MS);
     this.logger.warn(
       serverId,
-      `sse disconnected, silent reconnect in ${delayMs} ms` +
-        `(attempt ${nextAttempt}/${this.MAX_RETRIES}), reason: ${errorMsg}`
+      `sse disconnected, silent reconnect in ${delayMs} ms ` +
+        `(attempt ${nextAttempt}), reason: ${errorMsg}`
     );
+
     const timer = setTimeout(async () => {
       await this.connectStreamWithRetry(serverId);
     }, delayMs);
