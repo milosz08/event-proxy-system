@@ -44,14 +44,57 @@ const useTableSelection = (props: Props): ReturnProps => {
     handlersRef.current = props;
   });
 
+  const clearSelection = useCallback(() => {
+    setSelectedEvents([]);
+    setLastSelectedIndex(null);
+    setAnchorIndex(null);
+  }, [setSelectedEvents]);
+
+  const shiftSelectionAfterAction = useCallback(() => {
+    if (events.length === 0 || selectedEvents.length === 0) {
+      return;
+    }
+    const selectedIndices = selectedEvents
+      .map(id => events.findIndex(e => e.id === id))
+      .filter(idx => idx !== -1)
+      .sort((a, b) => a - b);
+
+    if (selectedIndices.length === 0) {
+      return;
+    }
+    const topMostIndex = selectedIndices[0];
+    const bottomMostIndex = selectedIndices[selectedIndices.length - 1];
+
+    let nextSelectedIndex = -1;
+    let newCalculatedIndex = 0;
+
+    if (bottomMostIndex + 1 < events.length) {
+      nextSelectedIndex = bottomMostIndex + 1;
+      newCalculatedIndex = Math.max(0, nextSelectedIndex - selectedIndices.length);
+    } else if (topMostIndex > 0) {
+      nextSelectedIndex = topMostIndex - 1;
+      newCalculatedIndex = nextSelectedIndex;
+    }
+    if (nextSelectedIndex !== -1 && events[nextSelectedIndex]) {
+      const nextId = events[nextSelectedIndex].id;
+      setSelectedEvents([nextId]);
+      setLastSelectedIndex(newCalculatedIndex);
+      setAnchorIndex(newCalculatedIndex);
+    } else {
+      clearSelection();
+    }
+  }, [events, selectedEvents, setSelectedEvents, clearSelection]);
+
   const handleArchiveEvents = useCallback(
     async (e?: KeyboardEvent) => {
       if (selectedEvents.length === 0 || e?.repeat) {
         return;
       }
-      await handlersRef.current.onArchive(Array.from(selectedEvents));
+      const idsToProcess = Array.from(selectedEvents);
+      shiftSelectionAfterAction();
+      await handlersRef.current.onArchive(idsToProcess);
     },
-    [selectedEvents]
+    [selectedEvents, shiftSelectionAfterAction]
   );
 
   const handleUnarchiveEvents = useCallback(
@@ -59,9 +102,11 @@ const useTableSelection = (props: Props): ReturnProps => {
       if (selectedEvents.length === 0 || e?.repeat) {
         return;
       }
-      await handlersRef.current.onUnarchive(Array.from(selectedEvents));
+      const idsToProcess = Array.from(selectedEvents);
+      shiftSelectionAfterAction();
+      await handlersRef.current.onUnarchive(idsToProcess);
     },
-    [selectedEvents]
+    [selectedEvents, shiftSelectionAfterAction]
   );
 
   const handleHardDeleteEvents = useCallback(
@@ -69,9 +114,11 @@ const useTableSelection = (props: Props): ReturnProps => {
       if (selectedEvents.length === 0 || e?.repeat) {
         return;
       }
-      await handlersRef.current.onDelete(Array.from(selectedEvents));
+      const idsToProcess = Array.from(selectedEvents);
+      shiftSelectionAfterAction();
+      await handlersRef.current.onDelete(idsToProcess);
     },
-    [selectedEvents]
+    [selectedEvents, shiftSelectionAfterAction]
   );
 
   const hotkeys = useMemo<HotkeyConfig[]>(
@@ -183,12 +230,6 @@ const useTableSelection = (props: Props): ReturnProps => {
     },
     [handleKeyDownSelection, handleKeyDownHotkeys]
   );
-
-  const clearSelection = useCallback(() => {
-    setSelectedEvents([]);
-    setLastSelectedIndex(null);
-    setAnchorIndex(null);
-  }, [setSelectedEvents]);
 
   const isAllSelected = events.length > 0 && selectedEvents.length === events.length;
   const isIndeterminate = selectedEvents.length > 0 && selectedEvents.length < events.length;
